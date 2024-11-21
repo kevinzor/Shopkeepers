@@ -690,6 +690,12 @@ public class Messages extends Config {
 
 	public static Text noShopsFound = Text.parse("&7No shops were found.");
 
+	public static Text teleportVirtualShopkeeper = Text.parse("&7Cannot teleport to a virtual shopkeeper!");
+	public static Text teleportShopkeeperWorldNotLoaded = Text.parse("&7Cannot teleport to a shopkeeper in an unloaded world!");
+	public static Text teleportNoSafeLocationFound = Text.parse("&7Could not find a safe location to teleport to!");
+	public static Text teleportFailed = Text.parse("&7The teleport failed!");
+	public static Text teleportSuccess = Text.parse("&aPlayer '&e{player}&a' was teleported to shopkeeper '&e{shop}&a'!");
+
 	public static Text listAdminShopsHeader = Text.parse("&9There are &e{shopsCount} &9admin shops: &e(Page {page} of {maxPage})");
 	public static Text listAllShopsHeader = Text.parse("&9There are &e{shopsCount} &9shops in total: &e(Page {page} of {maxPage})");
 	public static Text listPlayerShopsHeader = Text.parse("&9Player '&e{player}&9' has &e{shopsCount} &9shops: &e(Page {page} of {maxPage})");
@@ -801,6 +807,7 @@ public class Messages extends Config {
 	public static Text commandDescriptionRemote = Text.parse("Remotely opens a shop (Optionally: For another player).");
 	public static Text commandDescriptionRemoteEdit = Text.parse("Remotely edits a shop.");
 	public static Text commandDescriptionTransfer = Text.parse("Transfers the ownership of a shop.");
+	public static Text commandDescriptionTeleport = Text.parse("Teleports to a shop.");
 	public static Text commandDescriptionSettradeperm = Text.parse("Sets, removes (-) or displays (?) the trading permission.");
 	public static Text commandDescriptionSettradedcommand = Text.parse("Sets, removes (-) or displays (?) the traded command of the held item.");
 	public static Text commandDescriptionSetforhire = Text.parse("Sets one of your shops for sale.");

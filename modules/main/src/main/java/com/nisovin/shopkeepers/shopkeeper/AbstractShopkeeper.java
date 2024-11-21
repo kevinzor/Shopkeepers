@@ -985,6 +985,16 @@ public abstract class AbstractShopkeeper implements Shopkeeper {
 	}
 
 	@Override
+	public final String getDisplayName() {
+		var name = this.getName(); // Can be empty
+		if (!name.isEmpty()) {
+			return name;
+		}
+
+		return String.valueOf(this.getId());
+	}
+
+	@Override
 	public final boolean isVirtual() {
 		assert (location != null && location.hasWorldName())
 				^ (location == null && shopObject instanceof VirtualShopObject);

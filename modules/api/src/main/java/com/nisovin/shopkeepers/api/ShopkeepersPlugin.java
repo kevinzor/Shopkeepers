@@ -153,6 +153,14 @@ public interface ShopkeepersPlugin extends Plugin {
 	 */
 	public static final String TRANSFER_PERMISSION = "shopkeeper.transfer";
 	/**
+	 * The <code>shopkeeper.teleport</code> permission.
+	 */
+	public static final String TELEPORT_PERMISSION = "shopkeeper.teleport";
+	/**
+	 * The <code>shopkeeper.teleport.others</code> permission.
+	 */
+	public static final String TELEPORT_OTHERS_PERMISSION = "shopkeeper.teleport.others";
+	/**
 	 * The <code>shopkeeper.settradeperm</code> permission.
 	 */
 	public static final String SET_TRADE_PERM_PERMISSION = "shopkeeper.settradeperm";

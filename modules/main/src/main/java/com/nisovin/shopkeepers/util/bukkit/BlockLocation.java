@@ -292,8 +292,38 @@ public class BlockLocation {
 	public final @Nullable Block getBlock() {
 		World world = this.getWorld();
 		if (world == null) return null;
+		return this.getBlock(world);
+	}
+
+	/**
+	 * Gets the {@link Block} in the given {@link World} that corresponds to this location.
+	 * 
+	 * @param world
+	 *            the world, not <code>null</code>
+	 * @return the block, not <code>null</code>
+	 */
+	public final Block getBlock(World world) {
+		return this.getBlockAtOffset(world, 0, 0, 0);
+	}
+
+	/**
+	 * Gets the {@link Block} in the given {@link World} that corresponds to this location with the
+	 * given offset applied to it.
+	 * 
+	 * @param world
+	 *            the world, not <code>null</code>
+	 * @param offsetX
+	 *            the x offset
+	 * @param offsetY
+	 *            the y offset
+	 * @param offsetZ
+	 *            the z offset
+	 * @return the block, not <code>null</code>
+	 */
+	public final Block getBlockAtOffset(World world, int offsetX, int offsetY, int offsetZ) {
+		Validate.notNull(world, "world");
 		// Not null (even for coordinates outside the world's bounds):
-		return world.getBlockAt(x, y, z);
+		return world.getBlockAt(x + offsetX, y + offsetY, z + offsetZ);
 	}
 
 	/**

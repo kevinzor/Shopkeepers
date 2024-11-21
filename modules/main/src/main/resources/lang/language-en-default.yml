@@ -578,6 +578,12 @@ villager-name-invalid: "&aThat name is not valid!"
 
 no-shops-found: "&7No shops were found."
 
+teleport-virtual-shopkeeper: "&7Cannot teleport to a virtual shopkeeper!"
+teleport-shopkeeper-world-not-loaded: "&7Cannot teleport to a shopkeeper in an unloaded world!"
+teleport-no-safe-location-found: "&7Could not find a safe location to teleport to!"
+teleport-failed: "&7The teleport failed!"
+teleport-success: "&aPlayer '&e{player}&a' was teleported to shopkeeper '&e{shop}&a'!"
+
 list-admin-shops-header: "&9There are &e{shopsCount} &9admin shops: &e(Page {page} of {maxPage})"
 list-all-shops-header: "&9There are &e{shopsCount} &9shops in total: &e(Page {page} of {maxPage})"
 list-player-shops-header: "&9Player '&e{player}&9' has &e{shopsCount} &9shops: &e(Page {page} of {maxPage})"
@@ -686,6 +692,7 @@ command-description-update-items: "Updates third-party items (if they support it
 command-description-remote: "Remotely opens a shop (Optionally: For another player)."
 command-description-remote-edit: "Remotely edits a shop."
 command-description-transfer: "Transfers the ownership of a shop."
+command-description-teleport: "Teleports to a shop."
 command-description-settradeperm: "Sets, removes (-) or displays (?) the trading permission."
 command-description-settradedcommand: "Sets, removes (-) or displays (?) the traded command of the held item."
 command-description-setforhire: "Sets one of your shops for sale."

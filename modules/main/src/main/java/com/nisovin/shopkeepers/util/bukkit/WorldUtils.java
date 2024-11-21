@@ -120,6 +120,33 @@ public final class WorldUtils {
 		return distanceToGround;
 	}
 
+	public static boolean isBlockInsideWorldBorder(Block block) {
+		return isBlockInsideWorldBorder(block.getWorld(), block.getX(), block.getZ());
+	}
+
+	public static boolean isBlockInsideWorldBorder(World world, int x, int z) {
+		var worldBorder = world.getWorldBorder();
+		Location center = worldBorder.getCenter();
+		int radius = (int) (worldBorder.getSize() / 2);
+		int centerX = center.getBlockX();
+		int centerZ = center.getBlockZ();
+		int minX = centerX - radius;
+		int maxX = centerX + radius;
+		int minZ = centerZ - radius;
+		int maxZ = centerZ + radius;
+		return x >= minX && x <= maxX && z >= minZ && z <= maxZ;
+	}
+
+	public static boolean isBlockInsideWorldHeightBounds(Block block) {
+		return isBlockInsideWorldHeightBounds(block.getWorld(), block.getY());
+	}
+
+	public static boolean isBlockInsideWorldHeightBounds(World world, int y) {
+		var maxY = world.getMaxHeight() - 1; // Exclusive bound
+		int minY = world.getMinHeight();
+		return y >= minY && y <= maxY;
+	}
+
 	private WorldUtils() {
 	}
 }

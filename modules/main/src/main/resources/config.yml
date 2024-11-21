@@ -35,6 +35,8 @@ debug: false
 #    result slot.
 # - 'text-components': Logs additional debug output whenever component-based
 #    text is sent.
+# - 'unsafe-teleports': Logs additional debug output whenever a teleport is
+#    considered unsafe.
 debug-options: []
 # Whether to report anonymous usage statistics to https://bStats.org
 # All reported information can be found here:

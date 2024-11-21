@@ -39,6 +39,8 @@ public final class DebugOptions {
 	public static final String emptyTrades = add("empty-trades");
 	// Logs additional debug output whenever component-based text is sent.
 	public static final String textComponents = add("text-components");
+	// Logs additional debug output whenever a teleport is considered unsafe.
+	public static final String unsafeTeleports = add("unsafe-teleports");
 
 	private static String add(String debugOption) {
 		allOptions.add(debugOption);

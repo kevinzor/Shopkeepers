@@ -96,6 +96,12 @@ permissions:
     shopkeeper.transfer:
         description: Transfer ownership of player shops
         default: op
+    shopkeeper.teleport:
+        description: Teleport to shopkeepers via command
+        default: op
+    shopkeeper.teleport.others:
+        description: Teleport other players to shopkeepers
+        default: op
     shopkeeper.settradeperm:
         description: Set the trade permissions for admin shops
         default: op

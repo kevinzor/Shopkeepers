@@ -4,9 +4,22 @@ Date format: (YYYY-MM-DD)
 ## v2.23.3 (TBA)
 ### Supported MC versions: 1.21.3, 1.21.1, 1.21, 1.20.6
 
+* Commands: Add command `/shopkeeper teleport [player] <shop> ['force']` that teleports a player near the specified shopkeeper.
+  * Permissions: `shopkeeper.teleport` (default: `op`) and `shopkeeper.teleport.others` (default: `op`).
+  * The command tries to find a safe teleport location in a small radius in front of the shopkeeper. The `force` argument can be used to teleport the player even if no safe location is found.
+  * Debug: Add debug option `unsafe-teleports` to log additional debug output for unsafe teleports.
 * Fix: Prevent damage caused by shopkeeper mobs, e.g. when touching puffed pufferfish shopkeepers.
 * Fix: The remote command ignored shops that cannot be opened because they have no trades currently. We still want to show these shops in command completions.
+* API: Add `Shopkeeper#getDisplayName`.
 * Internal: Add `UIHandler#canAccess` as a subset of the checks performed by `#canOpen`.
+
+**Message changes:**  
+* Added `command-description-teleport`.
+* Added `teleport-virtual-shopkeeper`.
+* Added `teleport-shopkeeper-world-not-loaded`.
+* Added `teleport-no-safe-location-found`.
+* Added `teleport-failed`.
+* Added `teleport-success`.
 
 ## v2.23.2 (2024-11-21)
 ### Supported MC versions: 1.21.3, 1.21.1, 1.21, 1.20.6

@@ -145,6 +145,17 @@ public interface Shopkeeper {
 	public String getLocatedLogPrefix();
 
 	/**
+	 * Gets a display name for this shopkeeper that can for example be used in command feedback
+	 * messages.
+	 * <p>
+	 * The format of the display name is not defined, but may for example include the shopkeeper's
+	 * {@link #getName() name} (if set), {@link #getId() id}, or {@link #getUniqueId() unique id}.
+	 * 
+	 * @return a display name for this shopkeeper
+	 */
+	public String getDisplayName();
+
+	/**
 	 * Gets the type of this shopkeeper (e.g.: admin, selling player, buying player, trading player,
 	 * etc.).
 	 * 
