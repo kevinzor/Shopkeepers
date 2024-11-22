@@ -4,6 +4,7 @@ Date format: (YYYY-MM-DD)
 ## v2.23.3 (TBA)
 ### Supported MC versions: 1.21.3, 1.21.1, 1.21, 1.20.6
 
+* Fix: Prevent damage caused by shopkeeper mobs, e.g. when touching puffed pufferfish shopkeepers.
 
 ## v2.23.2 (2024-11-21)
 ### Supported MC versions: 1.21.3, 1.21.1, 1.21, 1.20.6

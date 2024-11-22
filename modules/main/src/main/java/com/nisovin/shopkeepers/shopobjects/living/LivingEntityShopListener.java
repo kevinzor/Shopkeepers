@@ -6,6 +6,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Mob;
 import org.bukkit.entity.Monster;
 import org.bukkit.entity.PigZombie;
 import org.bukkit.entity.Player;
@@ -228,20 +229,25 @@ class LivingEntityShopListener implements Listener {
 
 	@EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
 	void onEntityDamage(EntityDamageEvent event) {
+		// Block damaging of shopkeepers:
 		Entity entity = event.getEntity();
-		if (!shopkeeperRegistry.isShopkeeper(entity)) return;
+		if (shopkeeperRegistry.isShopkeeper(entity)) {
+			event.setCancelled(true);
 
-		// Block damaging of shopkeepers
-		event.setCancelled(true);
-		if (event instanceof EntityDamageByEntityEvent) {
-			EntityDamageByEntityEvent evt = (EntityDamageByEntityEvent) event;
-			if (evt.getDamager() instanceof Monster) {
-				Monster monster = (Monster) evt.getDamager();
-				// Reset target, future targeting should get prevented somewhere else:
-				if (entity.equals(monster.getTarget())) {
-					monster.setTarget(null);
-				}
+			// If damaged by another mob, reset the mob's target. Future targeting should get
+			// prevented somewhere else (see EntityTargetEvent).
+			if (event instanceof EntityDamageByEntityEvent entityDamageByEntityEvent
+					&& entityDamageByEntityEvent.getDamager() instanceof Mob attacker
+					&& entity.equals(attacker.getTarget())) {
+				attacker.setTarget(null);
 			}
+			return;
+		}
+
+		// Prevent damage caused by shopkeeper mobs (e.g. touching a puffed pufferfish shopkeeper):
+		if (event instanceof EntityDamageByEntityEvent entityDamageByEntityEvent
+				&& shopkeeperRegistry.isShopkeeper(entityDamageByEntityEvent.getDamager())) {
+			event.setCancelled(true);
 		}
 	}
 
