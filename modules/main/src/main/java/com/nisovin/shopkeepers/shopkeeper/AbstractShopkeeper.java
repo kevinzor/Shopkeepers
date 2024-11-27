@@ -1572,11 +1572,20 @@ public abstract class AbstractShopkeeper implements Shopkeeper {
 		return this.openWindow(DefaultUITypes.EDITOR(), player);
 	}
 
-	// Shortcut to check if the sender can access the editor:
+	// Shortcut to check if the sender has access to the editor, taking the bypass permission into
+	// account for non-player CommandSenders.
 	public final boolean canEdit(CommandSender sender, boolean silent) {
+		return this.canAccess(sender, DefaultUITypes.EDITOR(), silent);
+	}
+
+	// Shortcut for checking if the sender has access to the given UI type, taking the bypass
+	// permission into account for non-player CommandSenders.
+	public final boolean canAccess(CommandSender sender, UIType uiType, boolean silent) {
+		var uiHandler = this.getUIHandler(uiType);
+		if (uiHandler == null) return false;
+
 		if (sender instanceof Player player) {
-			var uiHandler = Unsafe.assertNonNull(this.getUIHandler(DefaultUITypes.EDITOR()));
-			return uiHandler.canOpen(player, silent);
+			return uiHandler.canAccess(player, silent);
 		} else {
 			// Check if the command sender has the bypass permission (e.g. the case for the console
 			// and block command senders, but might not be the case for other unexpected types of

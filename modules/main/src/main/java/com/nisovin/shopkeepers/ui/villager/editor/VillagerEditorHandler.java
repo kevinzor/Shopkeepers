@@ -153,7 +153,7 @@ public final class VillagerEditorHandler extends AbstractEditorHandler {
 	}
 
 	@Override
-	public boolean canOpen(Player player, boolean silent) {
+	public boolean canAccess(Player player, boolean silent) {
 		Validate.notNull(player, "player is null");
 		// Check permission:
 		if (!this.checkEditPermission(player, silent)) {

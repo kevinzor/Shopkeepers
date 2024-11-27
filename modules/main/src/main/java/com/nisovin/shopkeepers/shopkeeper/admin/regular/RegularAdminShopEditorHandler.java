@@ -105,8 +105,8 @@ public class RegularAdminShopEditorHandler extends EditorHandler {
 	}
 
 	@Override
-	public boolean canOpen(Player player, boolean silent) {
-		if (!super.canOpen(player, silent)) return false;
+	public boolean canAccess(Player player, boolean silent) {
+		if (!super.canAccess(player, silent)) return false;
 
 		// Check the shopkeeper permission:
 		if (!this.getShopkeeper().getType().hasPermission(player)) {

@@ -53,8 +53,8 @@ public abstract class PlayerShopEditorHandler extends EditorHandler {
 	}
 
 	@Override
-	public boolean canOpen(Player player, boolean silent) {
-		if (!super.canOpen(player, silent)) return false;
+	public boolean canAccess(Player player, boolean silent) {
+		if (!super.canAccess(player, silent)) return false;
 
 		// Check the owner:
 		if (!this.getShopkeeper().isOwner(player)

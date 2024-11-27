@@ -63,7 +63,7 @@ public abstract class AbstractEquipmentEditorHandler extends UIHandler {
 	}
 
 	@Override
-	public boolean canOpen(Player player, boolean silent) {
+	public boolean canAccess(Player player, boolean silent) {
 		return true;
 	}
 

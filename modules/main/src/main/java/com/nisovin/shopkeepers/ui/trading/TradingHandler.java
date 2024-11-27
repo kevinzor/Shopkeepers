@@ -41,8 +41,6 @@ import com.nisovin.shopkeepers.lang.Messages;
 import com.nisovin.shopkeepers.shopkeeper.AbstractShopkeeper;
 import com.nisovin.shopkeepers.ui.AbstractShopkeeperUIHandler;
 import com.nisovin.shopkeepers.ui.AbstractUIType;
-import com.nisovin.shopkeepers.ui.SKDefaultUITypes;
-import com.nisovin.shopkeepers.ui.UIHandler;
 import com.nisovin.shopkeepers.ui.state.UIState;
 import com.nisovin.shopkeepers.util.annotations.ReadOnly;
 import com.nisovin.shopkeepers.util.annotations.ReadWrite;
@@ -90,7 +88,7 @@ public class TradingHandler extends AbstractShopkeeperUIHandler {
 	}
 
 	@Override
-	public boolean canOpen(Player player, boolean silent) {
+	public boolean canAccess(Player player, boolean silent) {
 		Validate.notNull(player, "player is null");
 		if (!PermissionUtils.hasPermission(player, ShopkeepersPlugin.TRADE_PERMISSION)) {
 			if (!silent) {
@@ -99,6 +97,15 @@ public class TradingHandler extends AbstractShopkeeperUIHandler {
 			}
 			return false;
 		}
+
+		return true;
+	}
+
+	@Override
+	public boolean canOpen(Player player, boolean silent) {
+		Validate.notNull(player, "player is null");
+		if (!super.canOpen(player, silent)) return false;
+
 		AbstractShopkeeper shopkeeper = this.getShopkeeper();
 		if (!shopkeeper.hasTradingRecipes(player)) {
 			if (!silent) {
@@ -107,13 +114,13 @@ public class TradingHandler extends AbstractShopkeeperUIHandler {
 
 				// If the player can edit the shopkeeper, send instructions on how to open the
 				// editor:
-				UIHandler editorHandler = shopkeeper.getUIHandler(SKDefaultUITypes.EDITOR());
-				if (editorHandler != null && editorHandler.canOpen(player, true)) {
+				if (shopkeeper.canEdit(player, true)) {
 					TextUtils.sendMessage(player, Messages.noOffersOpenEditorDescription);
 				}
 			}
 			return false;
 		}
+
 		return true;
 	}
 

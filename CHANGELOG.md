@@ -5,6 +5,8 @@ Date format: (YYYY-MM-DD)
 ### Supported MC versions: 1.21.3, 1.21.1, 1.21, 1.20.6
 
 * Fix: Prevent damage caused by shopkeeper mobs, e.g. when touching puffed pufferfish shopkeepers.
+* Fix: The remote command ignored shops that cannot be opened because they have no trades currently. We still want to show these shops in command completions.
+* Internal: Add `UIHandler#canAccess` as a subset of the checks performed by `#canOpen`.
 
 ## v2.23.2 (2024-11-21)
 ### Supported MC versions: 1.21.3, 1.21.1, 1.21, 1.20.6

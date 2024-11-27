@@ -58,19 +58,39 @@ public abstract class UIHandler {
 	}
 
 	/**
-	 * Checks whether the given player can open this interface.
+	 * Checks whether the given player is allowed to access to this interface.
 	 * <p>
 	 * This may for example perform any necessary permission checks.
 	 * <p>
-	 * This gets for example called when a player requests this interface.
+	 * This is for example checked as part of {@link #canOpen(Player, boolean)}, but limited to
+	 * access permission related checks.
 	 * 
 	 * @param player
 	 *            the player, not <code>null</code>
 	 * @param silent
-	 *            <code>false</code> to inform the player when the access is denied
-	 * @return <code>true</code> if the given player is allowed to open this interface
+	 *            <code>false</code> to inform the player if the access is denied
+	 * @return <code>true</code> if the given player has access to this interface
 	 */
-	public abstract boolean canOpen(Player player, boolean silent);
+	public abstract boolean canAccess(Player player, boolean silent);
+
+	/**
+	 * Checks whether the given player can open this interface.
+	 * <p>
+	 * This gets for example called when a player requests this interface.
+	 * <p>
+	 * This is expected to call {@link #canAccess(Player, boolean)}, but may perform additional
+	 * checks. For example, the trading UI of a shop may return <code>false</code> if there are
+	 * currently no trades available.
+	 * 
+	 * @param player
+	 *            the player, not <code>null</code>
+	 * @param silent
+	 *            <code>false</code> to inform the player if they cannot open the UI currently
+	 * @return <code>true</code> if the given player is currently allowed to open this interface
+	 */
+	public boolean canOpen(Player player, boolean silent) {
+		return this.canAccess(player, silent);
+	}
 
 	/**
 	 * Opens the interface window for the player of the given {@link UISession}.

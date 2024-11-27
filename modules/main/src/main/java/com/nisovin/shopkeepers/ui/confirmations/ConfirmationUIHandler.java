@@ -46,7 +46,7 @@ public class ConfirmationUIHandler extends UIHandler {
 	}
 
 	@Override
-	public boolean canOpen(Player player, boolean silent) {
+	public boolean canAccess(Player player, boolean silent) {
 		// Players cannot directly request this UI themselves. It is always opened for them in some
 		// context.
 		return true;

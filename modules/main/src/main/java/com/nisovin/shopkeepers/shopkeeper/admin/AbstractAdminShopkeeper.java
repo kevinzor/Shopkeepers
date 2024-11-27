@@ -38,8 +38,8 @@ public abstract class AbstractAdminShopkeeper
 		}
 
 		@Override
-		public boolean canOpen(Player player, boolean silent) {
-			if (!super.canOpen(player, silent)) return false;
+		public boolean canAccess(Player player, boolean silent) {
+			if (!super.canAccess(player, silent)) return false;
 
 			// Check trading permission:
 			String tradePermission = this.getShopkeeper().getTradePermission();
@@ -51,6 +51,7 @@ public abstract class AbstractAdminShopkeeper
 				}
 				return false;
 			}
+
 			return true;
 		}
 	}

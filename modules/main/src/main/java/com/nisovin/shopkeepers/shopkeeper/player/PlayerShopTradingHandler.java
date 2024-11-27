@@ -51,6 +51,7 @@ public abstract class PlayerShopTradingHandler extends TradingHandler {
 				return false;
 			}
 		}
+
 		return true;
 	}
 
