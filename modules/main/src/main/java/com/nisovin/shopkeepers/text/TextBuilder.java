@@ -302,12 +302,15 @@ public abstract class TextBuilder extends AbstractText {
 	/**
 	 * Creates a new {@link TextBuilder} with the given insertion text and sets it as
 	 * {@link #child(Text) child} Text.
+	 * <p>
+	 * Uses an empty {@link #childText(String)} instead if the insertion is <code>null</code> or
+	 * empty.
 	 * 
 	 * @param insertion
-	 *            the insertion text, not <code>null</code> or empty
+	 *            the insertion text
 	 * @return the new {@link TextBuilder}
 	 */
-	public TextBuilder childInsertion(String insertion) {
+	public TextBuilder childInsertion(@Nullable String insertion) {
 		return this.child(Text.insertion(insertion));
 	}
 
@@ -461,12 +464,15 @@ public abstract class TextBuilder extends AbstractText {
 	/**
 	 * Creates a new {@link TextBuilder} with the given insertion text and sets it as
 	 * {@link #next(Text) next} Text.
+	 * <p>
+	 * Uses an empty next {@link #text(String)} instead if the insertion is <code>null</code> or
+	 * empty.
 	 * 
 	 * @param insertion
-	 *            the insertion text, not <code>null</code> or empty
+	 *            the insertion text
 	 * @return the new {@link TextBuilder}
 	 */
-	public TextBuilder insertion(String insertion) {
+	public TextBuilder insertion(@Nullable String insertion) {
 		return this.next(Text.insertion(insertion));
 	}
 

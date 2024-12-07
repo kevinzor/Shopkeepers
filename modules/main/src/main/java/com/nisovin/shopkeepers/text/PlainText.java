@@ -41,6 +41,8 @@ public class PlainText extends TextBuilder {
 
 	@Override
 	public boolean isPlainTextEmpty() {
+		if (!super.isPlainTextEmpty()) return false;
+
 		return text.isEmpty();
 	}
 

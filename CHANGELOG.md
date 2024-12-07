@@ -12,6 +12,8 @@ Date format: (YYYY-MM-DD)
 * Fix: The remote command ignored shops that cannot be opened because they have no trades currently. We still want to show these shops in command completions.
 * API: Add `Shopkeeper#getDisplayName`.
 * Internal: Add `UIHandler#canAccess` as a subset of the checks performed by `#canOpen`.
+* Internal: Fix `PlainText#isPlainTextEmpty` ignoring next and child texts.
+* Internal: Insertion texts: Instead of throwing an exception, automatically use an empty text as fallback if the specified insertion is empty.
 
 **Message changes:**  
 * Added `command-description-teleport`.

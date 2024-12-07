@@ -294,13 +294,15 @@ public interface Text {
 
 	/**
 	 * Creates a new {@link TextBuilder} with the given insertion text.
+	 * <p>
+	 * Returns an empty {@link #text(String)} if the insertion is <code>null</code> or empty.
 	 * 
 	 * @param insertion
-	 *            the insertion text, not <code>null</code> or empty
+	 *            the insertion text
 	 * @return the new {@link TextBuilder}
 	 */
-	public static TextBuilder insertion(String insertion) {
-		return new InsertionText(insertion);
+	public static TextBuilder insertion(@Nullable String insertion) {
+		return (insertion == null || insertion.isEmpty()) ? text("") : new InsertionText(insertion);
 	}
 
 	/////
