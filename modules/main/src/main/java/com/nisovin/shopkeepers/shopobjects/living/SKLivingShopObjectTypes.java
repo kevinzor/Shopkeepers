@@ -167,6 +167,7 @@ import com.nisovin.shopkeepers.util.java.Validate;
  * <li>ARMADILLO: okay
  * <li>BOGGED: okay, TODO toggle sheared state # 1.21
  * <li>BREEZE: okay
+ * <li>CREAKING: okay # 1.21.4
  * </ul>
  **/
 public final class SKLivingShopObjectTypes implements LivingShopObjectTypes {

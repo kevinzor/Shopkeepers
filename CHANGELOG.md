@@ -2,8 +2,11 @@
 Date format: (YYYY-MM-DD)  
 
 ## v2.23.3 (TBA)
-### Supported MC versions: 1.21.3, 1.21.1, 1.21, 1.20.6
+### Supported MC versions: 1.21.4, 1.21.3, 1.21.1, 1.21, 1.20.6
 
+* Update for MC 1.21.4.
+  * Add pale oak sign and hanging sign shops.
+  * Add creaking to the by default enabled mob types.
 * Commands: Add command `/shopkeeper teleport [player] <shop> ['force']` that teleports a player near the specified shopkeeper.
   * Permissions: `shopkeeper.teleport` (default: `op`) and `shopkeeper.teleport.others` (default: `op`).
   * The command tries to find a safe teleport location in a small radius in front of the shopkeeper. The `force` argument can be used to teleport the player even if no safe location is found.
