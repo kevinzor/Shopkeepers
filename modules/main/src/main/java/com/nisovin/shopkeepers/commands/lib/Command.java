@@ -628,6 +628,7 @@ public abstract class Command {
 	protected static class ParsingContext {
 
 		public final CommandInput input;
+		public final CommandContext rootContext;
 		public CommandContext context; // The currently active context
 		public final ArgumentsReader argsReader;
 		public final int argumentsCount;
@@ -635,8 +636,14 @@ public abstract class Command {
 		public int currentArgumentIndex = 0;
 		public @Nullable ArgumentParseException currentParseException = null;
 
-		// Latest fallback. Recursively holds references to earlier fallbacks.
-		public @Nullable Fallback pendingFallback = null;
+		// The first pending fallback.
+		// See handleFallbacks for how this fallback is eventually processed.
+		// Recursively holds references to subsequent fallbacks that are evaluated from front to
+		// back if the parsing of the subsequent command arguments succeeds. If the parsing of the
+		// subsequent command arguments failed but this first fallback succeeds, the parsing is
+		// restarted from this point and the fallbacks for subsequent command arguments are
+		// disregarded.
+		private @Nullable Fallback pendingFallback = null;
 		// If present and parsing fails, this exception overrides any other exception that would
 		// otherwise be thrown.
 		// This exception is usually associated with an earlier command argument that initially
@@ -654,6 +661,7 @@ public abstract class Command {
 		) {
 			assert input != null && context != null && argsReader != null && argumentsCount >= 0;
 			this.input = input;
+			this.rootContext = context;
 			this.context = context;
 			this.argsReader = argsReader;
 			this.argumentsCount = argumentsCount;
@@ -683,26 +691,41 @@ public abstract class Command {
 			this.overrideParseException = overrideParseException;
 			this.overrideParseExceptionArgumentIndex = argumentIndex;
 		}
+
+		/**
+		 * Appends the given {@link Fallback} to the end of the list of pending fallbacks.
+		 * 
+		 * @param fallback
+		 *            the fallback to append
+		 */
+		public void appendFallback(Fallback fallback) {
+			if (pendingFallback == null) {
+				pendingFallback = fallback;
+			} else {
+				assert pendingFallback != null;
+				pendingFallback.appendFallback(fallback);
+			}
+		}
 	}
 
 	protected static class Fallback {
 
-		protected final @Nullable Fallback previousPendingFallback;
 		protected final int argumentIndex;
 
 		private final FallbackArgumentException exception;
 		private final BufferedCommandContext bufferedContext;
 		private final ArgumentsReader originalArgsReader; // Snapshot from before the fallback
 
+		// Linked list of subsequent fallbacks:
+		private @Nullable Fallback nextPendingFallback;
+
 		protected Fallback(
-				@Nullable Fallback previousPendingFallback,
 				int argumentIndex,
 				FallbackArgumentException exception,
 				BufferedCommandContext bufferedContext,
 				ArgumentsReader originalArgsReader
 		) {
 			assert exception != null && bufferedContext != null && originalArgsReader != null;
-			this.previousPendingFallback = previousPendingFallback;
 			this.argumentIndex = argumentIndex;
 			this.exception = exception;
 			this.bufferedContext = bufferedContext;
@@ -739,26 +762,32 @@ public abstract class Command {
 		}
 
 		/**
-		 * Gets the original {@link CommandContext} from before the fallback.
-		 * <p>
-		 * This uses the {@link #getBufferedContext() buffered context's}
-		 * {@link BufferedCommandContext#getParentContext() parent context} and therefore only
-		 * matches the original state as long as the buffered context's buffer has not yet been
-		 * applied.
-		 * 
-		 * @return the original context
-		 */
-		public CommandContext getOriginalContext() {
-			return bufferedContext.getParentContext();
-		}
-
-		/**
 		 * Gets the {@link ArgumentsReader} at the state from before the fallback.
 		 * 
 		 * @return the ArgumentsReader at the state from before the fallback
 		 */
 		public ArgumentsReader getOriginalArgsReader() {
 			return originalArgsReader;
+		}
+
+		/**
+		 * Appends the given {@link Fallback} to the end of the list of pending fallbacks.
+		 * 
+		 * @param fallback
+		 *            the fallback to append
+		 */
+		public void appendFallback(Fallback fallback) {
+			Fallback end = this;
+			Fallback next = nextPendingFallback;
+			while (next != null) {
+				end = next;
+				next = end.nextPendingFallback;
+			}
+			end.nextPendingFallback = fallback;
+		}
+
+		public @Nullable Fallback getNextFallback() {
+			return nextPendingFallback;
 		}
 	}
 
@@ -797,6 +826,19 @@ public abstract class Command {
 
 			// Handle fallback(s) (if any):
 			this.handleFallbacks(parsingContext);
+
+			ArgumentParseException parseException = parsingContext.currentParseException;
+			if (parseException != null) {
+				// Parsing failed at the current argument.
+				// Check for an override parse exception:
+				if (parsingContext.overrideParseException != null) {
+					throw parsingContext.overrideParseException;
+				} else {
+					throw parseException;
+				}
+			} else {
+				// Parsing successful, continue with the next argument (if any)
+			}
 		}
 
 		// Handle unparsed arguments (if any):
@@ -823,15 +865,14 @@ public abstract class Command {
 			BufferedCommandContext bufferedContext = new BufferedCommandContext(context);
 			parsingContext.context = bufferedContext;
 
-			// Set pending fallback (also remembers the previous pending fallback):
+			// Append fallback:
 			Fallback fallback = new Fallback(
-					parsingContext.pendingFallback,
 					parsingContext.currentArgumentIndex,
 					e,
 					bufferedContext,
 					argsReaderState
 			);
-			parsingContext.pendingFallback = fallback;
+			parsingContext.appendFallback(fallback);
 		} catch (ArgumentParseException e) { // Parsing failed
 			argsReader.setState(argsReaderState); // Restore previous args reader state
 			parseException = e;
@@ -842,22 +883,10 @@ public abstract class Command {
 	}
 
 	protected void handleFallbacks(ParsingContext parsingContext) throws ArgumentParseException {
-		ArgumentParseException parseException = parsingContext.currentParseException;
-		assert !(parseException instanceof FallbackArgumentException);
-
 		Fallback fallback = parsingContext.getPendingFallback();
-		if (fallback == null) { // No pending fallback(s)
-			if (parseException != null) {
-				// Parsing failed at the current argument.
-				// Check for an override parse exception:
-				if (parsingContext.overrideParseException != null) {
-					throw parsingContext.overrideParseException;
-				} else {
-					throw parseException;
-				}
-			} else {
-				return; // Parsing successful, continue with the next argument (if any)
-			}
+		if (fallback == null) {
+			// No pending fallback(s):
+			return;
 		}
 
 		// Note: We attempt to fully parse all command arguments after the fallback before
@@ -878,6 +907,8 @@ public abstract class Command {
 		// Evaluate the pending fallback if parsing of the current command argument failed (without
 		// providing a fallback itself), or if there are no more command arguments to parse.
 		// Otherwise continue parsing:
+		ArgumentParseException parseException = parsingContext.currentParseException;
+		assert !(parseException instanceof FallbackArgumentException);
 		boolean currentParsingFailed = (parseException != null);
 		boolean hasUnparsedCommandArguments = parsingContext.hasUnparsedCommandArguments();
 		if (!currentParsingFailed && hasUnparsedCommandArguments) {
@@ -890,11 +921,17 @@ public abstract class Command {
 		ArgumentsReader argsReader = parsingContext.argsReader;
 		boolean parsingFailed = (currentParsingFailed || argsReader.hasNext());
 
-		// Update pending fallback (null if there are no more pending fallbacks):
-		parsingContext.pendingFallback = fallback.previousPendingFallback;
+		// Reset the pending fallback:
+		parsingContext.pendingFallback = null;
 
-		// Reset context to state before fallback:
-		parsingContext.context = fallback.getOriginalContext();
+		// Reset the context to the state before the fallback:
+		// Since the currently evaluated fallback is always the first pending fallback, we can use
+		// the root context here, since any previous fallbacks have already applied their changes to
+		// the root context.
+		// We cannot use the fallback's buffer's parent context, since the parent can be the
+		// buffered context of an earlier fallback that was already evaluated and applied, so any
+		// new additions to this parent buffered context will not be applied to the root context.
+		parsingContext.context = parsingContext.rootContext;
 
 		// Note: If some command argument after the fallback was able to parse something, the args
 		// reader might no longer match the state from before the fallback. If parsing past the
@@ -984,42 +1021,44 @@ public abstract class Command {
 			// Fallback argument failed.
 			parsingContext.currentArgumentIndex = fallback.argumentIndex;
 			parsingContext.currentParseException = fallbackError;
-			// If there is another pending fallback, evaluate it. Otherwise, parsing fails with this
-			// fallback error.
-			this.handleFallbacks(parsingContext);
-			return;
-		} else {
-			// The fallback successfully parsed something.
-			// Heuristic: If the following arguments did previously already successfully parse with
-			// no arguments remaining, we assume that they do not depend on the new context provided
-			// by the current fallback and that restarting the parsing would result in the same
-			// outcome as before. We can therefore apply the previously captured state and skip
-			// parsing these arguments again.
-			// TODO One can easily construct examples in which this heuristic fails (e.g. if the
-			// context is optional, but would result in a different outcome when present). Remove
-			// this heuristic?
-			if (!parsingFailed) {
-				// Apply buffered context changes that happened after the fallback argument:
-				fallback.getBufferedContext().applyBuffer();
-				// Restore the previous args state (from before the evaluation of this fallback):
-				argsReader.setState(prevArgsState);
-
-				// If there are other pending fallbacks, evaluate them. Otherwise, this leads to
-				// parsing success.
-				this.handleFallbacks(parsingContext);
-				return;
-			}
-
-			// Freshly restart the parsing from the next command argument after the fallback.
-			// Any buffered context changes that happened after the fallback argument are
-			// disregarded.
-			// Note: Even if the fallback did not consume any arguments and parsing of the following
-			// command arguments previously failed, the parsing might succeed now if the following
-			// command arguments depend on context that is provided by the current fallback.
-			parsingContext.currentArgumentIndex = fallback.argumentIndex;
-			parsingContext.currentParseException = null;
+			// Return: This will abort the parsing with the currentParseException.
 			return;
 		}
+
+		// The fallback successfully parsed something.
+		// Heuristic: If the following arguments did previously already successfully parse with no
+		// arguments remaining, we assume that they do not depend on the new context provided by the
+		// current fallback and that restarting the parsing would result in the same outcome as
+		// before. We can therefore apply the previously captured state and skip parsing these
+		// arguments again.
+		// TODO One can easily construct examples in which this heuristic fails (e.g. if the context
+		// is optional, but would result in a different outcome when present). Remove this
+		// heuristic?
+		if (!parsingFailed) {
+			// Apply buffered context changes that happened after the fallback argument to the
+			// current parsing context (i.e. the root context):
+			// Note: Applying the buffered changes to the buffer's parent context is not sufficient,
+			// because the parent can itself be a buffered context of an earlier fallback: Since all
+			// parent fallbacks have already been evaluated and applied, any new additions to the
+			// parent buffered context are not getting applied to the root context.
+			fallback.getBufferedContext().applyBuffer(parsingContext.context);
+			// Restore the previous args state (from before the evaluation of this fallback):
+			argsReader.setState(prevArgsState);
+
+			// If there are other pending fallbacks, evaluate them. Otherwise, this leads to parsing
+			// success.
+			parsingContext.pendingFallback = fallback.getNextFallback();
+			this.handleFallbacks(parsingContext);
+			return;
+		}
+
+		// Freshly restart the parsing from the next command argument after the fallback. Any
+		// fallbacks and buffered context changes for subsequent command arguments are disregarded.
+		// Note: Even if the fallback did not consume any arguments and parsing of the following
+		// command arguments previously failed, the parsing might succeed now if the following
+		// command arguments depend on context that is provided by the current fallback.
+		parsingContext.currentArgumentIndex = fallback.argumentIndex;
+		parsingContext.currentParseException = null;
 	}
 
 	private void handleUnparsedArguments(ParsingContext parsingContext) throws ArgumentParseException {

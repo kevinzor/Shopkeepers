@@ -50,10 +50,21 @@ public final class BufferedCommandContext extends SimpleCommandContext {
 	 * Applies the buffer to the parent {@link CommandContext} and then clears it.
 	 */
 	public void applyBuffer() {
+		this.applyBuffer(context);
+		this.clearBuffer();
+	}
+
+	/**
+	 * Applies the buffer to the given {@link CommandContext}. This does not automatically clear the
+	 * buffer.
+	 * 
+	 * @param context
+	 *            the {@link CommandContext} to apply the buffer to
+	 */
+	public void applyBuffer(CommandContext context) {
 		values.forEach((key, value) -> {
 			context.put(key, value);
 		});
-		this.clearBuffer();
 	}
 
 	@Override

@@ -8,6 +8,7 @@ Date format: (YYYY-MM-DD)
   * Permissions: `shopkeeper.teleport` (default: `op`) and `shopkeeper.teleport.others` (default: `op`).
   * The command tries to find a safe teleport location in a small radius in front of the shopkeeper. The `force` argument can be used to teleport the player even if no safe location is found.
   * Debug: Add debug option `unsafe-teleports` to log additional debug output for unsafe teleports.
+* Commands: Evaluate command argument fallbacks from front to back instead of from back to front. This results in better error messages since we usually prefer error messages for earlier arguments over error messages for later arguments. And this fixes an issue with for example the command `/shopkeeper list 123 2` being interpreted differently than `/shopkeeper list X 2`: The latter previously resulted in an error rather then checking for shop owners named `X`.
 * Fix: Prevent damage caused by shopkeeper mobs, e.g. when touching puffed pufferfish shopkeepers.
 * Fix: The remote command ignored shops that cannot be opened because they have no trades currently. We still want to show these shops in command completions.
 * API: Add `Shopkeeper#getDisplayName`.
