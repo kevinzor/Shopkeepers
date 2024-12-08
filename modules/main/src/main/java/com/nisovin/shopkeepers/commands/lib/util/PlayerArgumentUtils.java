@@ -11,8 +11,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import com.nisovin.shopkeepers.api.internal.util.Unsafe;
-import com.nisovin.shopkeepers.lang.Messages;
-import com.nisovin.shopkeepers.text.Text;
+import com.nisovin.shopkeepers.commands.lib.arguments.AmbiguousPlayerEntryNameHandler;
 import com.nisovin.shopkeepers.util.bukkit.TextUtils;
 import com.nisovin.shopkeepers.util.java.StringUtils;
 
@@ -203,25 +202,15 @@ public final class PlayerArgumentUtils {
 			Iterable<? extends Entry<? extends UUID, ? extends String>> matches,
 			int maxEntries
 	) {
-		return CommandArgumentUtils.handleAmbiguousInput(sender, name, matches, maxEntries,
-				() -> {
-					TextUtils.sendMessage(sender, Messages.ambiguousPlayerName, "name", name);
-				},
-				(match, index) -> {
-					UUID matchUUID = match.getKey();
-					String matchUUIDString = matchUUID.toString();
-					String matchName = match.getValue();
+		var ambiguousPlayerNameHandler = new AmbiguousPlayerEntryNameHandler(name, matches, maxEntries);
+		if (ambiguousPlayerNameHandler.isInputAmbiguous()) {
+			var errorMsg = ambiguousPlayerNameHandler.getErrorMsg();
+			assert errorMsg != null;
+			TextUtils.sendMessage(sender, errorMsg);
+			return true;
+		}
 
-					TextUtils.sendMessage(sender, Messages.ambiguousPlayerNameEntry,
-							"index", index,
-							"name", Text.insertion(matchName).childText(matchName).buildRoot(),
-							"uuid", Text.insertion(matchUUIDString).childText(matchUUIDString).buildRoot()
-					);
-				},
-				() -> {
-					TextUtils.sendMessage(sender, Messages.ambiguousPlayerNameMore);
-				}
-		);
+		return false;
 	}
 
 	private PlayerArgumentUtils() {

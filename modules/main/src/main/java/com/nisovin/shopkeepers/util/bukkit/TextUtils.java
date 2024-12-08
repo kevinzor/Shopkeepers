@@ -189,6 +189,10 @@ public final class TextUtils {
 		}
 	}
 
+	public static String getPlayerNameOrUnknown(@Nullable String playerName) {
+		return getPlayerNameOrUUID(playerName, null);
+	}
+
 	public static final char COLOR_CHAR_ALTERNATIVE = '&';
 	private static final Pattern STRIP_COLOR_ALTERNATIVE_PATTERN = Pattern.compile(
 			"(?i)" + COLOR_CHAR_ALTERNATIVE + "[0-9A-FK-ORX]"

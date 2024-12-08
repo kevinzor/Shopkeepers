@@ -8,7 +8,9 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import com.nisovin.shopkeepers.api.shopkeeper.Shopkeeper;
 import com.nisovin.shopkeepers.commands.lib.CommandInput;
 import com.nisovin.shopkeepers.commands.lib.argument.ArgumentParseException;
+import com.nisovin.shopkeepers.commands.lib.argument.ambiguity.AmbiguousInputHandler;
 import com.nisovin.shopkeepers.commands.lib.argument.filter.ArgumentFilter;
+import com.nisovin.shopkeepers.commands.lib.argument.filter.ArgumentRejectedException;
 import com.nisovin.shopkeepers.commands.lib.arguments.ObjectByIdArgument;
 import com.nisovin.shopkeepers.commands.lib.arguments.ObjectIdArgument;
 import com.nisovin.shopkeepers.commands.lib.arguments.PlayerNameArgument;
@@ -76,15 +78,69 @@ public class ShopkeeperByNameArgument extends ObjectByIdArgument<String, Shopkee
 		return Messages.commandShopkeeperArgumentInvalid;
 	}
 
+	/**
+	 * Gets the {@link AmbiguousInputHandler} for the shopkeepers matched by name.
+	 * <p>
+	 * When overriding this method, consider applying the {@link #getDefaultErrorMsgArgs() common
+	 * message arguments} to the error message returned by the {@link AmbiguousInputHandler} (if
+	 * any).
+	 * 
+	 * @param argumentInput
+	 *            the argument input
+	 * @param matchedShopkeepers
+	 *            the matched shopkeepers
+	 * @return the ambiguous shopkeeper name handler, not <code>null</code>
+	 */
+	protected AmbiguousInputHandler<Shopkeeper> getAmbiguousShopkeeperNameHandler(
+			String argumentInput,
+			Iterable<? extends Shopkeeper> matchedShopkeepers
+	) {
+		var ambiguousShopkeeperNameHandler = new AmbiguousShopkeeperNameHandler(
+				argumentInput,
+				matchedShopkeepers
+		);
+		if (ambiguousShopkeeperNameHandler.isInputAmbiguous()) {
+			// Apply common message arguments:
+			Text errorMsg = ambiguousShopkeeperNameHandler.getErrorMsg();
+			assert errorMsg != null;
+			errorMsg.setPlaceholderArguments(this.getDefaultErrorMsgArgs());
+			errorMsg.setPlaceholderArguments("argument", argumentInput);
+		}
+		return ambiguousShopkeeperNameHandler;
+	}
+
+	/**
+	 * The default implementation of getting a {@link Shopkeeper} by name.
+	 * 
+	 * @param nameInput
+	 *            the name input
+	 * @return the matched Shopkeeper, or <code>null</code> if no match is found
+	 * @throws ArgumentRejectedException
+	 *             if the name is ambiguous
+	 */
+	public final @Nullable Shopkeeper getDefaultShopkeeperByName(String nameInput)
+			throws ArgumentRejectedException {
+		Stream<? extends Shopkeeper> shopkeepers = ShopkeeperNameMatchers.DEFAULT.match(nameInput);
+		var ambiguousShopkeeperNameHandler = this.getAmbiguousShopkeeperNameHandler(
+				nameInput,
+				CollectionUtils.toIterable(shopkeepers)
+		);
+		if (ambiguousShopkeeperNameHandler.isInputAmbiguous()) {
+			Text errorMsg = ambiguousShopkeeperNameHandler.getErrorMsg();
+			assert errorMsg != null;
+			throw new ArgumentRejectedException(this, errorMsg);
+		} else {
+			return ambiguousShopkeeperNameHandler.getFirstMatch();
+		}
+	}
+
 	@Override
 	protected @Nullable Shopkeeper getObject(
 			CommandInput input,
 			CommandContextView context,
 			String nameInput
 	) throws ArgumentParseException {
-		Stream<? extends Shopkeeper> shopkeepers = ShopkeeperNameMatchers.DEFAULT.match(nameInput);
-		return CollectionUtils.getFirstOrNull(shopkeepers);
-		// TODO deal with ambiguities
+		return this.getDefaultShopkeeperByName(nameInput);
 	}
 
 	@Override

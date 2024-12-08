@@ -11,6 +11,8 @@ import com.nisovin.shopkeepers.commands.lib.CommandInput;
 import com.nisovin.shopkeepers.commands.lib.argument.ArgumentParseException;
 import com.nisovin.shopkeepers.commands.lib.argument.ArgumentsReader;
 import com.nisovin.shopkeepers.commands.lib.argument.CommandArgument;
+import com.nisovin.shopkeepers.commands.lib.argument.ambiguity.AmbiguousInputHandler;
+import com.nisovin.shopkeepers.commands.lib.argument.filter.ArgumentRejectedException;
 import com.nisovin.shopkeepers.commands.lib.context.CommandContextView;
 import com.nisovin.shopkeepers.commands.util.ShopkeeperArgumentUtils;
 import com.nisovin.shopkeepers.commands.util.ShopkeeperArgumentUtils.TargetShopkeeperFilter;
@@ -45,6 +47,30 @@ public class TargetShopkeeperArgument extends CommandArgument<Shopkeeper> {
 		return true; // Does not require user input
 	}
 
+	/**
+	 * Gets the {@link AmbiguousInputHandler} for the targeted shopkeepers.
+	 * <p>
+	 * When overriding this method, consider applying the {@link #getDefaultErrorMsgArgs() common
+	 * message arguments} to the error message returned by the {@link AmbiguousInputHandler} (if
+	 * any).
+	 * 
+	 * @param matchedShopkeepers
+	 *            the matched shopkeepers
+	 * @return the ambiguous target shopkeeper handler, not <code>null</code>
+	 */
+	protected AmbiguousInputHandler<Shopkeeper> getAmbiguousTargetShopkeeperHandler(
+			Iterable<? extends Shopkeeper> matchedShopkeepers
+	) {
+		var ambiguousTargetShopkeeperHandler = new AmbiguousTargetShopkeeperHandler(matchedShopkeepers);
+		if (ambiguousTargetShopkeeperHandler.isInputAmbiguous()) {
+			// Apply common message arguments:
+			Text errorMsg = ambiguousTargetShopkeeperHandler.getErrorMsg();
+			assert errorMsg != null;
+			errorMsg.setPlaceholderArguments(this.getDefaultErrorMsgArgs());
+		}
+		return ambiguousTargetShopkeeperHandler;
+	}
+
 	@Override
 	public Shopkeeper parseValue(
 			CommandInput input,
@@ -65,8 +91,19 @@ public class TargetShopkeeperArgument extends CommandArgument<Shopkeeper> {
 			throw new ArgumentParseException(this, error);
 		} else {
 			assert !result.getShopkeepers().isEmpty();
-			// TODO Print an error if result is ambiguous?
-			return result.getShopkeepers().get(0);
+
+			var ambiguousTargetShopkeeperHandler = this.getAmbiguousTargetShopkeeperHandler(
+					result.getShopkeepers()
+			);
+			if (ambiguousTargetShopkeeperHandler.isInputAmbiguous()) {
+				Text errorMsg = ambiguousTargetShopkeeperHandler.getErrorMsg();
+				assert errorMsg != null;
+				throw new ArgumentRejectedException(this, errorMsg);
+			} else {
+				var shopkeeper = ambiguousTargetShopkeeperHandler.getFirstMatch();
+				assert shopkeeper != null;
+				return shopkeeper;
+			}
 		}
 	}
 

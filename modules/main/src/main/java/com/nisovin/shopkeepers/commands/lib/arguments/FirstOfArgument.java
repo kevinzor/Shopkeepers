@@ -21,8 +21,8 @@ import com.nisovin.shopkeepers.util.java.Pair;
 import com.nisovin.shopkeepers.util.java.Validate;
 
 /**
- * A {@link CommandArgument} which stores the value for the first of the given command arguments
- * which successfully parses something.
+ * A {@link CommandArgument} that stores the value for the first of the given command arguments that
+ * successfully parses something.
  * <p>
  * If an argument provides <code>null</code> as value, parsing continues, giving the remaining
  * arguments a chance to parse something 'more useful'. However, no {@link ArgumentParseException}
@@ -196,9 +196,9 @@ public class FirstOfArgument
 		}
 
 		if (rejectedException != null) {
-			// Some argument was able to parse something but rejected the result due to some filter.
-			// Prefer this more specific exception since it is likely to be more relevant to the
-			// user.
+			// Some argument was able to parse something but rejected the result, e.g. due to some
+			// filter or because the input was ambiguous. Prefer this more specific exception since
+			// it is likely to be more relevant to the user.
 			throw rejectedException;
 		}
 

@@ -2,9 +2,7 @@ package com.nisovin.shopkeepers.commands.lib.arguments;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Stream;
 
 import org.bukkit.entity.Player;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -15,8 +13,8 @@ import com.nisovin.shopkeepers.commands.lib.argument.ArgumentParseException;
 import com.nisovin.shopkeepers.commands.lib.argument.ArgumentsReader;
 import com.nisovin.shopkeepers.commands.lib.argument.CommandArgument;
 import com.nisovin.shopkeepers.commands.lib.argument.filter.ArgumentFilter;
+import com.nisovin.shopkeepers.commands.lib.argument.filter.ArgumentRejectedException;
 import com.nisovin.shopkeepers.commands.lib.context.CommandContextView;
-import com.nisovin.shopkeepers.commands.lib.util.PlayerArgumentUtils.PlayerNameMatcher;
 import com.nisovin.shopkeepers.util.java.Validate;
 
 /**
@@ -139,15 +137,11 @@ public class PlayerArgument extends CommandArgument<Player> {
 	 * @param nameInput
 	 *            the name input
 	 * @return the matched player, or <code>null</code>
-	 * @throws IllegalArgumentException
-	 *             if the id is ambiguous
+	 * @throws ArgumentRejectedException
+	 *             if the name is ambiguous
 	 */
-	public @Nullable Player getPlayerByName(String nameInput) throws IllegalArgumentException {
-		// Name input may be both player name or display name:
-		Stream<Player> players = PlayerNameMatcher.EXACT.match(nameInput);
-		Optional<Player> player = players.findFirst();
-		return player.orElse(null);
-		// TODO deal with ambiguities
+	public @Nullable Player getPlayerByName(String nameInput) throws ArgumentRejectedException {
+		return playerNameArgument.getDefaultPlayerByName(nameInput);
 	}
 
 	/**

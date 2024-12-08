@@ -2,7 +2,6 @@ package com.nisovin.shopkeepers.commands.arguments;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Stream;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
 
@@ -12,10 +11,9 @@ import com.nisovin.shopkeepers.commands.lib.argument.ArgumentParseException;
 import com.nisovin.shopkeepers.commands.lib.argument.ArgumentsReader;
 import com.nisovin.shopkeepers.commands.lib.argument.CommandArgument;
 import com.nisovin.shopkeepers.commands.lib.argument.filter.ArgumentFilter;
+import com.nisovin.shopkeepers.commands.lib.argument.filter.ArgumentRejectedException;
 import com.nisovin.shopkeepers.commands.lib.arguments.TypedFirstOfArgument;
 import com.nisovin.shopkeepers.commands.lib.context.CommandContextView;
-import com.nisovin.shopkeepers.commands.util.ShopkeeperArgumentUtils.ShopkeeperNameMatchers;
-import com.nisovin.shopkeepers.util.java.CollectionUtils;
 
 public class ShopkeeperArgument extends CommandArgument<Shopkeeper> {
 
@@ -96,13 +94,11 @@ public class ShopkeeperArgument extends CommandArgument<Shopkeeper> {
 	 * @param nameInput
 	 *            the raw name input
 	 * @return the matched shopkeeper, or <code>null</code>
-	 * @throws IllegalArgumentException
-	 *             if the id is ambiguous
+	 * @throws ArgumentRejectedException
+	 *             if the name is ambiguous
 	 */
-	public @Nullable Shopkeeper getShopkeeper(String nameInput) throws IllegalArgumentException {
-		Stream<? extends Shopkeeper> shopkeepers = ShopkeeperNameMatchers.DEFAULT.match(nameInput);
-		return CollectionUtils.getFirstOrNull(shopkeepers);
-		// TODO deal with ambiguities
+	public @Nullable Shopkeeper getShopkeeper(String nameInput) throws ArgumentRejectedException {
+		return shopNameArgument.getDefaultShopkeeperByName(nameInput);
 	}
 
 	@Override

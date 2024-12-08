@@ -8,7 +8,7 @@ import com.nisovin.shopkeepers.text.Text;
 
 /**
  * An {@link InvalidArgumentException} that indicates that a parsed argument got rejected, for
- * example by an {@link ArgumentFilter}.
+ * example by an {@link ArgumentFilter} or because the input was ambiguous.
  */
 public class ArgumentRejectedException extends InvalidArgumentException {
 

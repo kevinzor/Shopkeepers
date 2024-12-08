@@ -11,7 +11,7 @@ import com.nisovin.shopkeepers.util.java.Validate;
  * A {@link FallbackArgument} that returns the targeted shopkeeper without consuming any arguments.
  * <p>
  * If the sender is not a player, the parsing exception of the original argument is thrown (the
- * original argument might get reevaluated is some parsing context has changed).
+ * original argument might get reevaluated if some parsing context has changed).
  */
 public class TargetShopkeeperFallback extends TypedFallbackArgument<Shopkeeper> {
 

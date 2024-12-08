@@ -673,9 +673,17 @@ command-shopkeeper-argument-no-player-shop: "&cShop '&e{argument}&c' ist kein Sp
 command-shopkeeper-argument-no-access: "&cDu hast keinen Zugriff auf Shop '&e{argument}&c'."
 command-entity-argument-no-villager: "&cObjekt '&e{argument}&c' ist kein normaler Dorfbewohner."
 
-ambiguous-player-name: "&cEs gibt mehrere Treffer für den Namen '&e{name}&c'!"
+ambiguous-player-name: "&cEs gibt mehrere Spieler für den Namen '&e{name}&c'!"
 ambiguous-player-name-entry: "&c  - '&e{name}&r&c' (&6{uuid}&c)"
 ambiguous-player-name-more: "&c  - ...."
+
+ambiguous-shopkeeper-name: "&cEs gibt mehrere Shops für den Namen '&e{name}&c'!"
+ambiguous-shopkeeper-name-entry: "&c  - &e{id})&c '&e{name}&r&c' (&6{uuid}&c)"
+ambiguous-shopkeeper-name-more: "&c  - ...."
+
+ambiguous-target-shopkeeper: "&cEs werden mehrere Shops anvisiert!"
+ambiguous-target-shopkeeper-entry: "&c  - &e{id})&c '&e{name}&r&c' (&6{uuid}&c)"
+ambiguous-target-shopkeeper-more: "&c  - ...."
 
 command-help-title: "&9***** &8[&6Shopkeepers v{version}&8] &9*****"
 command-help-usage-format: "&e{usage}"

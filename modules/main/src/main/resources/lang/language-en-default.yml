@@ -668,9 +668,17 @@ command-shopkeeper-argument-no-player-shop: "&cShopkeeper '&e{argument}&c' is no
 command-shopkeeper-argument-no-access: "&cYou do not have access to shopkeeper '&e{argument}&c'."
 command-entity-argument-no-villager: "&cEntity '&e{argument}&c' is no regular villager."
 
-ambiguous-player-name: "&cThere are multiple matches for the name '&e{name}&c'!"
+ambiguous-player-name: "&cThere are multiple players for the name '&e{name}&c'!"
 ambiguous-player-name-entry: "&c  - '&e{name}&r&c' (&6{uuid}&c)"
 ambiguous-player-name-more: "&c  - ...."
+
+ambiguous-shopkeeper-name: "&cThere are multiple shopkeepers for the name '&e{name}&c'!"
+ambiguous-shopkeeper-name-entry: "&c  - &e{id})&c '&e{name}&r&c' (&6{uuid}&c)"
+ambiguous-shopkeeper-name-more: "&c  - ...."
+
+ambiguous-target-shopkeeper: "&cThere are multiple shopkeepers being targeted!"
+ambiguous-target-shopkeeper-entry: "&c  - &e{id})&c '&e{name}&r&c' (&6{uuid}&c)"
+ambiguous-target-shopkeeper-more: "&c  - ...."
 
 command-help-title: "&9***** &8[&6Shopkeepers v{version}&8] &9*****"
 command-help-usage-format: "&e{usage}"

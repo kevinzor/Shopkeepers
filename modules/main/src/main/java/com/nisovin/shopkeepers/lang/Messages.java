@@ -783,9 +783,17 @@ public class Messages extends Config {
 	public static Text commandShopkeeperArgumentNoAccess = Text.parse("&cYou do not have access to shopkeeper '&e{argument}&c'.");
 	public static Text commandEntityArgumentNoVillager = Text.parse("&cEntity '&e{argument}&c' is no regular villager.");
 
-	public static Text ambiguousPlayerName = Text.parse("&cThere are multiple matches for the name '&e{name}&c'!");
+	public static Text ambiguousPlayerName = Text.parse("&cThere are multiple players for the name '&e{name}&c'!");
 	public static Text ambiguousPlayerNameEntry = Text.parse("&c  - '&e{name}&r&c' (&6{uuid}&c)");
 	public static Text ambiguousPlayerNameMore = Text.parse("&c  - ....");
+
+	public static Text ambiguousShopkeeperName = Text.parse("&cThere are multiple shopkeepers for the name '&e{name}&c'!");
+	public static Text ambiguousShopkeeperNameEntry = Text.parse("&c  - &e{id})&c '&e{name}&r&c' (&6{uuid}&c)");
+	public static Text ambiguousShopkeeperNameMore = Text.parse("&c  - ....");
+
+	public static Text ambiguousTargetShopkeeper = Text.parse("&cThere are multiple shopkeepers being targeted!");
+	public static Text ambiguousTargetShopkeeperEntry = Text.parse("&c  - &e{id})&c '&e{name}&r&c' (&6{uuid}&c)");
+	public static Text ambiguousTargetShopkeeperMore = Text.parse("&c  - ....");
 
 	public static Text commandHelpTitle = Text.parse("&9***** &8[&6Shopkeepers v{version}&8] &9*****");
 	public static Text commandHelpUsageFormat = Text.parse("&e{usage}");
