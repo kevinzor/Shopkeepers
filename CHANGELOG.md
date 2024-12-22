@@ -4,6 +4,13 @@ Date format: (YYYY-MM-DD)
 ## v2.23.4 (TBA)
 ### Supported MC versions: 1.21.4, 1.21.3, 1.21.1, 1.21, 1.20.6
 
+* Data: Add shopkeeper data migration to remove invalid player head profile names. See GH #907.
+  * Since MC 1.20.5, player head profile names must be valid player names, i.e. have a maximum length of 16 and only contain allowed characters (spaces are not allowed).
+  * Minecraft itself cleared invalid profiles names during its own item data migration. However, this migration was not automatically applied to the item data of shopkeepers. On Spigot, the invalid item data is loaded but can result in crashes later on. On Paper, the invalid item data is already rejected during the loading of the shopkeeper data.
+  * Profiles always require a non-empty name or a unique id. If our migration clears a profile name and the profile has no unique id, we add a fixed dummy unique id (`5458ec26-8221-366d-8836-be7a07a5e29b`).
+  * If the save data has changed as result of the migration, we create a backup of the previous save file. If you are not happy with the result of the migration, you can use this backup to apply your own migration.
+  * Debug: If the debug mode is enabled, we also write the migrated save file to disk. This can help diagnose issues if the migrated save file subsequently fails to load.
+  * After the migrated shopkeeper data has been successfully loaded, we forcefully save all shopkeepers to disk to persist the migration result.
 * Data: Remove old shopkeeper data migration from the save file in the plugin folder.
 
 ## v2.23.3 (2024-12-08)

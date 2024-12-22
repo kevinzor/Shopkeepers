@@ -9,11 +9,13 @@ import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
 import java.nio.file.AtomicMoveNotSupportedException;
+import java.nio.file.CopyOption;
 import java.nio.file.Files;
 import java.nio.file.OpenOption;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
+import java.time.format.DateTimeFormatter;
 import java.util.logging.Logger;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -28,6 +30,12 @@ import com.nisovin.shopkeepers.util.logging.NullLogger;
  * description of the failed operation.
  */
 public final class FileUtils {
+
+	/**
+	 * A {@link DateTimeFormatter} that formats date and time information (to the second) in a
+	 * format that is compatible with the naming restrictions of typical file systems.
+	 */
+	public static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("uuuu-MM-DD_HH-mm-ss");
 
 	/**
 	 * Checks if the specified file is {@link Files#isWritable(Path) writable} and throws an
@@ -270,7 +278,8 @@ public final class FileUtils {
 				logger.warning(() -> "Could not move file '" + source + "' to '" + target + "' ("
 						+ ThrowableUtils.getDescription(e) + ")! Attempting copy and delete.");
 				try {
-					copyAndDelete(source, target);
+					copy(source, target, StandardCopyOption.REPLACE_EXISTING);
+					delete(source);
 				} catch (IOException e2) {
 					throw new IOException("Could not copy-and-delete file '" + source + "' to '"
 							+ target + "': " + ThrowableUtils.getDescription(e2), e2);
@@ -279,14 +288,35 @@ public final class FileUtils {
 		}
 	}
 
-	private static void copyAndDelete(Path source, Path target) throws IOException {
-		assert source != null && target != null;
-		Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING);
-		// Ensure that the data has been written to disk before we remove the source file:
+	/**
+	 * Copies the file at the specified path to the specified destination.
+	 * <p>
+	 * Unlike {@link Files#copy(Path, Path, CopyOption...)}, this additionally creates parent
+	 * directories if missing and ensures that the changes are persisted to disk (see
+	 * {@link #fsync(Path)} and {@link #fsyncParentDirectory(Path)}.
+	 * 
+	 * @param source
+	 *            the file to copy
+	 * @param target
+	 *            the destination
+	 * @param copyOptions
+	 *            the {@link CopyOption}s
+	 * @throws IOException
+	 *             if an I/O error occurs
+	 */
+	public static void copy(Path source, Path target, CopyOption... copyOptions) throws IOException {
+		Validate.notNull(source, "source is null");
+		Validate.notNull(target, "target is null");
+
+		// Create the parent directories if necessary:
+		createParentDirectories(target);
+
+		Files.copy(source, target, copyOptions);
+
+		// Ensure that the data has been written to disk:
 		fsync(target);
 		// Also fsync the containing directory since we might have freshly created the target file:
 		fsyncParentDirectory(target);
-		delete(source);
 	}
 
 	/**

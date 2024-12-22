@@ -4,6 +4,7 @@ import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -28,9 +29,11 @@ import com.nisovin.shopkeepers.api.shopkeeper.Shopkeeper;
 import com.nisovin.shopkeepers.api.shopkeeper.ShopkeeperRegistry;
 import com.nisovin.shopkeepers.api.storage.ShopkeeperStorage;
 import com.nisovin.shopkeepers.config.Settings;
+import com.nisovin.shopkeepers.debug.Debug;
 import com.nisovin.shopkeepers.shopkeeper.AbstractShopkeeper;
 import com.nisovin.shopkeepers.shopkeeper.ShopkeeperData;
 import com.nisovin.shopkeepers.shopkeeper.registry.SKShopkeeperRegistry;
+import com.nisovin.shopkeepers.storage.migration.RawDataMigrations;
 import com.nisovin.shopkeepers.util.bukkit.PermissionUtils;
 import com.nisovin.shopkeepers.util.bukkit.PluginUtils;
 import com.nisovin.shopkeepers.util.bukkit.SchedulerUtils;
@@ -391,11 +394,59 @@ public class SKShopkeeperStorage implements ShopkeeperStorage {
 			}
 		}
 
+		boolean rawDataMigrated = false;
+
 		// Load the save data:
 		try (Reader reader = Files.newBufferedReader(saveFile, StandardCharsets.UTF_8)) {
+			var content = FileUtils.read(reader);
+
+			// Apply string-based migrations:
+			var migratedContent = RawDataMigrations.applyMigrations(content);
+			rawDataMigrated = !content.equals(migratedContent);
+
+			if (rawDataMigrated) {
+				var now = LocalDateTime.now();
+				var backupSaveFile = saveFile.resolveSibling(
+						now.format(FileUtils.DATE_TIME_FORMATTER) + "_" + saveFile.getFileName()
+								+ ".backup"
+				);
+				Log.info("Shopkeeper data migrated. Writing backup to "
+						+ PluginUtils.relativize(plugin, backupSaveFile));
+
+				try {
+					// Error if a file already exists at the destination:
+					Files.copy(saveFile, backupSaveFile);
+				} catch (Exception e) {
+					Log.severe("Failed to write backup file!", e);
+					return false; // Disable without save
+				}
+			}
+
+			// If a migration was applied, write the intermediate result to disk for debugging
+			// purposes (e.g. if the subsequent loading fails):
+			if (Debug.isDebugging() && rawDataMigrated) {
+				var migratedSaveFile = saveFile.resolveSibling(saveFile.getFileName() + ".migrated");
+				Log.info("Writing migrated save file to "
+						+ PluginUtils.relativize(plugin, migratedSaveFile));
+				try {
+					FileUtils.writeSafely(
+							migratedSaveFile,
+							migratedContent,
+							StandardCharsets.UTF_8,
+							Log.getLogger(),
+							getPluginDataFolder()
+					);
+				} catch (Exception e) {
+					Log.warning("Failed to write migrated save file ("
+							+ PluginUtils.relativize(plugin, migratedSaveFile)
+							+ "). This file is only written for debugging purposes."
+							+ " Continuing the data loading ...", e);
+				}
+			}
+
 			// Since Bukkit 1.16.5, this automatically clears the save data before loading the new
-			// entries.
-			saveData.load(reader);
+			// entries:
+			saveData.loadFromString(migratedContent);
 		} catch (InvalidDataFormatException e) {
 			Log.severe("Failed to load the save file! Note: Server downgrades or manually "
 					+ "editing the save file are not supported!", e);
@@ -476,17 +527,22 @@ public class SKShopkeeperStorage implements ShopkeeperStorage {
 		// Check if the data version has changed, and whether we need to trigger a full save of all
 		// shopkeeper data:
 		boolean dataVersionChanged = !DataVersion.current().equals(dataVersion);
-		boolean forceSaveAllShopkeepers = DataVersion.current().isMinecraftUpgrade(dataVersion)
+		boolean forceSaveAllShopkeepers = rawDataMigrated
+				|| DataVersion.current().isMinecraftUpgrade(dataVersion)
 				|| DataVersion.current().isShopkeeperStorageUpgrade(dataVersion);
 		if (dataVersionChanged) {
 			Log.info("The save file's data version has changed from '" + dataVersion
-					+ "' to '" + DataVersion.current() + "'."
-					+ (forceSaveAllShopkeepers ? " The saved data of all shopkeepers is updated." : ""));
+					+ "' to '" + DataVersion.current() + "'.");
 			// Update the data version:
 			saveData.set(DATA_VERSION_KEY, DataVersion.current().toString());
 
 			// Mark the storage as dirty so that the new data version is saved to disk even if none
 			// of the loaded shopkeepers is marked as dirty:
+			this.requestSave();
+		}
+
+		if (forceSaveAllShopkeepers) {
+			Log.info("The saved data of all shopkeepers is updated.");
 			this.requestSave();
 		}
 
