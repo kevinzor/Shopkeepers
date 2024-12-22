@@ -1,6 +1,5 @@
 package com.nisovin.shopkeepers.util.data.persistence;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
@@ -36,25 +35,8 @@ public interface DataStoreBase extends DataStore {
 
 	@Override
 	public default void load(Reader reader) throws IOException, InvalidDataFormatException {
-		Validate.notNull(reader, "reader is null");
-		BufferedReader bufferedReader;
-		if (reader instanceof BufferedReader) {
-			bufferedReader = (BufferedReader) reader;
-		} else {
-			bufferedReader = new BufferedReader(reader);
-		}
-
-		StringBuilder data = new StringBuilder();
-		try {
-			String line;
-			while ((line = bufferedReader.readLine()) != null) {
-				data.append(line).append('\n');
-			}
-		} finally {
-			bufferedReader.close();
-		}
-
-		this.loadFromString(data.toString());
+		var content = FileUtils.read(reader);
+		this.loadFromString(content);
 	}
 
 	@Override

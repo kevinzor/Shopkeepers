@@ -1,7 +1,9 @@
 package com.nisovin.shopkeepers.util.java;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.io.Reader;
 import java.io.Writer;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
@@ -13,6 +15,8 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.util.logging.Logger;
+
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 import com.nisovin.shopkeepers.util.logging.NullLogger;
 
@@ -312,6 +316,202 @@ public final class FileUtils {
 		CharsetEncoder encoder = cs.newEncoder();
 		Writer writer = new OutputStreamWriter(Files.newOutputStream(path, options), encoder);
 		return writer;
+	}
+
+	/**
+	 * Reads the content from the given {@link Reader} to a string.
+	 * <p>
+	 * Unless the given reader is already buffered, it is wrapped in a new {@link BufferedReader}.
+	 * The reader is closed once the content has been read.
+	 * <p>
+	 * All line separators are replaced by {@code \n} in the returned string.
+	 * 
+	 * @param reader
+	 *            the reader
+	 * @return the read string, not <code>null</code>
+	 * @throws IOException
+	 *             if an I/O error occurs
+	 */
+	public static String read(Reader reader) throws IOException {
+		Validate.notNull(reader, "reader is null");
+		BufferedReader bufferedReader;
+		if (reader instanceof BufferedReader) {
+			bufferedReader = (BufferedReader) reader;
+		} else {
+			bufferedReader = new BufferedReader(reader);
+		}
+
+		StringBuilder data = new StringBuilder();
+		try {
+			String line;
+			while ((line = bufferedReader.readLine()) != null) {
+				data.append(line).append('\n');
+			}
+			return data.toString();
+		} finally {
+			bufferedReader.close();
+		}
+	}
+
+	/**
+	 * Gets the path to a sibling of the given file path by appending {@code .tmp}.
+	 * 
+	 * @param path
+	 *            the file path
+	 * @return the sibling temporary file path
+	 */
+	public static Path getTempSibling(Path path) {
+		var fileName = path.getFileName();
+		if (fileName == null) {
+			throw new IllegalArgumentException("Path is empty!");
+		}
+		return path.resolveSibling(fileName + ".tmp");
+	}
+
+	/**
+	 * Gets the path relative to the specified base path, but only if the given path starts with the
+	 * given base path.
+	 * 
+	 * @param basePath
+	 *            the base path
+	 * @param path
+	 *            the path
+	 * @return the relative path, or the path itself if it does not start with the given base path
+	 */
+	public static Path relativize(@Nullable Path basePath, Path path) {
+		if (basePath == null || !path.startsWith(basePath)) {
+			return path;
+		}
+
+		return basePath.relativize(path);
+	}
+
+	/**
+	 * Safely writes the given text to a file at the specified path.
+	 * <p>
+	 * This first writes the text to a temporary intermediate file in the same directory before
+	 * deleting any currently existing file at the specified destination and (ideally atomically)
+	 * moving the temporary file to the specified destination.
+	 * <p>
+	 * If a file at the temporary path already exists, e.g. from a previous writing attempt,
+	 * depending on whether a file exists at the destination path, the temporary file is either
+	 * deleted or first moved to the destination path before we write the new file contents.
+	 * <p>
+	 * This method also takes care of first checking the necessary file system permissions for more
+	 * detailed error feedback, creating any missing parent directories, and ensuring that the
+	 * changes are physically persisted to disk.
+	 * 
+	 * @param path
+	 *            the file path
+	 * @param content
+	 *            the file content
+	 * @param charset
+	 *            the {@link Charset}
+	 * @param logger
+	 *            the {@link Logger} to use for certain warnings
+	 * @param basePath
+	 *            if specified, any error or warning messages that include path strings will use the
+	 *            path relative to this base path instead
+	 * @throws IOException
+	 *             if the operation fails
+	 */
+	public static void writeSafely(
+			Path path,
+			String content,
+			Charset charset,
+			Logger logger,
+			@Nullable Path basePath
+	) throws IOException {
+		var tempPath = getTempSibling(path);
+		assert tempPath != null;
+
+		// Handle already existing temporary file:
+		handleExistingTempFile(path, logger, basePath);
+
+		// Ensure that the temporary file's parent directories exist:
+		FileUtils.createParentDirectories(tempPath);
+
+		// Check write permissions for the involved directories:
+		Path tempDirectory = tempPath.getParent();
+		if (tempDirectory != null) {
+			FileUtils.checkIsDirectoryWritable(tempDirectory);
+		}
+
+		Path directory = path.getParent();
+		if (directory != null && !directory.equals(tempDirectory)) {
+			FileUtils.checkIsDirectoryWritable(directory);
+		}
+
+		// Create new temporary file and write data to it:
+		try (Writer writer = Files.newBufferedWriter(tempPath, charset)) {
+			writer.write(content);
+		} catch (IOException e) {
+			throw new IOException("Could not write temporary file ("
+					+ relativize(basePath, tempPath) + "): " + ThrowableUtils.getDescription(e), e);
+		}
+
+		// Fsync the temporary file and the containing directory (ensures that the data is actually
+		// persisted to disk):
+		FileUtils.fsync(tempPath);
+		FileUtils.fsyncParentDirectory(tempPath);
+
+		// Delete the old file (if it exists):
+		FileUtils.deleteIfExists(path);
+
+		// Ensure that the file's parent directories exist:
+		FileUtils.createParentDirectories(path);
+
+		// Rename the temporary file (ideally atomically):
+		FileUtils.moveFile(tempPath, path, logger);
+
+		// Fsync the file's parent directory (ensures that the rename operation is persisted to
+		// disk):
+		FileUtils.fsyncParentDirectory(path);
+	}
+
+	// If a temporary file already exists, this might indicate an issue during a previous writing
+	// attempt. Depending on whether the destination file exists, we either rename or delete the
+	// temporary file.
+	private static void handleExistingTempFile(Path path, Logger logger, @Nullable Path basePath)
+			throws IOException {
+		var tempPath = getTempSibling(path);
+
+		if (!Files.exists(tempPath)) return;
+
+		// Check write permissions:
+		FileUtils.checkIsFileWritable(tempPath);
+
+		Path tempDirectory = tempPath.getParent();
+		if (tempDirectory != null) {
+			FileUtils.checkIsDirectoryWritable(tempDirectory);
+		}
+
+		Path directory = path.getParent();
+		if (directory != null && !directory.equals(tempDirectory)) {
+			FileUtils.checkIsDirectoryWritable(directory);
+		}
+
+		if (!Files.exists(path)) {
+			// Renaming the temporary file might have failed during an earlier write attempt. It
+			// might contain the only backup of previously written data. -> Do not remove it!
+			// Instead, we try to rename it to make it the new 'old data' and then continue the
+			// writing procedure.
+			logger.warning("Found an existing temporary file (" + relativize(basePath, tempPath)
+					+ "), but no file at the destination (" + relativize(basePath, path) + ")!"
+					+ " This might indicate an issue during a previous write attempt!"
+					+ " We rename the temporary file and then continue the writing!");
+
+			// Rename the temporary file:
+			FileUtils.moveFile(tempPath, path, logger);
+		} else {
+			logger.warning("Found an existing temporary file (" + relativize(basePath, tempPath)
+					+ "), but also a file at the destination (" + relativize(basePath, path) + ")!"
+					+ " This might indicate an issue during a previous write attempt!"
+					+ " We delete the temporary file and then continue the writing!");
+
+			// Delete the old temporary file:
+			FileUtils.delete(tempPath);
+		}
 	}
 
 	private FileUtils() {

@@ -1,8 +1,6 @@
 package com.nisovin.shopkeepers.storage;
 
-import java.io.IOException;
 import java.io.Reader;
-import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -13,7 +11,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
 import org.bukkit.Bukkit;
@@ -35,6 +32,7 @@ import com.nisovin.shopkeepers.shopkeeper.AbstractShopkeeper;
 import com.nisovin.shopkeepers.shopkeeper.ShopkeeperData;
 import com.nisovin.shopkeepers.shopkeeper.registry.SKShopkeeperRegistry;
 import com.nisovin.shopkeepers.util.bukkit.PermissionUtils;
+import com.nisovin.shopkeepers.util.bukkit.PluginUtils;
 import com.nisovin.shopkeepers.util.bukkit.SchedulerUtils;
 import com.nisovin.shopkeepers.util.bukkit.SingletonTask;
 import com.nisovin.shopkeepers.util.data.container.DataContainer;
@@ -73,7 +71,6 @@ public class SKShopkeeperStorage implements ShopkeeperStorage {
 
 	private static final String DATA_FOLDER = "data";
 	private static final String SAVE_FILE_NAME = "save.yml";
-	private static final String TEMP_SAVE_FILE_NAME = SAVE_FILE_NAME + ".tmp";
 
 	private static final String DATA_VERSION_KEY = "data-version";
 
@@ -93,7 +90,6 @@ public class SKShopkeeperStorage implements ShopkeeperStorage {
 	private final SKShopkeepersPlugin plugin;
 
 	private final Path saveFile;
-	private final Path tempSaveFile;
 
 	/* Data */
 	/*
@@ -141,7 +137,6 @@ public class SKShopkeeperStorage implements ShopkeeperStorage {
 		DataVersion.init();
 		this.plugin = plugin;
 		this.saveFile = Unsafe.initialized(this)._getSaveFile();
-		this.tempSaveFile = Unsafe.initialized(this)._getTempSaveFile();
 		this.saveTask = new SaveTask(plugin);
 	}
 
@@ -155,15 +150,6 @@ public class SKShopkeeperStorage implements ShopkeeperStorage {
 
 	private Path _getSaveFile() {
 		return this._getDataFolder().resolve(SAVE_FILE_NAME);
-	}
-
-	private Path _getTempSaveFile() {
-		return this._getSaveFile().resolveSibling(TEMP_SAVE_FILE_NAME);
-	}
-
-	// Gets the path relative to the plugin data folder.
-	private Path pluginDataRelative(Path path) {
-		return this.getPluginDataFolder().relativize(path);
 	}
 
 	public void onEnable() {
@@ -348,52 +334,6 @@ public class SKShopkeeperStorage implements ShopkeeperStorage {
 		nextShopkeeperId = 1;
 	}
 
-	// We previously stored the save file within the plugin's root folder. If no save file exist at
-	// the expected location, we check the old save file location and migrate the save file if it is
-	// found.
-	private Path getOldSaveFile() {
-		return this.getPluginDataFolder().resolve("save.yml");
-	}
-
-	private Path getOldTempSaveFile() {
-		return this.getOldSaveFile().resolveSibling("save.temp");
-	}
-
-	// Returns false if the migration failed.
-	// Returns true if the migration succeeded or there is no old save file to migrate.
-	// Note: This is called after it has been checked that the save file does not exist yet.
-	private boolean migrateOldSaveFile() {
-		Path oldSaveFile = this.getOldSaveFile();
-		if (!Files.exists(oldSaveFile)) {
-			Path oldTempSaveFile = this.getOldTempSaveFile();
-			if (Files.exists(oldTempSaveFile)) {
-				// Migrate old temporary save file instead:
-				Log.warning("Found no old save file, but an existing old temporary save file ("
-						+ this.pluginDataRelative(oldTempSaveFile) + ")!"
-						+ " This might indicate an issue during a previous saving attempt!"
-						+ " We try to migrate this temporary save file instead!");
-
-				oldSaveFile = oldTempSaveFile;
-			} else {
-				// No old save file found that needs to be migrated.
-				return true;
-			}
-		}
-
-		// Move old save file to new location:
-		Log.info("Migrating old save file (" + this.pluginDataRelative(oldSaveFile)
-				+ ") to new location (" + this.pluginDataRelative(saveFile) + ")!");
-		try {
-			FileUtils.moveFile(oldSaveFile, saveFile, Log.getLogger());
-		} catch (IOException e) {
-			Log.severe("Failed to migrate old save file! (" + this.pluginDataRelative(oldSaveFile)
-					+ ")", e);
-			return false;
-		}
-		// Migration succeeded:
-		return true;
-	}
-
 	// Returns true on success, and false if there was some severe issue during loading.
 	// This is blocking and will wait for any currently ongoing or pending saves to complete!
 	public boolean reload() {
@@ -434,20 +374,17 @@ public class SKShopkeeperStorage implements ShopkeeperStorage {
 
 		Path saveFile = this.saveFile;
 		if (!Files.exists(saveFile)) {
+			var tempSaveFile = FileUtils.getTempSibling(saveFile);
 			if (Files.exists(tempSaveFile)) {
 				// Load from temporary save file instead:
 				Log.warning("Found no save file, but an existing temporary save file ("
-						+ this.pluginDataRelative(tempSaveFile) + ")!"
+						+ PluginUtils.relativize(plugin, tempSaveFile) + ")!"
 						+ " This might indicate an issue during a previous saving attempt!"
 						+ " We try to load the Shopkeepers data from this temporary save file"
 						+ " instead!");
 				saveFile = tempSaveFile;
-			} else if (!this.migrateOldSaveFile()) {
-				// Migration of old save file failed:
-				return false; // Disable without save
-			} else if (!Files.exists(saveFile)) {
-				// No save file exists yet (even after checking for it again, after the migration)
-				// -> No shopkeeper data available.
+			} else {
+				// No save file exists yet -> No shopkeeper data available.
 				// We silently set up the data version and abort:
 				saveData.set(DATA_VERSION_KEY, DataVersion.current().toString());
 				return true;
@@ -1061,108 +998,17 @@ public class SKShopkeeperStorage implements ShopkeeperStorage {
 		 */
 		private void doSaveToFile(String data) throws ShopkeeperStorageSaveException {
 			assert data != null;
-			// Handle already existing temporary save file:
-			this.handleExistingTempSaveFile();
-
-			// Ensure that the temporary save file's parent directories exist:
-			this.wrapException(() -> FileUtils.createParentDirectories(tempSaveFile));
-
-			// Check write permissions for the involved directories:
-			Path tempSaveFileDirectory = tempSaveFile.getParent();
-			if (tempSaveFileDirectory != null) {
-				this.wrapException(() -> FileUtils.checkIsDirectoryWritable(tempSaveFileDirectory));
-			}
-
-			Path saveFileDirectory = saveFile.getParent();
-			if (saveFileDirectory != null && !saveFileDirectory.equals(tempSaveFileDirectory)) {
-				this.wrapException(() -> FileUtils.checkIsDirectoryWritable(saveFileDirectory));
-			}
-
-			// Create new temporary save file and write data to it:
-			try (Writer writer = Files.newBufferedWriter(tempSaveFile, StandardCharsets.UTF_8)) {
-				writer.write(data);
-			} catch (IOException e) {
-				throw new ShopkeeperStorageSaveException(
-						"Could not write the shopkeeper data to the temporary save file ("
-								+ pluginDataRelative(tempSaveFile) + "): "
-								+ ThrowableUtils.getDescription(e),
-						e
-				);
-			}
-
-			// Fsync the temporary save file and the containing directory (ensures that the data is
-			// actually persisted to disk):
-			this.wrapException(() -> FileUtils.fsync(tempSaveFile));
-			this.wrapException(() -> FileUtils.fsyncParentDirectory(tempSaveFile));
-
-			// Delete the old save file (if it exists):
-			this.wrapException(() -> FileUtils.deleteIfExists(saveFile));
-
-			// Ensure that the save file's parent directories exist:
-			this.wrapException(() -> FileUtils.createParentDirectories(saveFile));
-
-			// Rename the temporary save file (ideally atomically):
-			this.wrapException(() -> FileUtils.moveFile(tempSaveFile, saveFile, Log.getLogger()));
-
-			// Fsync the save file's parent directory (ensures that the rename operation is
-			// persisted to disk):
-			this.wrapException(() -> FileUtils.fsyncParentDirectory(saveFile));
-		}
-
-		// If the temporary save file already exists, this might indicate an issue during a previous
-		// saving attempt. Depending on whether the save file exists, we either rename the temporary
-		// save file, or delete it.
-		private void handleExistingTempSaveFile() throws ShopkeeperStorageSaveException {
-			if (!Files.exists(tempSaveFile)) return;
-
-			// Check write permissions:
-			this.wrapException(() -> FileUtils.checkIsFileWritable(tempSaveFile));
-
-			Path tempSaveFileDirectory = tempSaveFile.getParent();
-			if (tempSaveFileDirectory != null) {
-				this.wrapException(() -> FileUtils.checkIsDirectoryWritable(tempSaveFileDirectory));
-			}
-
-			Path saveFileDirectory = saveFile.getParent();
-			if (saveFileDirectory != null && !saveFileDirectory.equals(tempSaveFileDirectory)) {
-				this.wrapException(() -> FileUtils.checkIsDirectoryWritable(saveFileDirectory));
-			}
-
-			if (!Files.exists(saveFile)) {
-				// Renaming the temporary save file might have failed during an earlier saving
-				// attempt. It might contain the only backup of previously saved data.
-				// -> Do not remove it!
-				// Instead, we try to rename it to make it the new 'old save data' and then continue
-				// the saving procedure.
-				Log.warning("Found an already existing temporary save file ("
-						+ pluginDataRelative(tempSaveFile) + "), but no old save file!"
-						+ " This might indicate an issue during a previous saving attempt!"
-						+ " We rename the temporary save file and interpret it as existing old save"
-						+ " data, and then continue the saving!");
-
-				// Rename the temporary save file:
-				this.wrapException(() -> FileUtils.moveFile(tempSaveFile, saveFile, Log.getLogger()));
-			} else {
-				Log.warning("Found an already existing temporary save file ("
-						+ pluginDataRelative(tempSaveFile) + "), but also a regular save file!"
-						+ " This might indicate an issue during a previous saving attempt!"
-						+ " We delete the temporary save file and then continue the saving!");
-
-				// Delete the old temporary save file:
-				this.wrapException(() -> FileUtils.delete(tempSaveFile));
-			}
-		}
-
-		private <T> T wrapException(Callable<T> callable) throws ShopkeeperStorageSaveException {
 			try {
-				return callable.call();
+				FileUtils.writeSafely(
+						saveFile,
+						data,
+						StandardCharsets.UTF_8,
+						Log.getLogger(),
+						getPluginDataFolder()
+				);
 			} catch (Exception e) {
 				throw new ShopkeeperStorageSaveException(e.getMessage(), e);
 			}
-		}
-
-		private void wrapException(VoidCallable callable) throws ShopkeeperStorageSaveException {
-			this.wrapException((Callable<@Nullable Void>) callable);
 		}
 
 		@Override

@@ -4,6 +4,8 @@ Date format: (YYYY-MM-DD)
 ## v2.23.4 (TBA)
 ### Supported MC versions: 1.21.4, 1.21.3, 1.21.1, 1.21, 1.20.6
 
+* Data: Remove old shopkeeper data migration from the save file in the plugin folder.
+
 ## v2.23.3 (2024-12-08)
 ### Supported MC versions: 1.21.4, 1.21.3, 1.21.1, 1.21, 1.20.6
 
