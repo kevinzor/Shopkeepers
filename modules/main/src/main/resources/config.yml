@@ -362,6 +362,11 @@ shulker-peek-if-player-nearby: true
 # peeks.
 shulker-peek-height: 0.3
 
+# The maximum size of slime shopkeepers. Must be a value in the range of 1 to 10.
+slime-max-size: 5
+# The maximum size of magma cube shopkeepers. Must be a value in the range of 1 to 10.
+magma-cube-max-size: 5
+
 # Whether mob shopkeepers make sounds.
 silence-living-shop-entities: true
 

@@ -10,6 +10,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 import com.nisovin.shopkeepers.api.internal.util.Unsafe;
 import com.nisovin.shopkeepers.api.shopkeeper.ShopCreationData;
+import com.nisovin.shopkeepers.config.Settings;
 import com.nisovin.shopkeepers.lang.Messages;
 import com.nisovin.shopkeepers.shopkeeper.AbstractShopkeeper;
 import com.nisovin.shopkeepers.shopobjects.ShopObjectData;
@@ -28,6 +29,7 @@ import com.nisovin.shopkeepers.util.data.serialization.java.NumberSerializers;
 import com.nisovin.shopkeepers.util.inventory.ItemUtils;
 import com.nisovin.shopkeepers.util.java.MathUtils;
 import com.nisovin.shopkeepers.util.java.StringUtils;
+import com.nisovin.shopkeepers.util.logging.Log;
 
 public class MagmaCubeShop extends SKLivingShopObject<MagmaCube> {
 
@@ -35,6 +37,7 @@ public class MagmaCubeShop extends SKLivingShopObject<MagmaCube> {
 	// 255). However, at these sizes the magma cube is not properly rendered anymore, cannot be
 	// interacted with, and it becomes laggy.
 	// We limit it to 10 since this seems to be a more reasonable limit.
+	// Additionally, the maximum size can be further limited in the config.
 	public static final int MIN_SIZE = 1;
 	public static final int MAX_SIZE = 10;
 	public static final Property<Integer> SIZE = new BasicProperty<Integer>()
@@ -60,6 +63,9 @@ public class MagmaCubeShop extends SKLivingShopObject<MagmaCube> {
 	public void load(ShopObjectData shopObjectData) throws InvalidDataException {
 		super.load(shopObjectData);
 		sizeProperty.load(shopObjectData);
+
+		// Trim the size into valid bounds according to the current configuration:
+		this.setSize(this.getSize());
 	}
 
 	@Override
@@ -88,7 +94,16 @@ public class MagmaCubeShop extends SKLivingShopObject<MagmaCube> {
 	}
 
 	public void setSize(int size) {
-		sizeProperty.setValue(size);
+		int trimmedSize = this.trimSize(size);
+		if (trimmedSize != size) {
+			Log.warning(shopkeeper.getLogPrefix() + "Magma cube size trimmed to valid bounds: "
+					+ size + " -> " + trimmedSize);
+		}
+		sizeProperty.setValue(trimmedSize);
+	}
+
+	private int trimSize(int size) {
+		return MathUtils.trim(size, MIN_SIZE, Settings.magmaCubeMaxSize);
 	}
 
 	public void cycleSize(boolean backwards) {
@@ -99,7 +114,7 @@ public class MagmaCubeShop extends SKLivingShopObject<MagmaCube> {
 		} else {
 			nextSize = size + 1;
 		}
-		nextSize = MathUtils.rangeModulo(nextSize, MIN_SIZE, MAX_SIZE);
+		nextSize = MathUtils.rangeModulo(nextSize, MIN_SIZE, Settings.magmaCubeMaxSize);
 		this.setSize(nextSize);
 	}
 

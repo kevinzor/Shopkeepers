@@ -4,6 +4,8 @@ Date format: (YYYY-MM-DD)
 ## v2.23.4 (TBA)
 ### Supported MC versions: 1.21.4, 1.21.3, 1.21.1, 1.21, 1.20.6
 
+* Config: Add `slime-max-size` (default: `5`) and `magma-cube-max-size` (default: `5`). The maximum supported size is `10`.
+  * Data: If you have existing slime or magma cube shopkeepers with larger sizes, they are automatically shrunk when they are loaded. To prevent this, manually add these new settings to your config file with the intended values before you update the plugin.
 * Data: Add shopkeeper data migration to remove invalid player head profile names. See GH #907.
   * Since MC 1.20.5, player head profile names must be valid player names, i.e. have a maximum length of 16 and only contain allowed characters (spaces are not allowed).
   * Minecraft itself cleared invalid profiles names during its own item data migration. However, this migration was not automatically applied to the item data of shopkeepers. On Spigot, the invalid item data is loaded but can result in crashes later on. On Paper, the invalid item data is already rejected during the loading of the shopkeeper data.

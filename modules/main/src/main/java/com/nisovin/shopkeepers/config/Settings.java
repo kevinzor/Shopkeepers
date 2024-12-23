@@ -40,6 +40,8 @@ import com.nisovin.shopkeepers.playershops.MaxShopsPermission;
 import com.nisovin.shopkeepers.playershops.PlayerShopsLimit;
 import com.nisovin.shopkeepers.shopcreation.ShopCreationItem;
 import com.nisovin.shopkeepers.shopkeeper.TradingRecipeDraft;
+import com.nisovin.shopkeepers.shopobjects.living.types.MagmaCubeShop;
+import com.nisovin.shopkeepers.shopobjects.living.types.SlimeShop;
 import com.nisovin.shopkeepers.tradelog.TradeLogStorageType;
 import com.nisovin.shopkeepers.util.bukkit.ConfigUtils;
 import com.nisovin.shopkeepers.util.bukkit.EntityUtils;
@@ -47,6 +49,7 @@ import com.nisovin.shopkeepers.util.bukkit.SoundEffect;
 import com.nisovin.shopkeepers.util.inventory.ItemData;
 import com.nisovin.shopkeepers.util.inventory.ItemUtils;
 import com.nisovin.shopkeepers.util.java.CollectionUtils;
+import com.nisovin.shopkeepers.util.java.MathUtils;
 import com.nisovin.shopkeepers.util.java.Trilean;
 import com.nisovin.shopkeepers.util.logging.Log;
 
@@ -223,6 +226,9 @@ public class Settings extends Config {
 
 	public static boolean shulkerPeekIfPlayerNearby = true;
 	public static float shulkerPeekHeight = 0.3F;
+
+	public static int slimeMaxSize = 5;
+	public static int magmaCubeMaxSize = 5;
 
 	public static boolean silenceLivingShopEntities = true;
 
@@ -850,6 +856,16 @@ public class Settings extends Config {
 		if (shulkerPeekHeight < 0 || shulkerPeekHeight > 1) {
 			Log.warning(this.getLogPrefix() + "'shulker-peek-height' must be between 0.0 and 1.0.");
 			shulkerPeekHeight = (shulkerPeekHeight < 0 ? 0 : 1);
+		}
+		if (slimeMaxSize < SlimeShop.MIN_SIZE || slimeMaxSize > SlimeShop.MAX_SIZE) {
+			Log.warning(this.getLogPrefix() + "'slime-max-size' must be between "
+					+ SlimeShop.MIN_SIZE + " and " + SlimeShop.MAX_SIZE + ".");
+			slimeMaxSize = MathUtils.trim(slimeMaxSize, SlimeShop.MIN_SIZE, SlimeShop.MAX_SIZE);
+		}
+		if (magmaCubeMaxSize < MagmaCubeShop.MIN_SIZE || magmaCubeMaxSize > MagmaCubeShop.MAX_SIZE) {
+			Log.warning(this.getLogPrefix() + "'magma-cube-max-size' must be between "
+					+ MagmaCubeShop.MIN_SIZE + " and " + MagmaCubeShop.MAX_SIZE + ".");
+			magmaCubeMaxSize = MathUtils.trim(magmaCubeMaxSize, MagmaCubeShop.MIN_SIZE, MagmaCubeShop.MAX_SIZE);
 		}
 
 		// Certain items cannot be of type AIR:
