@@ -18,6 +18,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import com.nisovin.shopkeepers.api.internal.util.Unsafe;
 import com.nisovin.shopkeepers.api.shopkeeper.ShopCreationData;
 import com.nisovin.shopkeepers.api.shopobjects.sign.SignShopObject;
+import com.nisovin.shopkeepers.config.Settings;
 import com.nisovin.shopkeepers.lang.Messages;
 import com.nisovin.shopkeepers.shopkeeper.AbstractShopkeeper;
 import com.nisovin.shopkeepers.shopkeeper.ShopkeeperData;
@@ -190,6 +191,9 @@ public class SKSignShopObject extends BaseBlockShopObject implements SignShopObj
 		signTypeProperty.load(shopObjectData);
 		wallSignProperty.load(shopObjectData);
 		glowingTextProperty.load(shopObjectData);
+
+		// Disable glowing text based on the current configuration:
+		this.setGlowingText(this.isGlowingText());
 	}
 
 	@Override
@@ -275,7 +279,9 @@ public class SKSignShopObject extends BaseBlockShopObject implements SignShopObj
 	public List<Button> createEditorButtons() {
 		List<Button> editorButtons = super.createEditorButtons();
 		editorButtons.add(this.getSignTypeEditorButton());
-		editorButtons.add(this.getGlowingTextEditorButton());
+		if (Settings.enableGlowingSignText) {
+			editorButtons.add(this.getGlowingTextEditorButton());
+		}
 		return editorButtons;
 	}
 
@@ -382,6 +388,10 @@ public class SKSignShopObject extends BaseBlockShopObject implements SignShopObj
 	}
 
 	public void setGlowingText(boolean glowing) {
+		if (glowing && !Settings.enableGlowingSignText) {
+			Log.warning(shopkeeper.getLogPrefix() + "Disabling glowing sign text.");
+			glowing = false;
+		}
 		glowingTextProperty.setValue(glowing);
 	}
 

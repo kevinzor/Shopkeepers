@@ -20,6 +20,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import com.nisovin.shopkeepers.api.internal.util.Unsafe;
 import com.nisovin.shopkeepers.api.shopkeeper.ShopCreationData;
 import com.nisovin.shopkeepers.api.shopobjects.sign.HangingSignShopObject;
+import com.nisovin.shopkeepers.config.Settings;
 import com.nisovin.shopkeepers.lang.Messages;
 import com.nisovin.shopkeepers.shopkeeper.AbstractShopkeeper;
 import com.nisovin.shopkeepers.shopobjects.SKDefaultShopObjectTypes;
@@ -40,6 +41,7 @@ import com.nisovin.shopkeepers.util.data.serialization.java.EnumSerializers;
 import com.nisovin.shopkeepers.util.inventory.ItemUtils;
 import com.nisovin.shopkeepers.util.java.EnumUtils;
 import com.nisovin.shopkeepers.util.java.Validate;
+import com.nisovin.shopkeepers.util.logging.Log;
 
 public class SKHangingSignShopObject extends BaseBlockShopObject implements HangingSignShopObject {
 
@@ -98,6 +100,9 @@ public class SKHangingSignShopObject extends BaseBlockShopObject implements Hang
 		signTypeProperty.load(shopObjectData);
 		wallSignProperty.load(shopObjectData);
 		glowingTextProperty.load(shopObjectData);
+
+		// Disable glowing text based on the current configuration:
+		this.setGlowingText(this.isGlowingText());
 	}
 
 	@Override
@@ -188,7 +193,9 @@ public class SKHangingSignShopObject extends BaseBlockShopObject implements Hang
 	public List<Button> createEditorButtons() {
 		List<Button> editorButtons = super.createEditorButtons();
 		editorButtons.add(this.getSignTypeEditorButton());
-		editorButtons.add(this.getGlowingTextEditorButton());
+		if (Settings.enableGlowingSignText) {
+			editorButtons.add(this.getGlowingTextEditorButton());
+		}
 		return editorButtons;
 	}
 
@@ -306,6 +313,10 @@ public class SKHangingSignShopObject extends BaseBlockShopObject implements Hang
 	}
 
 	public void setGlowingText(boolean glowing) {
+		if (glowing && !Settings.enableGlowingSignText) {
+			Log.warning(shopkeeper.getLogPrefix() + "Disabling glowing sign text.");
+			glowing = false;
+		}
 		glowingTextProperty.setValue(glowing);
 	}
 

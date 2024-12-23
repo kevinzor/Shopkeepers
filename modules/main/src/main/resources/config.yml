@@ -434,6 +434,8 @@ enable-sign-shops: true
 enable-sign-post-shops: true
 # Whether to allow the creation of hanging sign shops.
 enable-hanging-sign-shops: true
+# Whether to enable the use of glowing text for sign shops.
+enable-glowing-sign-text: true
 
 # *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*
 # Naming
