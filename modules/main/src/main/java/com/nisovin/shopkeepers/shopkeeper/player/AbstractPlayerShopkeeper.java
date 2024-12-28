@@ -123,9 +123,9 @@ public abstract class AbstractPlayerShopkeeper
 
 	@Override
 	protected void setup() {
-		if (this.getUIHandler(DefaultUITypes.HIRING()) == null) {
-			this.registerUIHandler(new PlayerShopHiringHandler(this));
-		}
+		this.registerUIHandlerIfMissing(DefaultUITypes.HIRING(), () -> {
+			return new PlayerShopHiringHandler(this);
+		});
 		super.setup();
 	}
 
