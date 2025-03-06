@@ -15,6 +15,7 @@ Date format: (YYYY-MM-DD)
   * Debug: If the debug mode is enabled, we also write the migrated save file to disk. This can help diagnose issues if the migrated save file subsequently fails to load.
   * After the migrated shopkeeper data has been successfully loaded, we forcefully save all shopkeepers to disk to persist the migration result.
 * Data: Remove old shopkeeper data migration from the save file in the plugin folder.
+* Fix: We were not correctly tracking players teleporting between worlds. This resulted in a memory leak, and in issues when trying to find nearby players (e.g. used by shulker shopkeepers to decide whether to peek).
 
 ## v2.23.3 (2024-12-08)
 ### Supported MC versions: 1.21.4, 1.21.3, 1.21.1, 1.21, 1.20.6

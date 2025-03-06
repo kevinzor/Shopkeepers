@@ -72,7 +72,7 @@ public final class PlayerMap {
 
 			World fromWorld = Unsafe.assertNonNull(event.getFrom().getWorld());
 			World toWorld = Unsafe.assertNonNull(toLocation.getWorld());
-			if (!fromWorld.equals(toWorld)) return;
+			if (fromWorld.equals(toWorld)) return;
 
 			Player player = event.getPlayer();
 			updatePlayer(player, fromWorld, toWorld);
