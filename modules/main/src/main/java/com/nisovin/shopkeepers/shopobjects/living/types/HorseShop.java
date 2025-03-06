@@ -23,7 +23,7 @@ import com.nisovin.shopkeepers.shopobjects.ShopObjectData;
 import com.nisovin.shopkeepers.shopobjects.living.LivingShops;
 import com.nisovin.shopkeepers.shopobjects.living.SKLivingShopObjectType;
 import com.nisovin.shopkeepers.ui.editor.Button;
-import com.nisovin.shopkeepers.ui.editor.EditorSession;
+import com.nisovin.shopkeepers.ui.editor.EditorView;
 import com.nisovin.shopkeepers.ui.editor.ShopkeeperActionButton;
 import com.nisovin.shopkeepers.util.bukkit.EquipmentUtils;
 import com.nisovin.shopkeepers.util.data.property.BasicProperty;
@@ -190,15 +190,12 @@ public class HorseShop extends AbstractHorseShop<Horse> {
 	private Button getColorEditorButton() {
 		return new ShopkeeperActionButton() {
 			@Override
-			public @Nullable ItemStack getIcon(EditorSession editorSession) {
+			public @Nullable ItemStack getIcon(EditorView editorView) {
 				return getColorEditorItem();
 			}
 
 			@Override
-			protected boolean runAction(
-					EditorSession editorSession,
-					InventoryClickEvent clickEvent
-			) {
+			protected boolean runAction(EditorView editorView, InventoryClickEvent clickEvent) {
 				boolean backwards = clickEvent.isRightClick();
 				cycleColor(backwards);
 				return true;
@@ -244,15 +241,12 @@ public class HorseShop extends AbstractHorseShop<Horse> {
 	private Button getStyleEditorButton() {
 		return new ShopkeeperActionButton() {
 			@Override
-			public @Nullable ItemStack getIcon(EditorSession editorSession) {
+			public @Nullable ItemStack getIcon(EditorView editorView) {
 				return getStyleEditorItem();
 			}
 
 			@Override
-			protected boolean runAction(
-					EditorSession editorSession,
-					InventoryClickEvent clickEvent
-			) {
+			protected boolean runAction(EditorView editorView, InventoryClickEvent clickEvent) {
 				boolean backwards = clickEvent.isRightClick();
 				cycleStyle(backwards);
 				return true;
@@ -307,15 +301,12 @@ public class HorseShop extends AbstractHorseShop<Horse> {
 	private Button getArmorEditorButton() {
 		return new ShopkeeperActionButton() {
 			@Override
-			public @Nullable ItemStack getIcon(EditorSession editorSession) {
+			public @Nullable ItemStack getIcon(EditorView editorView) {
 				return getArmorEditorItem();
 			}
 
 			@Override
-			protected boolean runAction(
-					EditorSession editorSession,
-					InventoryClickEvent clickEvent
-			) {
+			protected boolean runAction(EditorView editorView, InventoryClickEvent clickEvent) {
 				boolean backwards = clickEvent.isRightClick();
 				cycleArmor(backwards);
 				return true;

@@ -17,14 +17,14 @@ import org.bukkit.inventory.PlayerInventory;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-import com.nisovin.shopkeepers.SKShopkeepersPlugin;
 import com.nisovin.shopkeepers.api.ShopkeepersPlugin;
 import com.nisovin.shopkeepers.api.internal.util.Unsafe;
 import com.nisovin.shopkeepers.config.Settings;
 import com.nisovin.shopkeepers.dependencies.citizens.CitizensUtils;
 import com.nisovin.shopkeepers.lang.Messages;
 import com.nisovin.shopkeepers.shopcreation.ShopCreationItem;
-import com.nisovin.shopkeepers.ui.villager.editor.VillagerEditorHandler;
+import com.nisovin.shopkeepers.ui.lib.UISessionManager;
+import com.nisovin.shopkeepers.ui.villager.editor.VillagerEditorViewProvider;
 import com.nisovin.shopkeepers.util.bukkit.TextUtils;
 import com.nisovin.shopkeepers.util.inventory.InventoryUtils;
 import com.nisovin.shopkeepers.util.java.Validate;
@@ -112,9 +112,9 @@ public class VillagerInteractionListener implements Listener {
 			Log.debug("  possible villager editor request ..");
 			// Open the villager editor:
 			// Silent request (fails if the player is missing the permission):
-			VillagerEditorHandler villagerEditor = new VillagerEditorHandler(villager);
-			boolean uiOpened = SKShopkeepersPlugin.getInstance().getUIRegistry().requestUI(
-					villagerEditor,
+			var villagerEditorViewProvider = new VillagerEditorViewProvider(villager);
+			boolean uiOpened = UISessionManager.getInstance().requestUI(
+					villagerEditorViewProvider,
 					player,
 					true
 			);

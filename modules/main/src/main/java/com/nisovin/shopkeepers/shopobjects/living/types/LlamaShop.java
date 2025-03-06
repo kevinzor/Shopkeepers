@@ -20,7 +20,7 @@ import com.nisovin.shopkeepers.shopobjects.ShopObjectData;
 import com.nisovin.shopkeepers.shopobjects.living.LivingShops;
 import com.nisovin.shopkeepers.shopobjects.living.SKLivingShopObjectType;
 import com.nisovin.shopkeepers.ui.editor.Button;
-import com.nisovin.shopkeepers.ui.editor.EditorSession;
+import com.nisovin.shopkeepers.ui.editor.EditorView;
 import com.nisovin.shopkeepers.ui.editor.ShopkeeperActionButton;
 import com.nisovin.shopkeepers.util.bukkit.EquipmentUtils;
 import com.nisovin.shopkeepers.util.data.property.BasicProperty;
@@ -152,15 +152,12 @@ public class LlamaShop<E extends Llama> extends ChestedHorseShop<E> {
 	private Button getColorEditorButton() {
 		return new ShopkeeperActionButton() {
 			@Override
-			public @Nullable ItemStack getIcon(EditorSession editorSession) {
+			public @Nullable ItemStack getIcon(EditorView editorView) {
 				return getColorEditorItem();
 			}
 
 			@Override
-			protected boolean runAction(
-					EditorSession editorSession,
-					InventoryClickEvent clickEvent
-			) {
+			protected boolean runAction(EditorView editorView, InventoryClickEvent clickEvent) {
 				boolean backwards = clickEvent.isRightClick();
 				cycleColor(backwards);
 				return true;
@@ -229,15 +226,12 @@ public class LlamaShop<E extends Llama> extends ChestedHorseShop<E> {
 	private Button getCarpetColorEditorButton() {
 		return new ShopkeeperActionButton() {
 			@Override
-			public @Nullable ItemStack getIcon(EditorSession editorSession) {
+			public @Nullable ItemStack getIcon(EditorView editorView) {
 				return getCarpetColorEditorItem();
 			}
 
 			@Override
-			protected boolean runAction(
-					EditorSession editorSession,
-					InventoryClickEvent clickEvent
-			) {
+			protected boolean runAction(EditorView editorView, InventoryClickEvent clickEvent) {
 				boolean backwards = clickEvent.isRightClick();
 				cycleCarpetColor(backwards);
 				return true;

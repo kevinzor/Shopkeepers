@@ -560,7 +560,6 @@ public class SKShopkeepersPlugin extends JavaPlugin implements InternalShopkeepe
 		// Player cleanup:
 		shopTypesRegistry.clearSelection(player);
 		shopObjectTypesRegistry.clearSelection(player);
-		uiRegistry.onPlayerQuit(player);
 
 		shopkeeperCreation.onPlayerQuit(player);
 		commands.onPlayerQuit(player);

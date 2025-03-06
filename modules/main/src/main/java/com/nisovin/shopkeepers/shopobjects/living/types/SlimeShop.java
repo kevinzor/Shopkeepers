@@ -18,7 +18,7 @@ import com.nisovin.shopkeepers.shopobjects.living.LivingShops;
 import com.nisovin.shopkeepers.shopobjects.living.SKLivingShopObject;
 import com.nisovin.shopkeepers.shopobjects.living.SKLivingShopObjectType;
 import com.nisovin.shopkeepers.ui.editor.Button;
-import com.nisovin.shopkeepers.ui.editor.EditorSession;
+import com.nisovin.shopkeepers.ui.editor.EditorView;
 import com.nisovin.shopkeepers.ui.editor.ShopkeeperActionButton;
 import com.nisovin.shopkeepers.util.data.property.BasicProperty;
 import com.nisovin.shopkeepers.util.data.property.Property;
@@ -143,15 +143,12 @@ public class SlimeShop extends SKLivingShopObject<Slime> {
 	private Button getSizeEditorButton() {
 		return new ShopkeeperActionButton() {
 			@Override
-			public @Nullable ItemStack getIcon(EditorSession editorSession) {
+			public @Nullable ItemStack getIcon(EditorView editorView) {
 				return getSizeEditorItem();
 			}
 
 			@Override
-			protected boolean runAction(
-					EditorSession editorSession,
-					InventoryClickEvent clickEvent
-			) {
+			protected boolean runAction(EditorView editorView, InventoryClickEvent clickEvent) {
 				boolean backwards = clickEvent.isRightClick();
 				cycleSize(backwards);
 				return true;

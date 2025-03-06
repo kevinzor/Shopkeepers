@@ -26,7 +26,7 @@ import com.nisovin.shopkeepers.shopkeeper.ShopkeeperPropertyValuesHolder;
 import com.nisovin.shopkeepers.shopkeeper.registry.ShopObjectRegistry;
 import com.nisovin.shopkeepers.shopkeeper.spawning.ShopkeeperSpawnState;
 import com.nisovin.shopkeepers.ui.editor.Button;
-import com.nisovin.shopkeepers.ui.editor.EditorHandler;
+import com.nisovin.shopkeepers.ui.editor.ShopkeeperEditorLayout;
 import com.nisovin.shopkeepers.util.annotations.ReadWrite;
 import com.nisovin.shopkeepers.util.bukkit.BlockFaceUtils;
 import com.nisovin.shopkeepers.util.bukkit.LocationUtils;
@@ -552,7 +552,7 @@ public abstract class AbstractShopObject implements ShopObject {
 	/**
 	 * Creates the editor buttons for editing this shop object.
 	 * <p>
-	 * This is usually only invoked once, when the {@link EditorHandler} is set up for the
+	 * This is usually only invoked once, when the {@link ShopkeeperEditorLayout} is set up for the
 	 * shopkeeper. So it is not possible to dynamically add or remove buttons with this method.
 	 * <p>
 	 * In order to allow for subtypes to more easily add or modify the returned editor buttons, this

@@ -123,8 +123,8 @@ public abstract class AbstractPlayerShopkeeper
 
 	@Override
 	protected void setup() {
-		this.registerUIHandlerIfMissing(DefaultUITypes.HIRING(), () -> {
-			return new PlayerShopHiringHandler(this);
+		this.registerViewProviderIfMissing(DefaultUITypes.HIRING(), () -> {
+			return new PlayerShopHiringViewProvider(this);
 		});
 		super.setup();
 	}

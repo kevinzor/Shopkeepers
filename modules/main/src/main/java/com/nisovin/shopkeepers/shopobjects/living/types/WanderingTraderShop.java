@@ -14,9 +14,8 @@ import com.nisovin.shopkeepers.shopobjects.ShopObjectData;
 import com.nisovin.shopkeepers.shopobjects.living.LivingShops;
 import com.nisovin.shopkeepers.shopobjects.living.SKLivingShopObjectType;
 import com.nisovin.shopkeepers.shopobjects.living.types.villager.WanderingTraderSounds;
-import com.nisovin.shopkeepers.ui.UIHandler;
 import com.nisovin.shopkeepers.ui.editor.Button;
-import com.nisovin.shopkeepers.ui.trading.TradingHandler;
+import com.nisovin.shopkeepers.ui.trading.TradingViewProvider;
 import com.nisovin.shopkeepers.util.data.serialization.InvalidDataException;
 
 public class WanderingTraderShop extends BabyableShop<WanderingTrader> {
@@ -48,10 +47,9 @@ public class WanderingTraderShop extends BabyableShop<WanderingTrader> {
 		super.setup();
 
 		if (Settings.simulateWanderingTraderTradingSounds) {
-			UIHandler tradingUIHandler = shopkeeper.getUIHandler(DefaultUITypes.TRADING());
-			if (tradingUIHandler instanceof TradingHandler) {
-				TradingHandler tradingHandler = (TradingHandler) tradingUIHandler;
-				tradingHandler.addListener(wanderingTraderSounds);
+			var viewProvider = shopkeeper.getViewProvider(DefaultUITypes.TRADING());
+			if (viewProvider instanceof TradingViewProvider tradingViewProvider) {
+				tradingViewProvider.addListener(wanderingTraderSounds);
 			}
 		}
 	}

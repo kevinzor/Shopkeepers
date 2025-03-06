@@ -49,9 +49,10 @@ import com.nisovin.shopkeepers.shopobjects.ShopObjectData;
 import com.nisovin.shopkeepers.shopobjects.ShopkeeperMetadata;
 import com.nisovin.shopkeepers.shopobjects.entity.AbstractEntityShopObject;
 import com.nisovin.shopkeepers.ui.editor.Button;
-import com.nisovin.shopkeepers.ui.editor.EditorSession;
+import com.nisovin.shopkeepers.ui.editor.EditorView;
 import com.nisovin.shopkeepers.ui.editor.ShopkeeperActionButton;
 import com.nisovin.shopkeepers.ui.equipmentEditor.EquipmentEditorUI;
+import com.nisovin.shopkeepers.ui.equipmentEditor.EquipmentEditorUIState;
 import com.nisovin.shopkeepers.util.annotations.ReadOnly;
 import com.nisovin.shopkeepers.util.annotations.ReadWrite;
 import com.nisovin.shopkeepers.util.bukkit.EntityUtils;
@@ -1006,23 +1007,20 @@ public class SKLivingShopObject<E extends LivingEntity>
 	private Button getEquipmentEditorButton() {
 		return new ShopkeeperActionButton() {
 			@Override
-			public @Nullable ItemStack getIcon(EditorSession editorSession) {
+			public @Nullable ItemStack getIcon(EditorView editorView) {
 				return getEquipmentEditorItem();
 			}
 
 			@Override
-			protected boolean runAction(
-					EditorSession editorSession,
-					InventoryClickEvent clickEvent
-			) {
-				editorSession.getUISession().closeDelayedAndRunTask(() -> {
-					openEquipmentEditor(editorSession.getPlayer(), false);
+			protected boolean runAction(EditorView editorView, InventoryClickEvent clickEvent) {
+				editorView.closeDelayedAndRunTask(() -> {
+					openEquipmentEditor(editorView.getPlayer(), false);
 				});
 				return true;
 			}
 
 			@Override
-			protected void onActionSuccess(EditorSession editorSession, InventoryClickEvent clickEvent) {
+			protected void onActionSuccess(EditorView editorView, InventoryClickEvent clickEvent) {
 				// The button only opens the equipment editor: Skip the ShopkeeperEditedEvent and
 				// saving.
 			}
@@ -1031,9 +1029,7 @@ public class SKLivingShopObject<E extends LivingEntity>
 
 	@Override
 	public boolean openEquipmentEditor(Player player, boolean editAllSlots) {
-		return EquipmentEditorUI.request(
-				shopkeeper,
-				player,
+		var config = new EquipmentEditorUIState(
 				editAllSlots ? EquipmentUtils.EQUIPMENT_SLOTS : this.getEditableEquipmentSlots(),
 				this.getEquipment().getItems(),
 				(equipmentSlot, item) -> {
@@ -1047,5 +1043,6 @@ public class SKLivingShopObject<E extends LivingEntity>
 					shopkeeper.save();
 				}
 		);
+		return EquipmentEditorUI.request(shopkeeper, player, config);
 	}
 }
