@@ -32,7 +32,7 @@ dependencies {
 
 jar {
 	// We only require the output of the shadowJar task.
-	enabled false
+	enabled = false
 }
 
 shadowJar {

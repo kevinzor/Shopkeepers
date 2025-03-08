@@ -17,12 +17,9 @@ sonar {
 }
 
 ext.getGitHash = { ->
-	def stdout = new ByteArrayOutputStream()
-	exec {
+	return providers.exec {
 		commandLine 'git', 'rev-parse', '--short', 'HEAD'
-		standardOutput = stdout
-	}
-	return stdout.toString().trim()
+	}.standardOutput.asText.get().trim()
 }
 
 // We embed the git hash into jar files, and also use it for the plugin version of snapshot builds.
@@ -142,7 +139,7 @@ subprojects {
 		mavenCentral()
 
 		// Bukkit, Spigot-API
-		maven { url 'https://hub.spigotmc.org/nexus/content/groups/public/' }
+		maven { url = 'https://hub.spigotmc.org/nexus/content/groups/public/' }
 	}
 
 	// Shared plugin / task configurations:
@@ -314,9 +311,9 @@ subprojects {
 			doLast {
 				directory.mkdirs()
 				outputFile.text = "" +
-					"groupId=${project.group}\n" +
-					"artifactId=${project.artifactId}\n" +
-					"version=${project.version}\n"
+					"groupId=${inputs.properties['group']}\n" +
+					"artifactId=${inputs.properties['artifactId']}\n" +
+					"version=${inputs.properties['version']}\n"
 			}
 		}
 
@@ -325,15 +322,15 @@ subprojects {
 				// Formerly nexus.cube-nation.de, nexus.lichtspiele.org
 				// Contact person: Kronox (Discord); formerly: d1rty (dbo: d1rtyseven)
 				maven {
-					name 'projectshard'
+					name = 'projectshard'
 					credentials {
-						username findProperty('dev.projectshard.repo-username') ?: 'UNSET'
-						password findProperty('dev.projectshard.repo-password') ?: 'UNSET'
+						username = findProperty('dev.projectshard.repo-username') ?: 'UNSET'
+						password = findProperty('dev.projectshard.repo-password') ?: 'UNSET'
 					}
 					if (project.isSnapshot) {
-						url 'https://repo.projectshard.dev/repository/snapshots/'
+						url = 'https://repo.projectshard.dev/repository/snapshots/'
 					} else {
-						url 'https://repo.projectshard.dev/repository/releases/'
+						url = 'https://repo.projectshard.dev/repository/releases/'
 					}
 				}
 			}
