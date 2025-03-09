@@ -22,19 +22,24 @@ Shopkeepers API
 If you want to write an add-on plugin for Shopkeepers, or integrate some Shopkeepers aspect into your plugin, you can add `ShopkeepersAPI` as a dependency to your plugin.
 
 Maven repository:
+
 ```
 <repositories>
   <repository>
     <id>shopkeepers-repo</id>
-    <url>https://repo.projectshard.dev/repository/releases/</url>
+    <url>https://raw.githubusercontent.com/Shopkeepers/Repository/main/releases/</url>
   </repository>
 </repositories>
 ```
-Snapshot repository (development builds): https://repo.projectshard.dev/repository/snapshots/  
 
-If the above Maven repository is currently not available, you can also try to use Jitpack: https://jitpack.io/#Shopkeepers/Shopkeepers/  
+Snapshot repository (for testing development builds): `https://raw.githubusercontent.com/Shopkeepers/Repository/main/snapshots/`  
+
+Old repository (no longer containing older artifacts after a hardware failure and might stop working in the future): `https://repo.projectshard.dev/repository/releases/`  
+Old snapshot repository: `https://repo.projectshard.dev/repository/snapshots/`  
+
+If the above Maven repository is currently not available for some reason, you can also try to use Jitpack: https://jitpack.io/#Shopkeepers/Shopkeepers/  
 Jitpack snapshots: https://jitpack.io/#Shopkeepers/Shopkeepers/master-SNAPSHOT  
-However, this is not guaranteed to always work either.
+However, this is not guaranteed to always work.
 
 Maven dependency:
 ```

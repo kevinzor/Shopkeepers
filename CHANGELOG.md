@@ -17,6 +17,7 @@ Date format: (YYYY-MM-DD)
 * Data: Remove old shopkeeper data migration from the save file in the plugin folder.
 * Fix: We were not correctly tracking players teleporting between worlds. This resulted in a memory leak, and in issues when trying to find nearby players (e.g. used by shulker shopkeepers to decide whether to peek).
 * Build: Update Gradle.
+* Build: Publish the Maven repository via Github. The old repository might stop working in the future. If you are a developer depending on the Shopkeepers plugin or API, consider updating the Maven repository to point to `https://raw.githubusercontent.com/Shopkeepers/Repository/main/releases/`.
 
 ## v2.23.3 (2024-12-08)
 ### Supported MC versions: 1.21.4, 1.21.3, 1.21.1, 1.21, 1.20.6
