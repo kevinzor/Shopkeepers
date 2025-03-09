@@ -34,10 +34,10 @@ Maven repository:
 
 Snapshot repository (for testing development builds): `https://raw.githubusercontent.com/Shopkeepers/Repository/main/snapshots/`  
 
-Old repository (no longer containing older artifacts after a hardware failure and might stop working in the future): `https://repo.projectshard.dev/repository/releases/`  
+Old repository (mirrors the above repository; might stop working in the future): `https://repo.projectshard.dev/repository/releases/`  
 Old snapshot repository: `https://repo.projectshard.dev/repository/snapshots/`  
 
-If the above Maven repository is currently not available for some reason, you can also try to use Jitpack: https://jitpack.io/#Shopkeepers/Shopkeepers/  
+If the above Maven repositories are currently not available for some reason, you can also try to use Jitpack: https://jitpack.io/#Shopkeepers/Shopkeepers/  
 Jitpack snapshots: https://jitpack.io/#Shopkeepers/Shopkeepers/master-SNAPSHOT  
 However, this is not guaranteed to always work.
 
