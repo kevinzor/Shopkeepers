@@ -15,7 +15,7 @@ Date format: (YYYY-MM-DD)
   * Debug: If the debug mode is enabled, we also write the migrated save file to disk. This can help diagnose issues if the migrated save file subsequently fails to load.
   * After the migrated shopkeeper data has been successfully loaded, we forcefully save all shopkeepers to disk to persist the migration result.
 * Data: Remove old shopkeeper data migration from the save file in the plugin folder.
-* Fix: We were not correctly tracking players teleporting between worlds. This resulted in a memory leak, and in issues when trying to find nearby players (e.g. used by shulker shopkeepers to decide whether to peek).
+* Fix: We were not correctly tracking players teleporting between worlds. This resulted in a memory leak, and in issues when trying to find nearby players (e.g. used by shulker shopkeepers to decide whether to peek). Additionally, we now log a warning whenever we unexpectedly fail to cleanup the data for a player. This should help us identify any remaining memory leaks in this area, if any.
 * Build: Update Gradle.
 * Build: Publish the Maven repository via Github. The old repository might stop working in the future. If you are a developer depending on the Shopkeepers plugin or API, consider updating the Maven repository to point to `https://raw.githubusercontent.com/Shopkeepers/Repository/main/releases/`.
 

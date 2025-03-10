@@ -156,14 +156,18 @@ public final class PlayerMap {
 		String worldName = world.getName();
 		@Nullable WorldData worldData = this.getWorldData(worldName);
 		if (worldData == null) {
-			Log.debug("PlayerMap: Failed to remove player '" + player.getName()
-					+ "': Data for world '" + worldName + "' not found.");
+			Log.warning("PlayerMap: Failed to remove player '" + player.getName()
+					+ "': Data for world '" + worldName + "' not found. This indicates a bug. "
+					+ "Consider reporting this issue together with information on how to reproduce "
+					+ "it.");
 			return;
 		}
 
 		if (!worldData.players.remove(player)) {
-			Log.debug("PlayerMap: Failed to remove player '" + player.getName()
-					+ "': Player not found in data for world '" + worldName + "'.");
+			Log.warning("PlayerMap: Failed to remove player '" + player.getName()
+					+ "': Player not found in data for world '" + worldName + "'. This indicates a"
+					+ "bug. Consider reporting this issue together with information on how to "
+					+ "reproduce it.");
 		}
 	}
 
