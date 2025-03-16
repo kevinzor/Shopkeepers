@@ -38,7 +38,7 @@ ext.remapMojangToObfuscated = { inputFile, outputFile, craftbukkitVersion ->
 			'-o', outputFile.path,
 			'-m', mojangMappings.replace('{craftbukkitVersion}', craftbukkitVersion),
 			'--reverse'
-	}
+	}.result.get() // Trigger
 }
 
 // Converts from Minecraft's obfuscated mappings to Spigot's mappings.
@@ -56,7 +56,7 @@ ext.remapObfuscatedToSpigot = { inputFile, outputFile, craftbukkitVersion ->
 			'-i', inputFile.path,
 			'-o', outputFile.path,
 			'-m', spigotMappings.replace('{craftbukkitVersion}', craftbukkitVersion)
-	}
+	}.result.get() // Trigger
 }
 
 // Converts from Mojang's mappings to Spigot's mappings.
