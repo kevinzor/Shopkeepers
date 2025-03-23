@@ -1,39 +1,44 @@
-package com.nisovin.shopkeepers.commands.lib.arguments;
+package com.nisovin.shopkeepers.commands.arguments;
 
 import java.util.Collections;
 import java.util.Locale;
 import java.util.UUID;
 
-import org.bukkit.entity.Player;
+import org.bukkit.OfflinePlayer;
 
+import com.nisovin.shopkeepers.api.user.User;
 import com.nisovin.shopkeepers.commands.lib.CommandInput;
 import com.nisovin.shopkeepers.commands.lib.argument.filter.ArgumentFilter;
+import com.nisovin.shopkeepers.commands.lib.arguments.ObjectUUIDArgument;
 import com.nisovin.shopkeepers.commands.lib.context.CommandContextView;
+import com.nisovin.shopkeepers.commands.util.UserArgumentUtils;
 import com.nisovin.shopkeepers.lang.Messages;
 import com.nisovin.shopkeepers.text.Text;
-import com.nisovin.shopkeepers.util.bukkit.EntityUtils;
 
 /**
- * Provides suggestions for the UUIDs of online players.
+ * Provides suggestions for the UUIDs of (potentially offline shop owner) {@link User}s.
  * <p>
- * By default this accepts any UUID regardless of whether it corresponds to an online player.
+ * By default this accepts any UUID regardless of whether it corresponds to a known user.
+ * <p>
+ * During argument completion, this does not take UUIDs of offline {@link OfflinePlayer}s into
+ * account.
  */
-public class PlayerUUIDArgument extends ObjectUUIDArgument {
+public class UserUUIDArgument extends ObjectUUIDArgument {
 
 	public static final int DEFAULT_MINIMUM_COMPLETION_INPUT = ObjectUUIDArgument.DEFAULT_MINIMUM_COMPLETION_INPUT;
 
-	// Note: Not providing a default argument filter that only accepts uuids of online players,
-	// because this can be achieved more efficiently by using PlayerByUUIDArgument instead.
+	// Note: Not providing a default argument filter that only accepts uuids of known users,
+	// because this can be achieved more efficiently by using UserByUUIDArgument instead.
 
-	public PlayerUUIDArgument(String name) {
+	public UserUUIDArgument(String name) {
 		this(name, ArgumentFilter.acceptAny());
 	}
 
-	public PlayerUUIDArgument(String name, ArgumentFilter<? super UUID> filter) {
+	public UserUUIDArgument(String name, ArgumentFilter<? super UUID> filter) {
 		this(name, filter, DEFAULT_MINIMUM_COMPLETION_INPUT);
 	}
 
-	public PlayerUUIDArgument(
+	public UserUUIDArgument(
 			String name,
 			ArgumentFilter<? super UUID> filter,
 			int minimumCompletionInput
@@ -62,16 +67,16 @@ public class PlayerUUIDArgument extends ObjectUUIDArgument {
 	 *            the minimum input length before completion suggestions are provided
 	 * @param uuidPrefix
 	 *            the uuid prefix, may be empty, not <code>null</code>
-	 * @param playerFilter
-	 *            only suggestions for players accepted by this filter are included
-	 * @return the player uuid completion suggestions
+	 * @param userFilter
+	 *            only suggestions for users accepted by this filter are included
+	 * @return the user uuid completion suggestions
 	 */
 	public static Iterable<? extends UUID> getDefaultCompletionSuggestions(
 			CommandInput input,
 			CommandContextView context,
 			int minimumCompletionInput,
 			String uuidPrefix,
-			ArgumentFilter<? super Player> playerFilter
+			ArgumentFilter<? super User> userFilter
 	) {
 		// Only provide suggestions if there is a minimum length input:
 		if (uuidPrefix.length() < minimumCompletionInput) {
@@ -79,9 +84,9 @@ public class PlayerUUIDArgument extends ObjectUUIDArgument {
 		}
 
 		String normalizedUUIDPrefix = uuidPrefix.toLowerCase(Locale.ROOT);
-		return EntityUtils.getOnlinePlayersStream()
-				.filter(player -> playerFilter.test(input, context, player))
-				.map(Player::getUniqueId)
+		return UserArgumentUtils.getKnownUsers()
+				.filter(user -> userFilter.test(input, context, user))
+				.map(User::getUniqueId)
 				.filter(uuid -> {
 					// Assumption: UUID#toString is already lowercase (normalized).
 					return uuid.toString().startsWith(normalizedUUIDPrefix);

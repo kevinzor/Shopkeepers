@@ -4,6 +4,10 @@ Date format: (YYYY-MM-DD)
 ## v2.23.4 (TBA)
 ### Supported MC versions: 1.21.4, 1.21.3, 1.21.1, 1.21, 1.20.6
 
+* Command: The `/shopkeeper transfer` command also allows transferring shops to offline players now.
+  * The player can be specified by unique id and name. The command checks for matching players among the currently online players, among the current shop owners, and among offline player. But we only check for a matching offline player if we didn't find any matching player among the online players and shop owners.
+  * Command completion and ambiguous name handling is not supported for offline players.
+  * The lookup by name may involve a blocking roundtrip to the Mojang servers.
 * Config: Add `slime-max-size` (default: `5`) and `magma-cube-max-size` (default: `5`). The maximum supported size is `10`.
   * Data: If you have existing slime or magma cube shopkeepers with larger sizes, they are automatically shrunk when they are loaded. To prevent this, manually add these new settings to your config file with the intended values before you update the plugin.
 * Config: Add `enable-glowing-sign-text` (default: `true`).

@@ -1,67 +1,73 @@
-package com.nisovin.shopkeepers.commands.lib.arguments;
+package com.nisovin.shopkeepers.commands.arguments;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
-import org.bukkit.entity.Player;
+import org.bukkit.OfflinePlayer;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import com.nisovin.shopkeepers.api.internal.util.Unsafe;
+import com.nisovin.shopkeepers.api.user.User;
 import com.nisovin.shopkeepers.commands.lib.CommandInput;
 import com.nisovin.shopkeepers.commands.lib.argument.ArgumentParseException;
 import com.nisovin.shopkeepers.commands.lib.argument.ArgumentsReader;
 import com.nisovin.shopkeepers.commands.lib.argument.CommandArgument;
 import com.nisovin.shopkeepers.commands.lib.argument.filter.ArgumentFilter;
 import com.nisovin.shopkeepers.commands.lib.argument.filter.ArgumentRejectedException;
+import com.nisovin.shopkeepers.commands.lib.arguments.TypedFirstOfArgument;
 import com.nisovin.shopkeepers.commands.lib.context.CommandContextView;
 import com.nisovin.shopkeepers.util.java.Validate;
 
 /**
- * Accepts a player specified by either name (might not have to be exact, depending on the used
- * matching function) or UUID.
+ * Accepts a {@link User} specified by either name (might not have to be exact, depending on the
+ * used matching function) or UUID.
+ * <p>
+ * Accounts for known users, e.g. online players and shop owners. This does, however, not check for
+ * matching offline players by name (see rationale in {@link UserByNameArgument}), nor does this
+ * take {@link OfflinePlayer}s into account during argument completion.
  */
-public class PlayerArgument extends CommandArgument<Player> {
+public class UserArgument extends CommandArgument<User> {
 
-	protected final ArgumentFilter<? super Player> filter; // Not null
-	private final PlayerByNameArgument playerNameArgument;
-	private final PlayerByUUIDArgument playerUUIDArgument;
-	private final TypedFirstOfArgument<Player> firstOfArgument;
+	protected final ArgumentFilter<? super User> filter; // Not null
+	private final UserByNameArgument userNameArgument;
+	private final UserByUUIDArgument userUUIDArgument;
+	private final TypedFirstOfArgument<User> firstOfArgument;
 
-	public PlayerArgument(String name) {
+	public UserArgument(String name) {
 		this(name, ArgumentFilter.acceptAny());
 	}
 
-	public PlayerArgument(String name, ArgumentFilter<? super Player> filter) {
+	public UserArgument(String name, ArgumentFilter<? super User> filter) {
 		this(
 				name,
 				filter,
-				PlayerNameArgument.DEFAULT_MINIMUM_COMPLETION_INPUT,
-				PlayerUUIDArgument.DEFAULT_MINIMUM_COMPLETION_INPUT
+				UserNameArgument.DEFAULT_MINIMUM_COMPLETION_INPUT,
+				UserUUIDArgument.DEFAULT_MINIMUM_COMPLETION_INPUT
 		);
 	}
 
-	public PlayerArgument(
+	public UserArgument(
 			String name,
-			ArgumentFilter<? super Player> filter,
+			ArgumentFilter<? super User> filter,
 			int minimalNameCompletionInput,
 			int minimumUUIDCompletionInput
 	) {
 		super(name);
 		Validate.notNull(filter, "filter is null");
 		this.filter = filter;
-		this.playerNameArgument = new PlayerByNameArgument(
+		this.userNameArgument = new UserByNameArgument(
 				name + ":name",
 				filter,
 				minimalNameCompletionInput
 		) {
 			@Override
-			public @Nullable Player getObject(
+			public @Nullable User getObject(
 					CommandInput input,
 					CommandContextView context,
 					String nameInput
 			) throws ArgumentParseException {
-				return Unsafe.initialized(PlayerArgument.this).getPlayerByName(nameInput);
+				return Unsafe.initialized(UserArgument.this).getUserByName(nameInput);
 			}
 
 			@Override
@@ -71,7 +77,7 @@ public class PlayerArgument extends CommandArgument<Player> {
 					int minimumCompletionInput,
 					String idPrefix
 			) {
-				return Unsafe.initialized(PlayerArgument.this).getNameCompletionSuggestions(
+				return Unsafe.initialized(UserArgument.this).getNameCompletionSuggestions(
 						input,
 						context,
 						minimumCompletionInput,
@@ -79,7 +85,7 @@ public class PlayerArgument extends CommandArgument<Player> {
 				);
 			}
 		};
-		this.playerUUIDArgument = new PlayerByUUIDArgument(
+		this.userUUIDArgument = new UserByUUIDArgument(
 				name + ":uuid",
 				filter,
 				minimumUUIDCompletionInput
@@ -91,7 +97,7 @@ public class PlayerArgument extends CommandArgument<Player> {
 					int minimumCompletionInput,
 					String idPrefix
 			) {
-				return Unsafe.initialized(PlayerArgument.this).getUUIDCompletionSuggestions(
+				return Unsafe.initialized(UserArgument.this).getUUIDCompletionSuggestions(
 						input,
 						context,
 						minimumCompletionInput,
@@ -101,7 +107,7 @@ public class PlayerArgument extends CommandArgument<Player> {
 		};
 		this.firstOfArgument = new TypedFirstOfArgument<>(
 				name + ":firstOf",
-				Arrays.asList(playerNameArgument, playerUUIDArgument),
+				Arrays.asList(userNameArgument, userUUIDArgument),
 				false,
 				false
 		);
@@ -109,7 +115,7 @@ public class PlayerArgument extends CommandArgument<Player> {
 	}
 
 	@Override
-	public Player parseValue(
+	public User parseValue(
 			CommandInput input,
 			CommandContextView context,
 			ArgumentsReader argsReader
@@ -128,7 +134,7 @@ public class PlayerArgument extends CommandArgument<Player> {
 	}
 
 	/**
-	 * Gets a {@link Player} that matches the given name input.
+	 * Gets a {@link User} that matches the given name input.
 	 * <p>
 	 * This can be overridden if a different behavior is required. You may also want to override
 	 * {@link #getNameCompletionSuggestions(CommandInput, CommandContextView, int, String)} and
@@ -136,18 +142,18 @@ public class PlayerArgument extends CommandArgument<Player> {
 	 * 
 	 * @param nameInput
 	 *            the name input
-	 * @return the matched player, or <code>null</code>
+	 * @return the matched user, or <code>null</code>
 	 * @throws ArgumentRejectedException
 	 *             if the name is ambiguous
 	 */
-	public @Nullable Player getPlayerByName(String nameInput) throws ArgumentRejectedException {
-		return playerNameArgument.getDefaultPlayerByName(nameInput);
+	public @Nullable User getUserByName(String nameInput) throws ArgumentRejectedException {
+		return userNameArgument.getDefaultUserByName(nameInput);
 	}
 
 	/**
 	 * Gets the name completion suggestions for the given name prefix.
 	 * <p>
-	 * This should take this argument's player filter into account.
+	 * This should take this argument's user filter into account.
 	 * 
 	 * @param input
 	 *            the command input, not <code>null</code>
@@ -167,7 +173,7 @@ public class PlayerArgument extends CommandArgument<Player> {
 	) {
 		// Note: Whether to include display name suggestions usually depends on whether the used
 		// matching function considers display names.
-		return PlayerNameArgument.getDefaultCompletionSuggestions(
+		return UserNameArgument.getDefaultCompletionSuggestions(
 				input,
 				context,
 				minimumCompletionInput,
@@ -180,7 +186,7 @@ public class PlayerArgument extends CommandArgument<Player> {
 	/**
 	 * Gets the uuid completion suggestions for the given name prefix.
 	 * <p>
-	 * This should take this argument's player filter into account.
+	 * This should take this argument's User filter into account.
 	 * 
 	 * @param input
 	 *            the command input, not <code>null</code>
@@ -198,7 +204,7 @@ public class PlayerArgument extends CommandArgument<Player> {
 			int minimumCompletionInput,
 			String idPrefix
 	) {
-		return PlayerUUIDArgument.getDefaultCompletionSuggestions(
+		return UserUUIDArgument.getDefaultCompletionSuggestions(
 				input,
 				context,
 				minimumCompletionInput,

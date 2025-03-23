@@ -426,12 +426,12 @@ public final class TextUtils {
 
 	public static Text getPlayerText(Player player) {
 		Validate.notNull(player, "player is null");
-		String playerName = Unsafe.assertNonNull(player.getName());
-		String playerUUIDString = player.getUniqueId().toString();
-		return Text.hoverEvent(Text.of(playerUUIDString))
-				.childInsertion(playerUUIDString)
-				.childText(playerName)
-				.buildRoot();
+		return getPlayerText(player.getName(), player.getUniqueId());
+	}
+
+	public static Text getPlayerText(User user) {
+		Validate.notNull(user, "user is null");
+		return getPlayerText(user.getName(), user.getUniqueId());
 	}
 
 	public static Text getPlayerText(@Nullable String playerName, @Nullable UUID playerUUID) {

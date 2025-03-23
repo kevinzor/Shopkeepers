@@ -9,7 +9,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 /**
  * Represents a player that the Shopkeepers plugin knows about.
  * <p>
- * The player may not be currently online.
+ * The player might not be currently online.
  */
 public interface User {
 
@@ -21,9 +21,11 @@ public interface User {
 	public UUID getUniqueId();
 
 	/**
-	 * Gets the player's last known name that is stored by this {@link User} object.
+	 * Gets the player's last known name stored by this {@link User} object.
 	 * <p>
-	 * This may not match the player's current name, even if the player is currently online.
+	 * This might not match the player's current name, even if the player is currently online, and
+	 * this might not take the last known name stored by the corresponding {@link OfflinePlayer}
+	 * into account.
 	 * 
 	 * @return the player's last known name, not <code>null</code> or empty
 	 */
@@ -41,8 +43,8 @@ public interface User {
 	/**
 	 * Gets the player's display name.
 	 * <p>
-	 * If the player is currently offline, the display name may not be available. In this case, this
-	 * returns the player's {@link #getLastKnownName() last known name} as fallback.
+	 * If the player is currently offline, the display name might not be available. In this case,
+	 * this returns the player's {@link #getLastKnownName() last known name} as fallback.
 	 * 
 	 * @return the display name or last known name, not <code>null</code> or empty
 	 */
