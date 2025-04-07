@@ -3,7 +3,7 @@ package com.nisovin.shopkeepers.shopobjects.living.types;
 import java.util.List;
 
 import org.bukkit.Material;
-import org.bukkit.entity.ChestedHorse;
+import org.bukkit.entity.AbstractHorse;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -18,6 +18,7 @@ import com.nisovin.shopkeepers.shopobjects.living.SKLivingShopObjectType;
 import com.nisovin.shopkeepers.ui.editor.Button;
 import com.nisovin.shopkeepers.ui.editor.EditorSession;
 import com.nisovin.shopkeepers.ui.editor.ShopkeeperActionButton;
+import com.nisovin.shopkeepers.util.bukkit.EquipmentUtils;
 import com.nisovin.shopkeepers.util.data.property.BasicProperty;
 import com.nisovin.shopkeepers.util.data.property.Property;
 import com.nisovin.shopkeepers.util.data.property.value.PropertyValue;
@@ -25,20 +26,29 @@ import com.nisovin.shopkeepers.util.data.serialization.InvalidDataException;
 import com.nisovin.shopkeepers.util.data.serialization.java.BooleanSerializers;
 import com.nisovin.shopkeepers.util.inventory.ItemUtils;
 
-public class ChestedHorseShop<E extends ChestedHorse> extends AbstractHorseShop<E> {
+/**
+ * Supports saddle.
+ * <p>
+ * Note: Llamas do not support saddles even though they derive from {@link AbstractHorse}.
+ * 
+ * @param <E>
+ *            The mob type.
+ */
+public class AbstractHorseShop<E extends AbstractHorse> extends BabyableShop<E> {
 
-	public static final Property<Boolean> CARRYING_CHEST = new BasicProperty<Boolean>()
-			.dataKeyAccessor("carryingChest", BooleanSerializers.LENIENT)
+	public static final Property<Boolean> SADDLE = new BasicProperty<Boolean>()
+			.dataKeyAccessor("saddle", BooleanSerializers.LENIENT)
 			.defaultValue(false)
+			.omitIfDefault()
 			.build();
 
-	private final PropertyValue<Boolean> carryingChestProperty = new PropertyValue<>(CARRYING_CHEST)
-			.onValueChanged(Unsafe.initialized(this)::applyCarryingChest)
+	private final PropertyValue<Boolean> saddleProperty = new PropertyValue<>(SADDLE)
+			.onValueChanged(Unsafe.initialized(this)::applySaddle)
 			.build(properties);
 
-	public ChestedHorseShop(
+	public AbstractHorseShop(
 			LivingShops livingShops,
-			SKLivingShopObjectType<? extends ChestedHorseShop<E>> livingObjectType,
+			SKLivingShopObjectType<? extends AbstractHorseShop<E>> livingObjectType,
 			AbstractShopkeeper shopkeeper,
 			@Nullable ShopCreationData creationData
 	) {
@@ -48,63 +58,69 @@ public class ChestedHorseShop<E extends ChestedHorse> extends AbstractHorseShop<
 	@Override
 	public void load(ShopObjectData shopObjectData) throws InvalidDataException {
 		super.load(shopObjectData);
-		carryingChestProperty.load(shopObjectData);
+		saddleProperty.load(shopObjectData);
 	}
 
 	@Override
 	public void save(ShopObjectData shopObjectData, boolean saveAll) {
 		super.save(shopObjectData, saveAll);
-		carryingChestProperty.save(shopObjectData);
+		saddleProperty.save(shopObjectData);
 	}
 
 	@Override
 	protected void onSpawn() {
 		super.onSpawn();
-		this.applyCarryingChest();
+		this.applySaddle();
 	}
 
 	@Override
 	public List<Button> createEditorButtons() {
 		List<Button> editorButtons = super.createEditorButtons();
-		editorButtons.add(this.getCarryingChestEditorButton());
+		if (EquipmentUtils.supportsSaddle(this.getEntityType())) {
+			editorButtons.add(this.getSaddleEditorButton());
+		}
 		return editorButtons;
 	}
 
-	// CARRYING CHEST
+	// SADDLE
 
-	public boolean isCarryingChest() {
-		return carryingChestProperty.getValue();
+	public boolean hasSaddle() {
+		return saddleProperty.getValue();
 	}
 
-	public void setCarryingChest(boolean carryingChest) {
-		carryingChestProperty.setValue(carryingChest);
+	public void setSaddle(boolean saddle) {
+		if (!EquipmentUtils.supportsSaddle(this.getEntityType())) return;
+
+		saddleProperty.setValue(saddle);
 	}
 
-	public void cycleCarryingChest() {
-		this.setCarryingChest(!this.isCarryingChest());
+	public void cycleSaddle() {
+		this.setSaddle(!this.hasSaddle());
 	}
 
-	private void applyCarryingChest() {
-		@Nullable E entity = this.getEntity();
+	private void applySaddle() {
+		if (!EquipmentUtils.supportsSaddle(this.getEntityType())) return;
+
+		AbstractHorse entity = this.getEntity();
 		if (entity == null) return; // Not spawned
 
-		entity.setCarryingChest(this.isCarryingChest());
+		entity.getInventory().setSaddle(this.hasSaddle() ? new ItemStack(Material.SADDLE) : null);
 	}
 
-	private ItemStack getCarryingChestEditorItem() {
-		ItemStack iconItem = new ItemStack(Material.CHEST);
+	private ItemStack getSaddleEditorItem() {
+		ItemStack iconItem = new ItemStack(Material.SADDLE);
 		ItemUtils.setDisplayNameAndLore(iconItem,
-				Messages.buttonCarryingChest,
-				Messages.buttonCarryingChestLore
+				Messages.buttonSaddle,
+				Messages.buttonSaddleLore
 		);
 		return iconItem;
 	}
 
-	private Button getCarryingChestEditorButton() {
+	private Button getSaddleEditorButton() {
 		return new ShopkeeperActionButton() {
 			@Override
 			public @Nullable ItemStack getIcon(EditorSession editorSession) {
-				return getCarryingChestEditorItem();
+				return getSaddleEditorItem();
 			}
 
 			@Override
@@ -112,7 +128,7 @@ public class ChestedHorseShop<E extends ChestedHorse> extends AbstractHorseShop<
 					EditorSession editorSession,
 					InventoryClickEvent clickEvent
 			) {
-				cycleCarryingChest();
+				cycleSaddle();
 				return true;
 			}
 		};

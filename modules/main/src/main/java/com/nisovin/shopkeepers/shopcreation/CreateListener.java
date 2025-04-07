@@ -356,7 +356,7 @@ class CreateListener implements Listener {
 		Player player = event.getPlayer();
 		// We check the permission first since this check is fast:
 		if (PermissionUtils.hasPermission(player, ShopkeepersPlugin.BYPASS_PERMISSION)) return;
-		ItemStack itemInHand = InventoryUtils.getItem(player.getInventory(), event.getHand());
+		ItemStack itemInHand = player.getInventory().getItem(event.getHand());
 		if (!ShopCreationItem.isShopCreationItem(itemInHand)) return;
 
 		// Prevent the entity interaction:

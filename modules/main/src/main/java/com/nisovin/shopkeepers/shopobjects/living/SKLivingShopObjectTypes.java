@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import org.bukkit.entity.AbstractHorse;
 import org.bukkit.entity.Ageable;
 import org.bukkit.entity.ChestedHorse;
 import org.bukkit.entity.Entity;
@@ -24,6 +25,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import com.nisovin.shopkeepers.api.internal.util.Unsafe;
 import com.nisovin.shopkeepers.api.shopobjects.living.LivingShopObjectTypes;
 import com.nisovin.shopkeepers.config.Settings.DerivedSettings;
+import com.nisovin.shopkeepers.shopobjects.living.types.AbstractHorseShop;
 import com.nisovin.shopkeepers.shopobjects.living.types.AxolotlShop;
 import com.nisovin.shopkeepers.shopobjects.living.types.BabyableShop;
 import com.nisovin.shopkeepers.shopobjects.living.types.CatShop;
@@ -50,6 +52,7 @@ import com.nisovin.shopkeepers.shopobjects.living.types.SheepShop;
 import com.nisovin.shopkeepers.shopobjects.living.types.ShulkerShop;
 import com.nisovin.shopkeepers.shopobjects.living.types.SlimeShop;
 import com.nisovin.shopkeepers.shopobjects.living.types.SnowmanShop;
+import com.nisovin.shopkeepers.shopobjects.living.types.StriderShop;
 import com.nisovin.shopkeepers.shopobjects.living.types.TropicalFishShop;
 import com.nisovin.shopkeepers.shopobjects.living.types.VillagerShop;
 import com.nisovin.shopkeepers.shopobjects.living.types.WanderingTraderShop;
@@ -154,7 +157,7 @@ import com.nisovin.shopkeepers.util.java.Validate;
  * <li>HOGLIN: okay
  * <li>ZOGLIN: okay, TODO add baby property
  * <li>STRIDER: okay, shakes outside the nether, randomly spawns with passenger (gets cleared),
- * randomly spawns with saddle (gets cleared), TODO saddle property, shivering property (may require
+ * randomly spawns with saddle (gets cleared), saddle property, TODO shivering property (may require
  * continuously updating the entity state) # 1.16.2
  * <li>PIGLIN_BRUTE: okay, TODO add baby property # 1.17
  * <li>AXOLOTL: okay, spawns with random variant in vanilla, TODO play dead?
@@ -658,6 +661,17 @@ public final class SKLivingShopObjectTypes implements LivingShopObjectTypes {
 					SalmonShop::new
 			);
 			break;
+		case STRIDER:
+			objectType = new SKLivingShopObjectType<>(
+					livingShops,
+					entityType,
+					identifier,
+					aliases,
+					permission,
+					StriderShop.class,
+					StriderShop::new
+			);
+			break;
 		default:
 			break;
 		}
@@ -673,6 +687,16 @@ public final class SKLivingShopObjectTypes implements LivingShopObjectTypes {
 						permission,
 						ClassUtils.parameterized(ChestedHorseShop.class),
 						ChestedHorseShop::new
+				);
+			} else if (AbstractHorse.class.isAssignableFrom(entityClass)) {
+				objectType = new SKLivingShopObjectType<AbstractHorseShop<AbstractHorse>>(
+						livingShops,
+						entityType,
+						identifier,
+						aliases,
+						permission,
+						ClassUtils.parameterized(AbstractHorseShop.class),
+						AbstractHorseShop::new
 				);
 			} else if (Zombie.class.isAssignableFrom(entityClass)) {
 				objectType = new SKLivingShopObjectType<ZombieShop<Zombie>>(

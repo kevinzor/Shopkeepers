@@ -136,6 +136,9 @@ public abstract class AbstractEquipmentEditorHandler extends UIHandler {
 		case "BODY": // TODO Added in Bukkit 1.20.5
 			displayName = Messages.equipmentSlotBody;
 			break;
+		case "SADDLE": // TODO Added in Bukkit 1.21.5
+			displayName = Messages.equipmentSlotSaddle;
+			break;
 		default:
 			// Fallback:
 			displayName = EnumUtils.formatEnumName(equipmentSlot.name());

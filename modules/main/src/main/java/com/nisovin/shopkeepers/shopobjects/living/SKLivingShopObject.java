@@ -294,7 +294,8 @@ public class SKLivingShopObject<E extends LivingEntity>
 		}
 
 		// Some entities (e.g. striders) may randomly spawn with a saddle that does not count as
-		// equipment:
+		// equipment: TODO MC 1.21.5+: Might no longer be the case due to the saddle being part of
+		// the equipment now.
 		if (entity instanceof Steerable) {
 			Steerable steerable = (Steerable) entity;
 			steerable.setSaddle(false);
@@ -895,9 +896,16 @@ public class SKLivingShopObject<E extends LivingEntity>
 		}
 
 		switch (this.getEntityType()) {
+		case PIG: // Dedicated button for saddle
+		case STRIDER: // Dedicated button for saddle
 		case LLAMA: // Dedicated button for carpet (armor slot)
 		case TRADER_LLAMA: // Dedicated button for carpet (armor slot)
-		case HORSE: // Dedicated button for horse armor (armor slot)
+		case HORSE: // Dedicated button for horse armor (armor slot) and saddle
+		case MULE: // Dedicated button for saddle
+		case DONKEY: // Dedicated button for saddle
+		case CAMEL: // Dedicated button for saddle
+		case ZOMBIE_HORSE: // Dedicated button for saddle
+		case SKELETON_HORSE: // Dedicated button for saddle
 			return Collections.emptyList();
 		case VINDICATOR: // The main hand item is only visible during a chase.
 			return EquipmentUtils.EQUIPMENT_SLOTS_HEAD;

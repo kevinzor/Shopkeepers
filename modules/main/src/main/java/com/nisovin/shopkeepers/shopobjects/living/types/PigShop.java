@@ -113,8 +113,8 @@ public class PigShop extends BabyableShop<Pig> {
 		ItemStack iconItem = new ItemStack(Material.SADDLE);
 		ItemUtils.setDisplayNameAndLore(
 				iconItem,
-				Messages.buttonPigSaddle,
-				Messages.buttonPigSaddleLore
+				Messages.buttonSaddle,
+				Messages.buttonSaddleLore
 		);
 		return iconItem;
 	}
