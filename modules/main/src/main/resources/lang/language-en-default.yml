@@ -147,6 +147,9 @@ button-fox-sleeping: "&aToggle sleeping pose"
 button-fox-sleeping-lore:
 - "Toggles the fox's"
 - "sleeping pose"
+button-cow-variant: "&aChoose cow variant"
+button-cow-variant-lore:
+- "Changes the cow's look"
 button-mooshroom-variant: "&aChoose mooshroom variant"
 button-mooshroom-variant-lore:
 - "Changes the look"
@@ -160,6 +163,12 @@ button-parrot-variant-lore:
 button-pig-saddle: "&aToggle pig saddle"
 button-pig-saddle-lore:
 - "Toggles the pig's saddle"
+button-pig-variant: "&aChoose pig variant"
+button-pig-variant-lore:
+- "Changes the pig's look"
+button-chicken-variant: "&aChoose chicken variant"
+button-chicken-variant-lore:
+- "Changes the chicken's look"
 button-sheep-color: "&aChoose sheep color"
 button-sheep-color-lore:
 - "Changes the sheep's"

@@ -28,6 +28,8 @@ import com.nisovin.shopkeepers.shopobjects.living.types.AxolotlShop;
 import com.nisovin.shopkeepers.shopobjects.living.types.BabyableShop;
 import com.nisovin.shopkeepers.shopobjects.living.types.CatShop;
 import com.nisovin.shopkeepers.shopobjects.living.types.ChestedHorseShop;
+import com.nisovin.shopkeepers.shopobjects.living.types.ChickenShop;
+import com.nisovin.shopkeepers.shopobjects.living.types.CowShop;
 import com.nisovin.shopkeepers.shopobjects.living.types.CreeperShop;
 import com.nisovin.shopkeepers.shopobjects.living.types.EndermanShop;
 import com.nisovin.shopkeepers.shopobjects.living.types.FoxShop;
@@ -68,8 +70,8 @@ import com.nisovin.shopkeepers.util.java.Validate;
  * <li>BAT: experimental: requires NoAI, sleeping by default, but starts flying when 'hit'
  * <li>BLAZE: experimental: starts flying upwards -> requires NoAI, seems okay
  * <li>CAVE_SPIDER: okay
- * <li>CHICKEN: might still lays eggs (TODO re-check: this might no longer be the case), seems okay
- * <li>COW: okay
+ * <li>CHICKEN: okay, laying eggs: canceled (EntityDropItemEvent), 1.21.5: variant
+ * <li>COW: okay, 1.21.5: variant
  * <li>CREEPER: okay
  * <li>ENDER_DRAGON: experimental: requires NoAI, plays no animation without AI (client-sided),
  * shows boss bar on older versions, not clickable! (body parts are server-sided, so the client
@@ -84,7 +86,7 @@ import com.nisovin.shopkeepers.util.java.Validate;
  * the case, maybe due to using NoAI)
  * <li>MUSHROOM_COW: okay, renamed to MOOSHROOM in Spigot 1.20.5
  * <li>OCELOT: okay
- * <li>PIG: okay
+ * <li>PIG: okay, saddle, 1.21.5: variant
  * <li>PIG_ZOMBIE: okay; replaced by ZOMBIFIED_PIGLIN in MC 1.16
  * <li>SHEEP: okay
  * <li>SILVERFISH: experimental, strange movement when the player is standing behind it -> requires
@@ -349,6 +351,17 @@ public final class SKLivingShopObjectTypes implements LivingShopObjectTypes {
 					PigShop::new
 			);
 			break;
+		case CHICKEN:
+			objectType = new SKLivingShopObjectType<>(
+					livingShops,
+					entityType,
+					identifier,
+					aliases,
+					permission,
+					ChickenShop.class,
+					ChickenShop::new
+			);
+			break;
 		case CREEPER:
 			objectType = new SKLivingShopObjectType<>(
 					livingShops,
@@ -501,6 +514,17 @@ public final class SKLivingShopObjectTypes implements LivingShopObjectTypes {
 					permission,
 					PandaShop.class,
 					PandaShop::new
+			);
+			break;
+		case COW:
+			objectType = new SKLivingShopObjectType<>(
+					livingShops,
+					entityType,
+					identifier,
+					aliases,
+					permission,
+					CowShop.class,
+					CowShop::new
 			);
 			break;
 		case MOOSHROOM:

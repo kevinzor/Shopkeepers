@@ -144,6 +144,10 @@ button-fox-sleeping: "&aSchlafhaltung umschalten"
 button-fox-sleeping-lore:
 - "Wechselt zwischen normaler"
 - "und Schlafhaltung"
+button-cow-variant: "&aKuh-Variante ändern"
+button-cow-variant-lore:
+- "Ändert das Aussehen"
+- "der Kuh"
 button-mooshroom-variant: "&aMooshroom-Variante ändern"
 button-mooshroom-variant-lore:
 - "Ändert das Aussehen"
@@ -160,6 +164,14 @@ button-pig-saddle: "&aSattel umschalten"
 button-pig-saddle-lore:
 - "Schaltet den Sattel"
 - "an oder aus"
+button-pig-variant: "&aSchwein-Variante ändern"
+button-pig-variant-lore:
+- "Ändert das Aussehen"
+- "des Schweins"
+button-chicken-variant: "&aHuhn-Variante ändern"
+button-chicken-variant-lore:
+- "Ändert das Aussehen"
+- "des Huhns"
 button-sheep-color: "&aWollfarbe ändern"
 button-sheep-color-lore:
 - "Ändert die Wollfarbe"

@@ -5,6 +5,7 @@ Date format: (YYYY-MM-DD)
 ### Supported MC versions: 1.21.5, 1.21.4, 1.21.3, 1.21.1, 1.21, 1.20.6
 
 * Update for MC 1.21.5.
+  * Add support for cow, chicken and pig variants.
 * Command: The `/shopkeeper transfer` command also allows transferring shops to offline players now.
   * The player can be specified by unique id and name. The command checks for matching players among the currently online players, among the current shop owners, and among offline player. But we only check for a matching offline player if we didn't find any matching player among the online players and shop owners.
   * Command completion and ambiguous name handling is not supported for offline players.
@@ -23,6 +24,14 @@ Date format: (YYYY-MM-DD)
 * Fix: We were not correctly tracking players teleporting between worlds. This resulted in a memory leak, and in issues when trying to find nearby players (e.g. used by shulker shopkeepers to decide whether to peek). Additionally, we now log a warning whenever we unexpectedly fail to cleanup the data for a player. This should help us identify any remaining memory leaks in this area, if any.
 * Build: Update Gradle.
 * Build: Publish the Maven repository via Github. The old repository might stop working in the future. If you are a developer depending on the Shopkeepers plugin or API, consider updating the Maven repository to point to `https://raw.githubusercontent.com/Shopkeepers/Repository/main/releases/`.
+
+**Message changes:**  
+* Added `button-cow-variant`.
+* Added `button-cow-variant-lore`.
+* Added `button-pig-variant`.
+* Added `button-pig-variant-lore`.
+* Added `button-chicken-variant`.
+* Added `button-chicken-variant-lore`.
 
 ## v2.23.3 (2024-12-08)
 ### Supported MC versions: 1.21.4, 1.21.3, 1.21.1, 1.21, 1.20.6

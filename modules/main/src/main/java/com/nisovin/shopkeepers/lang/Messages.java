@@ -193,6 +193,10 @@ public class Messages extends Config {
 			"Toggles the fox's",
 			"sleeping pose"
 	));
+	public static String buttonCowVariant = c("&aChoose cow variant");
+	public static List<String> buttonCowVariantLore = c(Arrays.asList(
+			"Changes the cow's look"
+	));
 	public static String buttonMooshroomVariant = c("&aChoose mooshroom variant");
 	public static List<String> buttonMooshroomVariantLore = c(Arrays.asList(
 			"Changes the look",
@@ -209,6 +213,14 @@ public class Messages extends Config {
 	public static String buttonPigSaddle = c("&aToggle pig saddle");
 	public static List<String> buttonPigSaddleLore = c(Arrays.asList(
 			"Toggles the pig's saddle"
+	));
+	public static String buttonPigVariant = c("&aChoose pig variant");
+	public static List<String> buttonPigVariantLore = c(Arrays.asList(
+			"Changes the pig's look"
+	));
+	public static String buttonChickenVariant = c("&aChoose chicken variant");
+	public static List<String> buttonChickenVariantLore = c(Arrays.asList(
+			"Changes the chicken's look"
 	));
 	public static String buttonSheepColor = c("&aChoose sheep color");
 	public static List<String> buttonSheepColorLore = c(Arrays.asList(
