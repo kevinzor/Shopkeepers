@@ -272,4 +272,9 @@ public final class NMSHandler implements NMSCallProvider {
 		}
 		salmon.setVariant(variantValue);
 	}
+
+	@Override
+	public boolean supportsItemSNBTHoverEvents() {
+		return true; // Supported in MC versions before 1.21.5
+	}
 }

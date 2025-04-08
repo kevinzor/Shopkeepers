@@ -113,6 +113,16 @@ public interface NMSCallProvider {
 
 	// MC 1.21.5+ TODO Can be removed once we only support Bukkit 1.21.5+
 
+	/**
+	 * Whether this MC version supports item hover events with the item SNBT in the "value" field.
+	 * This is no longer supported in MC version 1.21.5 and above.
+	 * 
+	 * @return <code>true</code> if item SNBT hover event values are supported
+	 */
+	public default boolean supportsItemSNBTHoverEvents() {
+		return false;
+	}
+
 	public default void setCowVariant(Cow cow, NamespacedKey variant) {
 		// Not supported by default.
 	}

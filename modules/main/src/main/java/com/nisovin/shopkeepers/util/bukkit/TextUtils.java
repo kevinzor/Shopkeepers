@@ -472,7 +472,8 @@ public final class TextUtils {
 			// Item SNBT is not supported.
 			return Text.text("");
 		} else {
-			return Text.hoverEvent(HoverEventText.Action.SHOW_ITEM, Text.of(itemSNBT));
+			var unmodifiableItem = UnmodifiableItemStack.ofNonNull(itemStack);
+			return Text.hoverEvent(new HoverEventText.ItemContent(unmodifiableItem));
 		}
 	}
 

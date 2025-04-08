@@ -255,4 +255,9 @@ public final class NMSHandler implements NMSCallProvider {
 		return explosionResult == ExplosionResult.DESTROY
 				|| explosionResult == ExplosionResult.DESTROY_WITH_DECAY;
 	}
+
+	@Override
+	public boolean supportsItemSNBTHoverEvents() {
+		return true; // Supported in MC versions before 1.21.5
+	}
 }

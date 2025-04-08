@@ -6,6 +6,7 @@ Date format: (YYYY-MM-DD)
 
 * Update for MC 1.21.5.
   * Add support for cow, chicken and pig variants.
+  * Item hover events in trade notifications do not support component data currently.
 * Add saddle editor option for zombie horse, skeleton horse, mule, donkey, camel and strider.
 * Command: The `/shopkeeper transfer` command also allows transferring shops to offline players now.
   * The player can be specified by unique id and name. The command checks for matching players among the currently online players, among the current shop owners, and among offline player. But we only check for a matching offline player if we didn't find any matching player among the online players and shop owners.
@@ -23,6 +24,7 @@ Date format: (YYYY-MM-DD)
   * After the migrated shopkeeper data has been successfully loaded, we forcefully save all shopkeepers to disk to persist the migration result.
 * Data: Remove old shopkeeper data migration from the save file in the plugin folder.
 * Fix: We were not correctly tracking players teleporting between worlds. This resulted in a memory leak, and in issues when trying to find nearby players (e.g. used by shulker shopkeepers to decide whether to peek). Additionally, we now log a warning whenever we unexpectedly fail to cleanup the data for a player. This should help us identify any remaining memory leaks in this area, if any.
+* Internal: Changes to text hover events.
 * Build: Update Gradle.
 * Build: Publish the Maven repository via Github. The old repository might stop working in the future. If you are a developer depending on the Shopkeepers plugin or API, consider updating the Maven repository to point to `https://raw.githubusercontent.com/Shopkeepers/Repository/main/releases/`.
 

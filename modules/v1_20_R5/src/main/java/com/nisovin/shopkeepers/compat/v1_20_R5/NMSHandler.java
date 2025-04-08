@@ -249,4 +249,9 @@ public final class NMSHandler implements NMSCallProvider {
 	public boolean isDestroyingBlocks(BlockExplodeEvent event) {
 		return true; // Pre 1.21 behavior
 	}
+
+	@Override
+	public boolean supportsItemSNBTHoverEvents() {
+		return true; // Supported in MC versions before 1.21.5
+	}
 }
