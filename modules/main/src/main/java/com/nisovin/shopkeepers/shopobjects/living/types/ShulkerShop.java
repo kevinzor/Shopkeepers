@@ -34,9 +34,13 @@ import com.nisovin.shopkeepers.util.data.serialization.InvalidDataException;
 import com.nisovin.shopkeepers.util.data.serialization.java.EnumSerializers;
 import com.nisovin.shopkeepers.util.inventory.ItemUtils;
 import com.nisovin.shopkeepers.util.java.EnumUtils;
+import com.nisovin.shopkeepers.util.java.MathUtils;
 import com.nisovin.shopkeepers.util.java.Validate;
 
 public class ShulkerShop extends SKLivingShopObject<Shulker> {
+
+	// Shulkers use integer peek values of 0-100 internally.
+	private static final float PEEK_EPSILON = 0.01f;
 
 	public static final Property<@Nullable DyeColor> COLOR = new BasicProperty<@Nullable DyeColor>()
 			.dataKeyAccessor("color", EnumSerializers.lenient(DyeColor.class))
@@ -126,7 +130,8 @@ public class ShulkerShop extends SKLivingShopObject<Shulker> {
 		Location entityLocation = entity.getLocation();
 		Player nearestPlayer = EntityUtils.getNearestPlayer(entityLocation, LivingEntityAI.LOOK_RANGE);
 		if (nearestPlayer != null) {
-			if (entity.getPeek() < 1.0f) {
+			// Performance: Avoid updating the peek value if not necessary.
+			if (!MathUtils.fuzzyEquals(entity.getPeek(), Settings.shulkerPeekHeight, PEEK_EPSILON)) {
 				// Vanilla uses 1.0 when the shulker attacks, and 0.3 when it peeks.
 				// The peeking is automatically animated on the client.
 				// This also plays sound effects to nearby players and triggers game events.

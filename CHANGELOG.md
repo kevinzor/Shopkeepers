@@ -5,6 +5,7 @@ Date format: (YYYY-MM-DD)
 ### Supported MC versions: 1.21.5, 1.21.4, 1.21.3, 1.21.1, 1.21, 1.20.6
 
 * Performance: Further optimize the handling of the `BlockPhysicsEvent` for sign shopkeepers: Instead of checking during each block physics event whether the event shall be cancelled because the block or one of its neighbors would be affected by the event (7 checks), we pre-calculate the set of affected block locations and then only perform a single map lookup during the event (1 check).
+* Performance: Optimize shulker peek AI: Only update the peek state if actually necessary to avoid redundant game events and other side effects.
 * Performance: Remove the PlayerMap "optimization" again: It does not provide a clear benefit, but adds additional complexity and potential for bugs and memory leaks.
 * Fix: It was still possible to spawn or move shopkeepers into protected GriefPrevention regions. When using the `check-spawn-location-interaction-result`, we now temporarily spawn a dummy chest block at the checked location to ensure that region protection plugins like GriefPrevention actually react to our dummy interaction test event.
 * Fix: Mark shopkeepers as dirty when a property value is found missing and the default value is being used.
