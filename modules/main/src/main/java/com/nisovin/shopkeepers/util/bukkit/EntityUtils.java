@@ -27,7 +27,6 @@ import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.Vector;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-import com.nisovin.shopkeepers.SKShopkeepersPlugin;
 import com.nisovin.shopkeepers.api.internal.util.Unsafe;
 import com.nisovin.shopkeepers.util.java.PredicateUtils;
 import com.nisovin.shopkeepers.util.java.Validate;
@@ -184,7 +183,7 @@ public final class EntityUtils {
 		double radiusSq = radius * radius;
 		Player nearestPlayer = null;
 		double nearestDistanceSq = Double.MAX_VALUE;
-		for (Player player : SKShopkeepersPlugin.getInstance().getPlayerMap().getPlayers(world.getName())) {
+		for (Player player : world.getPlayers()) {
 			Location playerLocation = Unsafe.assertNonNull(player.getLocation(SHARED_LOCATION));
 			double distanceSq = LocationUtils.getDistanceSquared(playerLocation, location);
 			if (distanceSq <= radiusSq
@@ -212,7 +211,7 @@ public final class EntityUtils {
 		if (world == null) return players;
 
 		double radiusSq = radius * radius;
-		SKShopkeepersPlugin.getInstance().getPlayerMap().getPlayers(world.getName()).forEach(player -> {
+		world.getPlayers().forEach(player -> {
 			assert player != null;
 			Location playerLocation = Unsafe.assertNonNull(player.getLocation(SHARED_LOCATION));
 			if (LocationUtils.getDistanceSquared(playerLocation, location) <= radiusSq
