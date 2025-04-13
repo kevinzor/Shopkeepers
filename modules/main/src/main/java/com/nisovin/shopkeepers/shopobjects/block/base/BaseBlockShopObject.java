@@ -132,11 +132,11 @@ public abstract class BaseBlockShopObject extends AbstractBlockShopObject {
 			return false;
 		}
 
-		// Cancel block physics for this placed block if needed:
-		blockShops.cancelNextBlockPhysics(spawnBlock);
+		// Cancel block physics for the block, both for the initial placement and until the block
+		// shop is despawned again:
+		blockShops.addBlockPhysicsCancellation(spawnBlock);
+
 		spawnBlock.setBlockData(blockData, false); // Skip physics update
-		// Cleanup state if no block physics were triggered:
-		blockShops.cancelNextBlockPhysics(null);
 
 		// Check if the block placement has failed for some reason:
 		if (!this.isValidBlockType(spawnBlock.getType())) {
@@ -147,6 +147,7 @@ public abstract class BaseBlockShopObject extends AbstractBlockShopObject {
 
 		// Remember the block (indicates that this shop object has been spawned):
 		this.block = spawnBlock;
+
 		// Assign metadata for easy identification by other plugins:
 		ShopkeeperMetadata.apply(block);
 
@@ -179,12 +180,12 @@ public abstract class BaseBlockShopObject extends AbstractBlockShopObject {
 		Block block = this.block;
 		if (block == null) return;
 
-		// Cleanup:
-		this.cleanUpBlock(block);
-
 		// Remove the block:
 		block.setType(Material.AIR, false);
 		this.block = null;
+
+		// Cleanup:
+		this.cleanUpBlock(block);
 
 		// Inform about the object id change:
 		this.onIdChanged();
@@ -195,6 +196,9 @@ public abstract class BaseBlockShopObject extends AbstractBlockShopObject {
 		assert block != null;
 		// Remove the metadata again:
 		ShopkeeperMetadata.remove(block);
+
+		// Unregister the block physics cancellation again:
+		blockShops.removeBlockPhysicsCancellation(block);
 	}
 
 	@Override
