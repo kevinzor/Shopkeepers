@@ -5,6 +5,7 @@ Date format: (YYYY-MM-DD)
 ### Supported MC versions: 1.21.5, 1.21.4, 1.21.3, 1.21.1, 1.21, 1.20.6
 
 * Performance: Further optimize the handling of the `BlockPhysicsEvent` for sign shopkeepers: Instead of checking during each block physics event whether the event shall be cancelled because the block or one of its neighbors would be affected by the event (7 checks), we pre-calculate the set of affected block locations and then only perform a single map lookup during the event (1 check).
+* Fix: It was still possible to spawn or move shopkeepers into protected GriefPrevention regions. When using the `check-spawn-location-interaction-result`, we now temporarily spawn a dummy chest block at the checked location to ensure that region protection plugins like GriefPrevention actually react to our dummy interaction test event.
 * Fix: Mark shopkeepers as dirty when a property value is found missing and the default value is being used.
   * As before, we log a warning and then fall back to the default value for missing property values. This is for example often the case when new properties are added.
   * However, previously, we would not mark the shopkeeper as dirty in this case since the default value also equals the initial property value. One consequence of this was that the warning about missing property values would be repeated over and over during subsequent plugin reloads.

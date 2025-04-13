@@ -4,6 +4,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.BlockState;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event.Result;
@@ -12,6 +13,7 @@ import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 public final class InteractionUtils {
 
@@ -23,9 +25,11 @@ public final class InteractionUtils {
 	 * player's main and off hand.
 	 * <p>
 	 * We may also want to invoke this for block locations that are currently empty (i.e.
-	 * {@link Material#isAir()}), e.g. to check access to the location. But since some region
-	 * protection plugins ignore interactions with empty blocks, we temporarily place a dummy
-	 * non-empty block if the location is currently empty.
+	 * {@link Material#isAir()}) or of a non-interactable type, e.g. to check access to the
+	 * location. But since some region protection plugins only handle interactions with certain
+	 * types of blocks (e.g. container blocks, or other certain interactable blocks), the
+	 * {@code checkChestInteraction} parameter can be used to temporarily place a dummy chest at the
+	 * specified location and restore the original block afterwards.
 	 * <p>
 	 * Since this involves calling a dummy {@link PlayerInteractEvent}, plugins reacting to the
 	 * event might cause all kinds of side effects. Therefore, this should only be used in very
@@ -35,9 +39,13 @@ public final class InteractionUtils {
 	 *            the player
 	 * @param block
 	 *            the block to check interaction with
+	 * @param checkChestInteraction
+	 *            <code>true</code> to test the interaction with a chest block at the specified
+	 *            block location. If the block is not already a chest, it is temporarily replaced
+	 *            with a chest and the original block is restored afterwards.
 	 * @return <code>true</code> if no plugin denied block interaction
 	 */
-	public static boolean checkBlockInteract(Player player, Block block) {
+	public static boolean checkBlockInteract(Player player, Block block, boolean checkChestInteraction) {
 		// Simulating a right-click on the block to check if access is denied:
 		// Making sure that block access is really denied, and that the event is not cancelled
 		// because of denying usage with the items in hands:
@@ -47,11 +55,13 @@ public final class InteractionUtils {
 		playerInventory.setItemInMainHand(null);
 		playerInventory.setItemInOffHand(null);
 
-		// Temporarily place a non-empty block if the block location is empty:
+		// checkChestInteraction: Temporarily place a chest block if it is not already a chest:
 		Material blockType = block.getType();
-		if (blockType.isAir()) {
+		@Nullable BlockState capturedBlockState = null;
+		if (blockType != Material.CHEST && checkChestInteraction) {
+			capturedBlockState = block.getState();
 			// Skip physics to not accidentally affect neighboring blocks:
-			block.setType(Material.STONE, false);
+			block.setType(Material.CHEST, false);
 		}
 
 		TestPlayerInteractEvent dummyInteractEvent = new TestPlayerInteractEvent(
@@ -64,9 +74,9 @@ public final class InteractionUtils {
 		Bukkit.getPluginManager().callEvent(dummyInteractEvent);
 		boolean canAccessBlock = (dummyInteractEvent.useInteractedBlock() != Result.DENY);
 
-		// Reset the block type again (without physics):
-		if (blockType.isAir()) {
-			block.setType(blockType, false);
+		// Restore the original block again (without physics):
+		if (capturedBlockState != null) {
+			capturedBlockState.update(true, false);
 		}
 
 		// Resetting items in main and off hand:

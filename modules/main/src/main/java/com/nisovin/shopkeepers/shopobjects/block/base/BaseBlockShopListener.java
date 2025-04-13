@@ -201,7 +201,7 @@ class BaseBlockShopListener implements Listener {
 
 		// Check the block interaction result by calling another interact event:
 		if (Settings.checkShopInteractionResult) {
-			if (!InteractionUtils.checkBlockInteract(player, block)) {
+			if (!InteractionUtils.checkBlockInteract(player, block, false)) {
 				Log.debug("  Cancelled by another plugin");
 				return;
 			}
