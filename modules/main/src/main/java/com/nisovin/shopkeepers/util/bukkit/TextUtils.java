@@ -461,7 +461,7 @@ public final class TextUtils {
 	public static Text getItemText(@ReadOnly @Nullable ItemStack itemStack) {
 		if (itemStack == null) return Text.text("");
 		return TextUtils.getItemHover(itemStack)
-				.child(getMaterialNameForDisplay(itemStack))
+				.child(getItemNameForDisplay(itemStack))
 				.getRoot();
 	}
 
@@ -512,6 +512,26 @@ public final class TextUtils {
 	 */
 	public static Text getMaterialNameForDisplay(@Nullable ItemStack itemStack) {
 		return getMaterialNameForDisplay(itemStack != null ? itemStack.getType() : null);
+	}
+
+	/**
+	 * Gets a display name for the given {@link ItemStack}.
+	 * <p>
+	 * This uses either the item's display name, if available, or falls back to the
+	 * {@link #getMaterialNameForDisplay(ItemStack)}. This returns an empty Text if the item stack
+	 * is <code>null</code>.
+	 * 
+	 * @param itemStack
+	 *            the item stack, can be <code>null</code>
+	 * @return the display name
+	 */
+	public static Text getItemNameForDisplay(@ReadOnly @Nullable ItemStack itemStack) {
+		var displayName = ItemUtils.getDisplayNameOrEmpty(itemStack);
+		if (!displayName.isEmpty()) {
+			return Text.of(displayName);
+		}
+
+		return getMaterialNameForDisplay(itemStack);
 	}
 
 	// SENDING

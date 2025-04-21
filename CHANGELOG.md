@@ -4,6 +4,7 @@ Date format: (YYYY-MM-DD)
 ## v2.23.5 (TBA)
 ### Supported MC versions: 1.21.5, 1.21.4, 1.21.3, 1.21.1, 1.21, 1.20.6
 
+* If available, use the item's custom display name in trade notification messages.
 * Performance: Further optimize the handling of the `BlockPhysicsEvent` for sign shopkeepers: Instead of checking during each block physics event whether the event shall be cancelled because the block or one of its neighbors would be affected by the event (7 checks), we pre-calculate the set of affected block locations and then only perform a single map lookup during the event (1 check).
 * Performance: Optimize shulker peek AI: Only update the peek state if actually necessary to avoid redundant game events and other side effects.
 * Performance: Remove the PlayerMap "optimization" again: It does not provide a clear benefit, but adds additional complexity and potential for bugs and memory leaks.
