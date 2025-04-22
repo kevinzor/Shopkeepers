@@ -2,6 +2,7 @@ package com.nisovin.shopkeepers.compat.v1_20_R5;
 
 import java.lang.reflect.Field;
 
+import org.bukkit.craftbukkit.v1_20_R4.CraftRegistry;
 import org.bukkit.craftbukkit.v1_20_R4.entity.CraftAbstractVillager;
 import org.bukkit.craftbukkit.v1_20_R4.entity.CraftEntity;
 import org.bukkit.craftbukkit.v1_20_R4.entity.CraftLivingEntity;
@@ -35,7 +36,6 @@ import com.nisovin.shopkeepers.util.logging.Log;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponentPredicate;
 import net.minecraft.nbt.Tag;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.ai.goal.GoalSelector;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
@@ -234,7 +234,7 @@ public final class CompatProviderImpl implements CompatProvider {
 		Validate.notNull(itemStack, "itemStack is null");
 		assert itemStack != null;
 		net.minecraft.world.item.ItemStack nmsItem = asNMSItemStack(itemStack);
-		Tag itemNBT = nmsItem.saveOptional(MinecraftServer.getDefaultRegistryAccess());
+		Tag itemNBT = nmsItem.saveOptional(CraftRegistry.getMinecraftRegistry());
 		return itemNBT.toString();
 	}
 
