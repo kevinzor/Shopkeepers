@@ -6,6 +6,8 @@ import java.util.logging.Logger;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
 
+import com.nisovin.shopkeepers.api.internal.util.Unsafe;
+
 /**
  * A {@link Logger} that logs nothing.
  */
@@ -18,7 +20,7 @@ public final class NullLogger extends Logger {
 	}
 
 	private NullLogger() {
-		super(NullLogger.class.getCanonicalName(), null);
+		super(Unsafe.assertNonNull(NullLogger.class.getCanonicalName()), null);
 		super.setLevel(Level.OFF);
 	}
 
