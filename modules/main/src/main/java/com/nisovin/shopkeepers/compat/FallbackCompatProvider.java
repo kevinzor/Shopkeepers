@@ -11,11 +11,10 @@ import org.bukkit.inventory.ItemStack;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import com.nisovin.shopkeepers.api.internal.util.Unsafe;
-import com.nisovin.shopkeepers.compat.api.NMSCallProvider;
 import com.nisovin.shopkeepers.util.bukkit.ServerUtils;
 import com.nisovin.shopkeepers.util.inventory.ItemUtils;
 
-public final class FailedHandler implements NMSCallProvider {
+public final class FallbackCompatProvider implements CompatProvider {
 
 	// Minecraft
 	private final Class<?> nmsEntityClass;
@@ -31,7 +30,7 @@ public final class FailedHandler implements NMSCallProvider {
 	private @Nullable Method b_EntityExplodeEvent_GetExplosionResultMethod = null;
 	private @Nullable Method b_BlockExplodeEvent_GetExplosionResultMethod = null;
 
-	public FailedHandler() throws Exception {
+	public FallbackCompatProvider() throws Exception {
 		String cbPackage = ServerUtils.getCraftBukkitPackage();
 
 		// Minecraft

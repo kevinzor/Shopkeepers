@@ -23,9 +23,9 @@ import com.nisovin.shopkeepers.api.internal.util.Unsafe;
 import com.nisovin.shopkeepers.api.shopkeeper.ShopCreationData;
 import com.nisovin.shopkeepers.api.shopkeeper.ShopType;
 import com.nisovin.shopkeepers.commands.Commands;
+import com.nisovin.shopkeepers.compat.Compat;
 import com.nisovin.shopkeepers.compat.MC_1_21_3;
 import com.nisovin.shopkeepers.compat.MC_1_21_4;
-import com.nisovin.shopkeepers.compat.NMSManager;
 import com.nisovin.shopkeepers.compat.ServerAssumptionsTest;
 import com.nisovin.shopkeepers.config.Settings;
 import com.nisovin.shopkeepers.config.lib.ConfigLoadException;
@@ -206,11 +206,6 @@ public class SKShopkeepersPlugin extends JavaPlugin implements InternalShopkeepe
 		}*/
 	}
 
-	// Returns false if neither a compatible NMS version nor the fallback handler could be set up.
-	private boolean setupNMS() {
-		return NMSManager.load(this);
-	}
-
 	private void registerDefaults() {
 		Log.info("Registering defaults.");
 		livingShops.onRegisterDefaults();
@@ -241,8 +236,9 @@ public class SKShopkeepersPlugin extends JavaPlugin implements InternalShopkeepe
 			return;
 		}
 
-		// Try to load suitable NMS (or fallback) code:
-		this.incompatibleServer = !this.setupNMS();
+		// Try to load the compat module: Returns false if neither a compatible compat provider nor
+		// the fallback provider could be loaded.
+		this.incompatibleServer = !Compat.load(this);
 		if (this.incompatibleServer) {
 			return;
 		}
@@ -282,7 +278,7 @@ public class SKShopkeepersPlugin extends JavaPlugin implements InternalShopkeepe
 		if (this.outdatedServer) {
 			Log.severe("Outdated server version (" + Bukkit.getVersion()
 					+ "): Shopkeepers cannot be enabled. Please update your server!");
-			this.setEnabled(false); // also calls onDisable
+			this.setEnabled(false); // Also calls onDisable
 			return;
 		}
 
@@ -316,6 +312,9 @@ public class SKShopkeepersPlugin extends JavaPlugin implements InternalShopkeepe
 		// Example: MC_1_20_6.init();
 		MC_1_21_3.init();
 		MC_1_21_4.init();
+
+		// Compat module:
+		Compat.getProvider().onEnable();
 
 		// Inform about Spigot exclusive features:
 		if (SpigotFeatures.isSpigotAvailable()) {
@@ -531,6 +530,11 @@ public class SKShopkeepersPlugin extends JavaPlugin implements InternalShopkeepe
 
 		// Event debugger:
 		eventDebugger.onDisable();
+
+		// Compat module:
+		if (Compat.hasProvider()) {
+			Compat.getProvider().onDisable();
+		}
 
 		HandlerList.unregisterAll(this);
 		Bukkit.getScheduler().cancelTasks(this);

@@ -6,7 +6,7 @@ I.e. the mappings version changed without there being a bump to the CraftBukkit 
 Since our modules can currently only build against specific CraftBukkit versions, but not mappings versions, we are currently only able to support the latest mappings revision for each CraftBukkit version.
 
 To support the latest mappings version:
-* Update the mappings version of the corresponding CompatVersion in NMSManager.
+* Update the mappings version of the corresponding CompatVersion in Compat.
 * Make sure that Gradle resolves the latest CraftBukkit snapshot version (caching might prevent this).
   * However, there are test cases that should catch if we attempt to build against an unexpected mappings version.
 * If necessary, update the current compat module code for the CraftBukkit version.
@@ -14,7 +14,7 @@ To support the latest mappings version:
 
 ## Minecraft update
 
-* Add a new CompatVersion entry in NMSManager.
+* Add a new CompatVersion entry in Compat.
 	* Increment the revision number of the compat version (behind the 'R'). Note that for some minor Minecraft updates this version may not necessarily align with CraftBukkit's 'Minecraft Version'.
 
 * Add a new module (subproject) for the new compat version:
@@ -22,7 +22,7 @@ To support the latest mappings version:
 	* Update the CraftBukkit version inside the 'build.gradle' file of the new module.
 	* Add an entry for the module in the root 'settings.gradle' file.
 	* Add an entry for the module in the 'build.gradle' file of the 'dist' module.
-	* Update the NMSHandler class:
+	* Update the CompatProviderImpl class:
 		* Package name.
 		* Output of #getVersionId. This should match the compat version (not necessarily CraftBukkit's Minecraft version).
 		* Update all NMS version specific imports and references.
@@ -66,21 +66,21 @@ To support the latest mappings version:
 	* Check the MerchantRecipe constructions in MerchantUtils.
 
 * New explosion result enum values:
-	* Check FailedHandler and NMSHandlers and map destroying explosion results correctly.
+	* Check FallbackCompatProvider and CompatProviderImpls and map destroying explosion results correctly.
 
 * If there are major differences, consider dropping support for older Minecraft versions.
 	* Remove the corresponding modules:
 		* Folders.
 		* Entries in root 'settings.gradle'.
 		* Entries in 'modules/dist/build.gradle'.
-		* CompatVersion entries in NMSManager class.
+		* CompatVersion entries in Compat class.
 		* Entries in 'scripts/installSpigotDependencies.sh' script.
 	* Update the minimal Bukkit/Spigot/CraftBukkit dependency versions inside the 'gradle/libs.versions.toml' file.
 	* Update the 'api-version' inside the 'plugin.yml' file.
 	* Update the Minecraft version specific test code inside the 'main' module. The test cases and the default config might need to be updated (e.g. if there have been changes to Bukkit's item serialization).
 	* Update the code base (optional):
 		* Check for legacy data migrations that could be removed now.
-		* Check if there are new Bukkit features that can replace portions of the existing NMS specific code.
+		* Check if there are new Bukkit features that can replace portions of the existing compat specific code.
 		* Use the EntityType enum to get the name of default enabled mobs inside the Settings.
 		* Check for TODO notes that mention Bukkit version dependencies.
 

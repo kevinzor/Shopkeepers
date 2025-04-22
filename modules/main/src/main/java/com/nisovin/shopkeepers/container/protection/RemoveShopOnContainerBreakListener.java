@@ -11,7 +11,7 @@ import org.bukkit.event.block.BlockExplodeEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 
 import com.nisovin.shopkeepers.SKShopkeepersPlugin;
-import com.nisovin.shopkeepers.compat.NMSManager;
+import com.nisovin.shopkeepers.compat.Compat;
 import com.nisovin.shopkeepers.container.ShopContainers;
 
 class RemoveShopOnContainerBreakListener implements Listener {
@@ -39,7 +39,7 @@ class RemoveShopOnContainerBreakListener implements Listener {
 
 	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
 	void onEntityExplosion(EntityExplodeEvent event) {
-		if (!NMSManager.getProvider().isDestroyingBlocks(event)) return;
+		if (!Compat.getProvider().isDestroyingBlocks(event)) return;
 
 		List<Block> blockList = event.blockList();
 		removeShopOnContainerBreak.handleBlocksBreakage(blockList);
@@ -47,7 +47,7 @@ class RemoveShopOnContainerBreakListener implements Listener {
 
 	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
 	void onBlockExplosion(BlockExplodeEvent event) {
-		if (!NMSManager.getProvider().isDestroyingBlocks(event)) return;
+		if (!Compat.getProvider().isDestroyingBlocks(event)) return;
 
 		List<Block> blockList = event.blockList();
 		removeShopOnContainerBreak.handleBlocksBreakage(blockList);

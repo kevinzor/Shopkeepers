@@ -28,7 +28,7 @@ import org.bukkit.inventory.MerchantInventory;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import com.nisovin.shopkeepers.api.internal.util.Unsafe;
-import com.nisovin.shopkeepers.compat.api.NMSCallProvider;
+import com.nisovin.shopkeepers.compat.CompatProvider;
 import com.nisovin.shopkeepers.shopobjects.living.LivingEntityAI;
 import com.nisovin.shopkeepers.util.inventory.ItemUtils;
 import com.nisovin.shopkeepers.util.java.EnumUtils;
@@ -45,11 +45,11 @@ import net.minecraft.world.entity.ai.goal.GoalSelector;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
 import net.minecraft.world.item.trading.MerchantOffers;
 
-public final class NMSHandler implements NMSCallProvider {
+public final class CompatProviderImpl implements CompatProvider {
 
 	private final Field craftItemStackHandleField;
 
-	public NMSHandler() throws Exception {
+	public CompatProviderImpl() throws Exception {
 		craftItemStackHandleField = CraftItemStack.class.getDeclaredField("handle");
 		craftItemStackHandleField.setAccessible(true);
 	}

@@ -7,7 +7,7 @@ import org.bukkit.command.CommandSender;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import com.nisovin.shopkeepers.api.internal.util.Unsafe;
-import com.nisovin.shopkeepers.compat.NMSManager;
+import com.nisovin.shopkeepers.compat.Compat;
 import com.nisovin.shopkeepers.debug.Debug;
 import com.nisovin.shopkeepers.debug.DebugOptions;
 import com.nisovin.shopkeepers.spigot.SpigotFeatures;
@@ -295,8 +295,8 @@ public final class SpigotText {
 			} else if (hoverEventContent instanceof ItemContent itemContent) {
 				var item = ItemUtils.asItemStack(itemContent.getItem());
 				String itemSnbt = null;
-				if (NMSManager.getProvider().supportsItemSNBTHoverEvents()) {
-					itemSnbt = NMSManager.getProvider().getItemSNBT(item);
+				if (Compat.getProvider().supportsItemSNBTHoverEvents()) {
+					itemSnbt = Compat.getProvider().getItemSNBT(item);
 				}
 
 				if (itemSnbt != null) {

@@ -37,7 +37,7 @@ import com.nisovin.shopkeepers.api.shopkeeper.Shopkeeper;
 import com.nisovin.shopkeepers.api.shopobjects.living.LivingShopEquipment;
 import com.nisovin.shopkeepers.api.shopobjects.living.LivingShopObject;
 import com.nisovin.shopkeepers.api.util.ChunkCoords;
-import com.nisovin.shopkeepers.compat.NMSManager;
+import com.nisovin.shopkeepers.compat.Compat;
 import com.nisovin.shopkeepers.config.Settings;
 import com.nisovin.shopkeepers.debug.DebugOptions;
 import com.nisovin.shopkeepers.debug.events.DebugListener;
@@ -302,7 +302,7 @@ public class SKLivingShopObject<E extends LivingEntity>
 		}
 
 		// Any version-specific preparation:
-		NMSManager.getProvider().prepareEntity(entity);
+		Compat.getProvider().prepareEntity(entity);
 	}
 
 	// Any clean up that needs to happen for the entity. The entity might not be fully setup yet.
@@ -399,7 +399,7 @@ public class SKLivingShopObject<E extends LivingEntity>
 			}
 
 			// Any version-specific setup:
-			NMSManager.getProvider().setupSpawnedEntity(entity);
+			Compat.getProvider().setupSpawnedEntity(entity);
 
 			// Overwrite AI:
 			this.overwriteAI();
@@ -504,7 +504,7 @@ public class SKLivingShopObject<E extends LivingEntity>
 		entity.setCollidable(false);
 		// TODO Only required to handle the 'look-at-nearby-player' behavior. Maybe replace this
 		// with something own?
-		NMSManager.getProvider().overwriteLivingEntityAI(entity);
+		Compat.getProvider().overwriteLivingEntityAI(entity);
 
 		// Disable AI (also disables gravity) and replace it with our own handling:
 		this.setNoAI(entity);
@@ -520,7 +520,7 @@ public class SKLivingShopObject<E extends LivingEntity>
 			// disable their noclip again after their movement.
 			// TODO Still required? Bukkit's setCollidable API might actually work now.
 			// But this might also provide a small performance benefit.
-			NMSManager.getProvider().setNoclip(entity);
+			Compat.getProvider().setNoclip(entity);
 		}
 	}
 
@@ -537,7 +537,7 @@ public class SKLivingShopObject<E extends LivingEntity>
 		// Making sure that Spigot's entity activation range does not keep this entity ticking,
 		// because it assumes that it is currently falling:
 		// TODO This can be removed once Spigot ignores NoAI entities.
-		NMSManager.getProvider().setOnGround(entity, true);
+		Compat.getProvider().setOnGround(entity, true);
 	}
 
 	protected final void setNoGravity(E entity) {
@@ -545,7 +545,7 @@ public class SKLivingShopObject<E extends LivingEntity>
 
 		// Making sure that Spigot's entity activation range does not keep this entity ticking,
 		// because it assumes that it is currently falling:
-		NMSManager.getProvider().setOnGround(entity, true);
+		Compat.getProvider().setOnGround(entity, true);
 	}
 
 	protected void cleanupAI() {
@@ -770,7 +770,7 @@ public class SKLivingShopObject<E extends LivingEntity>
 		// In order to compensate for a reduced tick rate, we invoke the AI multiple times.
 		// Otherwise, the entity would turn its head more slowly and track the player for an
 		// increased duration.
-		NMSManager.getProvider().tickAI(entity, Settings.mobBehaviorTickPeriod);
+		Compat.getProvider().tickAI(entity, Settings.mobBehaviorTickPeriod);
 	}
 
 	// NAMING

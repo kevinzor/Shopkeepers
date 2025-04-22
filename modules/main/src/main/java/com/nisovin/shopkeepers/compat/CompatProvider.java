@@ -1,4 +1,4 @@
-package com.nisovin.shopkeepers.compat.api;
+package com.nisovin.shopkeepers.compat;
 
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Chicken;
@@ -14,20 +14,46 @@ import org.bukkit.inventory.ItemStack;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import com.nisovin.shopkeepers.api.util.UnmodifiableItemStack;
-import com.nisovin.shopkeepers.compat.CompatVersion;
-import com.nisovin.shopkeepers.compat.NMSManager;
 import com.nisovin.shopkeepers.util.annotations.ReadOnly;
 import com.nisovin.shopkeepers.util.inventory.ItemUtils;
 import com.nisovin.shopkeepers.util.java.Validate;
 
-public interface NMSCallProvider {
+/**
+ * The Shopkeepers plugin relies on functionality that is specific to the server version, e.g. to
+ * support multiple Minecraft versions, and specific to the server implementation, such as internal
+ * aspects of NMS and CraftBukkit that are not exposed via the Bukkit API. Additionally, there may
+ * be differences between the Spigot and Paper server implementations and APIs.
+ * <p>
+ * {@link CompatProvider} hides these version and server implementation specific aspects behind an
+ * interface that must be implemented for every supported combination of server implementation and
+ * version.
+ * <p>
+ * Every implementation, except the fallback implementation, must reside in the package
+ * {@code com.nisovin.shopkeepers.compat.v<version>}, be named {@code CompatProviderImpl}, and
+ * provide a default constructor without parameters.
+ */
+public interface CompatProvider {
+
+	/**
+	 * This is invoked when the plugin is enabled, after the config and language file have been
+	 * loaded.
+	 */
+	public default void onEnable() {
+	}
+
+	/**
+	 * This is invoked when the plugin is disabled.
+	 */
+	public default void onDisable() {
+
+	}
 
 	// The compat version string.
 	public String getVersionId();
 
 	// This does not return null.
 	public default CompatVersion getCompatVersion() {
-		CompatVersion compatVersion = NMSManager.getCompatVersion(this.getVersionId());
+		CompatVersion compatVersion = Compat.getCompatVersion(this.getVersionId());
 		// Not finding the compat version indicates a bug.
 		return Validate.State.notNull(compatVersion, "Could not find CompatVersion for '"
 				+ this.getVersionId() + "'!");

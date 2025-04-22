@@ -25,7 +25,7 @@ import com.nisovin.shopkeepers.commands.lib.Command;
 import com.nisovin.shopkeepers.commands.lib.CommandException;
 import com.nisovin.shopkeepers.commands.lib.CommandInput;
 import com.nisovin.shopkeepers.commands.lib.context.CommandContextView;
-import com.nisovin.shopkeepers.compat.NMSManager;
+import com.nisovin.shopkeepers.compat.Compat;
 import com.nisovin.shopkeepers.config.Settings;
 import com.nisovin.shopkeepers.lang.Messages;
 import com.nisovin.shopkeepers.shopkeeper.AbstractShopkeeper;
@@ -241,7 +241,7 @@ class CommandReplaceAllWithVanillaVillagers extends Command {
 		if (Settings.disableGravity) {
 			entity.setGravity(false);
 		}
-		NMSManager.getProvider().setOnGround(entity, true);
+		Compat.getProvider().setOnGround(entity, true);
 
 		// Lock the villager profession and trades:
 		entity.setVillagerExperience(1);

@@ -31,7 +31,7 @@ import com.nisovin.shopkeepers.api.shopkeeper.TradingRecipe;
 import com.nisovin.shopkeepers.api.trading.TradeEffect;
 import com.nisovin.shopkeepers.api.ui.UISession;
 import com.nisovin.shopkeepers.api.util.UnmodifiableItemStack;
-import com.nisovin.shopkeepers.compat.NMSManager;
+import com.nisovin.shopkeepers.compat.Compat;
 import com.nisovin.shopkeepers.config.Settings;
 import com.nisovin.shopkeepers.currency.Currencies;
 import com.nisovin.shopkeepers.currency.Currency;
@@ -234,7 +234,7 @@ public class TradingHandler extends AbstractShopkeeperUIHandler {
 		merchant.setRecipes(newMerchantRecipes);
 
 		// Update recipes for the client:
-		NMSManager.getProvider().updateTrades(player);
+		Compat.getProvider().updateTrades(player);
 	}
 
 	// Dynamically modifying trades (e.g. their blocked state, or properties such as their items),
@@ -818,8 +818,8 @@ public class TradingHandler extends AbstractShopkeeperUIHandler {
 		int requiredItem2Amount = ItemUtils.getItemStackAmount(requiredItem2);
 		return (offeredItem1Amount >= requiredItem1Amount
 				&& offeredItem2Amount >= requiredItem2Amount
-				&& NMSManager.getProvider().matches(offeredItem1, requiredItem1)
-				&& NMSManager.getProvider().matches(offeredItem2, requiredItem2));
+				&& Compat.getProvider().matches(offeredItem1, requiredItem1)
+				&& Compat.getProvider().matches(offeredItem2, requiredItem2));
 	}
 
 	protected final void debugPreventedTrade(Player player, String reason) {

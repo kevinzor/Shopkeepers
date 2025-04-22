@@ -12,7 +12,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 import com.nisovin.shopkeepers.api.internal.util.Unsafe;
 import com.nisovin.shopkeepers.api.shopkeeper.ShopCreationData;
-import com.nisovin.shopkeepers.compat.NMSManager;
+import com.nisovin.shopkeepers.compat.Compat;
 import com.nisovin.shopkeepers.lang.Messages;
 import com.nisovin.shopkeepers.shopkeeper.AbstractShopkeeper;
 import com.nisovin.shopkeepers.shopobjects.ShopObjectData;
@@ -85,14 +85,14 @@ public class ChickenShop extends BabyableShop<Chicken> {
 	}
 
 	public void cycleVariant(boolean backwards) {
-		this.setVariant(NMSManager.getProvider().cycleChickenVariant(this.getVariant(), backwards));
+		this.setVariant(Compat.getProvider().cycleChickenVariant(this.getVariant(), backwards));
 	}
 
 	private void applyVariant() {
 		Chicken entity = this.getEntity();
 		if (entity == null) return; // Not spawned
 
-		NMSManager.getProvider().setChickenVariant(entity, this.getVariant());
+		Compat.getProvider().setChickenVariant(entity, this.getVariant());
 	}
 
 	private ItemStack getVariantEditorItem() {

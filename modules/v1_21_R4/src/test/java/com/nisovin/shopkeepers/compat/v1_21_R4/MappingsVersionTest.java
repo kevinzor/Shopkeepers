@@ -10,11 +10,11 @@ public class MappingsVersionTest {
 
 	@Test
 	public void testMappingsVersion() throws Exception {
-		NMSHandler nmsHandler = new NMSHandler();
-		CompatVersion compatVersion = nmsHandler.getCompatVersion();
+		CompatProviderImpl compatProvider = new CompatProviderImpl();
+		CompatVersion compatVersion = compatProvider.getCompatVersion();
 		String expectedMappingsVersion = compatVersion.getMappingsVersion();
 		String actualMappingsVersion = MappingsVersionExtractor.getMappingsVersion(
-				nmsHandler.getCraftMagicNumbersClass()
+				compatProvider.getCraftMagicNumbersClass()
 		);
 		assertEquals("Unexpected mappings version!",
 				expectedMappingsVersion,

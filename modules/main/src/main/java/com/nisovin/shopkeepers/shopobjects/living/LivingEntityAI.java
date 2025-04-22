@@ -27,7 +27,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import com.nisovin.shopkeepers.SKShopkeepersPlugin;
 import com.nisovin.shopkeepers.api.internal.util.Unsafe;
 import com.nisovin.shopkeepers.api.util.ChunkCoords;
-import com.nisovin.shopkeepers.compat.NMSManager;
+import com.nisovin.shopkeepers.compat.Compat;
 import com.nisovin.shopkeepers.config.Settings;
 import com.nisovin.shopkeepers.util.bukkit.EntityUtils;
 import com.nisovin.shopkeepers.util.bukkit.MutableChunkCoords;
@@ -619,7 +619,7 @@ public class LivingEntityAI implements Listener {
 	// The result of this check is cached on plugin enable.
 	private boolean _isCustomGravityEnabled() {
 		// Gravity is enabled and not already handled by Minecraft itself:
-		return !Settings.disableGravity && NMSManager.getProvider().isNoAIDisablingGravity();
+		return !Settings.disableGravity && Compat.getProvider().isNoAIDisablingGravity();
 	}
 
 	private void processGravity(EntityData entityData) {
@@ -672,13 +672,13 @@ public class LivingEntityAI implements Listener {
 			// Tick falling:
 			if (falling) {
 				// Prevents SPIGOT-3948 / MC-130725
-				NMSManager.getProvider().setOnGround(entity, false);
+				Compat.getProvider().setOnGround(entity, false);
 				this.tickFalling(entityData);
 			}
 
 			if (!entityData.falling) {
 				// Prevents SPIGOT-3948 / MC-130725
-				NMSManager.getProvider().setOnGround(entity, true);
+				Compat.getProvider().setOnGround(entity, true);
 			}
 		}
 	}

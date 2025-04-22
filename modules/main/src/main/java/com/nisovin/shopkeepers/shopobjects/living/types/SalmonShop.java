@@ -11,7 +11,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import com.nisovin.shopkeepers.api.internal.util.Unsafe;
 import com.nisovin.shopkeepers.api.shopkeeper.ShopCreationData;
 import com.nisovin.shopkeepers.compat.MC_1_21_3;
-import com.nisovin.shopkeepers.compat.NMSManager;
+import com.nisovin.shopkeepers.compat.Compat;
 import com.nisovin.shopkeepers.lang.Messages;
 import com.nisovin.shopkeepers.shopkeeper.AbstractShopkeeper;
 import com.nisovin.shopkeepers.shopobjects.ShopObjectData;
@@ -95,7 +95,7 @@ public class SalmonShop extends SKLivingShopObject<Salmon> {
 		Salmon entity = this.getEntity();
 		if (entity == null) return; // Not spawned
 
-		NMSManager.getProvider().setSalmonVariant(entity, this.getVariant());
+		Compat.getProvider().setSalmonVariant(entity, this.getVariant());
 	}
 
 	private ItemStack getVariantEditorItem() {

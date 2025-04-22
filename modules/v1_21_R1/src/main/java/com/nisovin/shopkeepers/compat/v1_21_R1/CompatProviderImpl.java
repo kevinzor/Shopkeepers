@@ -1,23 +1,22 @@
-package com.nisovin.shopkeepers.compat.v1_21_R3;
+package com.nisovin.shopkeepers.compat.v1_21_R1;
 
 import java.lang.reflect.Field;
 
 import org.bukkit.ExplosionResult;
-import org.bukkit.craftbukkit.v1_21_R2.entity.CraftAbstractVillager;
-import org.bukkit.craftbukkit.v1_21_R2.entity.CraftEntity;
-import org.bukkit.craftbukkit.v1_21_R2.entity.CraftLivingEntity;
-import org.bukkit.craftbukkit.v1_21_R2.entity.CraftMob;
-import org.bukkit.craftbukkit.v1_21_R2.entity.CraftPlayer;
-import org.bukkit.craftbukkit.v1_21_R2.entity.CraftVillager;
-import org.bukkit.craftbukkit.v1_21_R2.inventory.CraftItemStack;
-import org.bukkit.craftbukkit.v1_21_R2.inventory.CraftMerchant;
-import org.bukkit.craftbukkit.v1_21_R2.util.CraftMagicNumbers;
+import org.bukkit.craftbukkit.v1_21_R1.entity.CraftAbstractVillager;
+import org.bukkit.craftbukkit.v1_21_R1.entity.CraftEntity;
+import org.bukkit.craftbukkit.v1_21_R1.entity.CraftLivingEntity;
+import org.bukkit.craftbukkit.v1_21_R1.entity.CraftMob;
+import org.bukkit.craftbukkit.v1_21_R1.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_21_R1.entity.CraftVillager;
+import org.bukkit.craftbukkit.v1_21_R1.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.v1_21_R1.inventory.CraftMerchant;
+import org.bukkit.craftbukkit.v1_21_R1.util.CraftMagicNumbers;
 import org.bukkit.entity.AbstractVillager;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.Salmon;
 import org.bukkit.entity.Villager;
 import org.bukkit.event.block.BlockExplodeEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
@@ -28,16 +27,14 @@ import org.bukkit.inventory.MerchantInventory;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import com.nisovin.shopkeepers.api.internal.util.Unsafe;
-import com.nisovin.shopkeepers.compat.api.NMSCallProvider;
+import com.nisovin.shopkeepers.compat.CompatProvider;
 import com.nisovin.shopkeepers.shopobjects.living.LivingEntityAI;
 import com.nisovin.shopkeepers.util.inventory.ItemUtils;
-import com.nisovin.shopkeepers.util.java.EnumUtils;
 import com.nisovin.shopkeepers.util.java.Validate;
 import com.nisovin.shopkeepers.util.logging.Log;
 
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponentPredicate;
-import net.minecraft.core.component.PatchedDataComponentMap;
 import net.minecraft.nbt.Tag;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
@@ -45,18 +42,18 @@ import net.minecraft.world.entity.ai.goal.GoalSelector;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
 import net.minecraft.world.item.trading.MerchantOffers;
 
-public final class NMSHandler implements NMSCallProvider {
+public final class CompatProviderImpl implements CompatProvider {
 
 	private final Field craftItemStackHandleField;
 
-	public NMSHandler() throws Exception {
+	public CompatProviderImpl() throws Exception {
 		craftItemStackHandleField = CraftItemStack.class.getDeclaredField("handle");
 		craftItemStackHandleField.setAccessible(true);
 	}
 
 	@Override
 	public String getVersionId() {
-		return "1_21_R3";
+		return "1_21_R1";
 	}
 
 	public Class<?> getCraftMagicNumbersClass() {
@@ -176,10 +173,7 @@ public final class NMSHandler implements NMSCallProvider {
 		if (provided.getType() != required.getType()) return false;
 		net.minecraft.world.item.ItemStack nmsProvided = asNMSItemStack(provided);
 		net.minecraft.world.item.ItemStack nmsRequired = asNMSItemStack(required);
-		DataComponentMap requiredComponents = PatchedDataComponentMap.fromPatch(
-				DataComponentMap.EMPTY,
-				nmsRequired.getComponentsPatch()
-		);
+		DataComponentMap requiredComponents = nmsRequired.getComponents();
 		// Compare the components according to Minecraft's matching rules (imprecise):
 		return DataComponentPredicate.allOf(requiredComponents).test(nmsProvided);
 	}
@@ -260,17 +254,6 @@ public final class NMSHandler implements NMSCallProvider {
 	private static boolean isDestroyingBlocks(ExplosionResult explosionResult) {
 		return explosionResult == ExplosionResult.DESTROY
 				|| explosionResult == ExplosionResult.DESTROY_WITH_DECAY;
-	}
-
-	// MC 1.21.3+ TODO Can be removed once we only support Bukkit 1.21.3+
-
-	@Override
-	public void setSalmonVariant(Salmon salmon, String variant) {
-		Salmon.Variant variantValue = EnumUtils.valueOf(Salmon.Variant.class, variant);
-		if (variantValue == null) {
-			variantValue = Salmon.Variant.MEDIUM; // Default
-		}
-		salmon.setVariant(variantValue);
 	}
 
 	@Override

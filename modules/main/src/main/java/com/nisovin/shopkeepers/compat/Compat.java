@@ -7,12 +7,14 @@ import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-import com.nisovin.shopkeepers.compat.api.NMSCallProvider;
 import com.nisovin.shopkeepers.util.bukkit.ServerUtils;
 import com.nisovin.shopkeepers.util.java.Validate;
 import com.nisovin.shopkeepers.util.logging.Log;
 
-public final class NMSManager {
+/**
+ * Provides access to the {@link CompatProvider} implementation.
+ */
+public final class Compat {
 
 	private static final Map<String, CompatVersion> SUPPORTED_MAPPINGS_VERSIONS = new LinkedHashMap<>();
 
@@ -56,49 +58,50 @@ public final class NMSManager {
 
 	// ----
 
-	private static @Nullable NMSCallProvider provider;
+	private static @Nullable CompatProvider provider;
 
 	public static boolean hasProvider() {
 		return (provider != null);
 	}
 
-	public static NMSCallProvider getProvider() {
-		return Validate.State.notNull(provider, "NMS provider is not set up!");
+	public static CompatProvider getProvider() {
+		return Validate.State.notNull(provider, "Compat provider is not set up!");
 	}
 
-	// Returns true if the NMS provider (or fallback handler) has been successfully set up.
+	// Returns true if the compat or fallback provider has been successfully set up.
 	public static boolean load(Plugin plugin) {
+		if (provider != null) {
+			throw new IllegalStateException("Provider already loaded!");
+		}
+
 		String mappingsVersion = ServerUtils.getMappingsVersion();
 		CompatVersion compatVersion = SUPPORTED_MAPPINGS_VERSIONS.get(mappingsVersion);
 		if (compatVersion != null) {
 			String compatVersionString = compatVersion.getCompatVersion();
 			try {
 				Class<?> clazz = Class.forName(
-						"com.nisovin.shopkeepers.compat.v" + compatVersionString + ".NMSHandler"
+						"com.nisovin.shopkeepers.compat.v" + compatVersionString + ".CompatProviderImpl"
 				);
-				if (NMSCallProvider.class.isAssignableFrom(clazz)) {
-					NMSManager.provider = (NMSCallProvider) clazz.getConstructor().newInstance();
-					return true; // Success
-				} else {
-					// Unexpected: NMSHandler does not implement NMSCallProvider. Continue with
-					// fallback.
-				}
+				provider = (CompatProvider) clazz.getConstructor().newInstance();
+				return true; // Success
 			} catch (Exception e) {
-				// Something went wrong. Continue with fallback.
+				Log.severe("Failed to load compatibility provider for version '"
+						+ compatVersionString + "'!", e);
+				// Continue with fallback.
 			}
 		}
 
 		// Incompatible server version detected:
 		Log.warning("Incompatible server version: " + Bukkit.getBukkitVersion() + " (mappings: "
 				+ mappingsVersion + ")");
-		Log.warning("Shopkeepers is trying to run in 'compatibility mode'.");
+		Log.warning("Shopkeepers is trying to run in 'fallback mode'.");
 		Log.info("Check for updates at: " + plugin.getDescription().getWebsite());
 
 		try {
-			NMSManager.provider = new FailedHandler();
+			provider = new FallbackCompatProvider();
 			return true; // Success
 		} catch (Exception e) {
-			Log.severe("Failed to enable 'compatibility mode'!", e);
+			Log.severe("Failed to enable 'fallback mode'!", e);
 		}
 		return false;
 	}

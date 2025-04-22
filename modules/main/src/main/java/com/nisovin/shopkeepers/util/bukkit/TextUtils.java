@@ -24,7 +24,7 @@ import com.nisovin.shopkeepers.api.internal.util.Unsafe;
 import com.nisovin.shopkeepers.api.user.User;
 import com.nisovin.shopkeepers.api.util.ChunkCoords;
 import com.nisovin.shopkeepers.api.util.UnmodifiableItemStack;
-import com.nisovin.shopkeepers.compat.NMSManager;
+import com.nisovin.shopkeepers.compat.Compat;
 import com.nisovin.shopkeepers.spigot.text.SpigotText;
 import com.nisovin.shopkeepers.text.HoverEventText;
 import com.nisovin.shopkeepers.text.Text;
@@ -467,7 +467,7 @@ public final class TextUtils {
 
 	public static TextBuilder getItemHover(@ReadOnly ItemStack itemStack) {
 		Validate.notNull(itemStack, "itemStack is null");
-		String itemSNBT = NMSManager.getProvider().getItemSNBT(itemStack);
+		String itemSNBT = Compat.getProvider().getItemSNBT(itemStack);
 		if (itemSNBT == null) {
 			// Item SNBT is not supported.
 			return Text.text("");

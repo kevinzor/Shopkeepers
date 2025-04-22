@@ -1,22 +1,29 @@
-package com.nisovin.shopkeepers.compat.v1_21_R2;
+package com.nisovin.shopkeepers.compat.v1_21_R5;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 
 import org.bukkit.ExplosionResult;
-import org.bukkit.craftbukkit.v1_21_R1.entity.CraftAbstractVillager;
-import org.bukkit.craftbukkit.v1_21_R1.entity.CraftEntity;
-import org.bukkit.craftbukkit.v1_21_R1.entity.CraftLivingEntity;
-import org.bukkit.craftbukkit.v1_21_R1.entity.CraftMob;
-import org.bukkit.craftbukkit.v1_21_R1.entity.CraftPlayer;
-import org.bukkit.craftbukkit.v1_21_R1.entity.CraftVillager;
-import org.bukkit.craftbukkit.v1_21_R1.inventory.CraftItemStack;
-import org.bukkit.craftbukkit.v1_21_R1.inventory.CraftMerchant;
-import org.bukkit.craftbukkit.v1_21_R1.util.CraftMagicNumbers;
+import org.bukkit.NamespacedKey;
+import org.bukkit.Registry;
+import org.bukkit.craftbukkit.v1_21_R4.entity.CraftAbstractVillager;
+import org.bukkit.craftbukkit.v1_21_R4.entity.CraftEntity;
+import org.bukkit.craftbukkit.v1_21_R4.entity.CraftLivingEntity;
+import org.bukkit.craftbukkit.v1_21_R4.entity.CraftMob;
+import org.bukkit.craftbukkit.v1_21_R4.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_21_R4.entity.CraftVillager;
+import org.bukkit.craftbukkit.v1_21_R4.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.v1_21_R4.inventory.CraftMerchant;
+import org.bukkit.craftbukkit.v1_21_R4.util.CraftMagicNumbers;
 import org.bukkit.entity.AbstractVillager;
+import org.bukkit.entity.Chicken;
+import org.bukkit.entity.Cow;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
+import org.bukkit.entity.Pig;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Salmon;
 import org.bukkit.entity.Villager;
 import org.bukkit.event.block.BlockExplodeEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
@@ -27,14 +34,16 @@ import org.bukkit.inventory.MerchantInventory;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import com.nisovin.shopkeepers.api.internal.util.Unsafe;
-import com.nisovin.shopkeepers.compat.api.NMSCallProvider;
+import com.nisovin.shopkeepers.compat.CompatProvider;
 import com.nisovin.shopkeepers.shopobjects.living.LivingEntityAI;
+import com.nisovin.shopkeepers.util.bukkit.RegistryUtils;
 import com.nisovin.shopkeepers.util.inventory.ItemUtils;
+import com.nisovin.shopkeepers.util.java.EnumUtils;
 import com.nisovin.shopkeepers.util.java.Validate;
 import com.nisovin.shopkeepers.util.logging.Log;
 
+import net.minecraft.core.component.DataComponentExactPredicate;
 import net.minecraft.core.component.DataComponentMap;
-import net.minecraft.core.component.DataComponentPredicate;
 import net.minecraft.core.component.PatchedDataComponentMap;
 import net.minecraft.nbt.Tag;
 import net.minecraft.server.MinecraftServer;
@@ -43,18 +52,25 @@ import net.minecraft.world.entity.ai.goal.GoalSelector;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
 import net.minecraft.world.item.trading.MerchantOffers;
 
-public final class NMSHandler implements NMSCallProvider {
+public final class CompatProviderImpl implements CompatProvider {
 
 	private final Field craftItemStackHandleField;
+	private final Method cowSetVariantMethod;
 
-	public NMSHandler() throws Exception {
+	public CompatProviderImpl() throws Exception {
 		craftItemStackHandleField = CraftItemStack.class.getDeclaredField("handle");
 		craftItemStackHandleField.setAccessible(true);
+
+		// TODO Spigot 1.21.5 remaps "Cow" to "AbstractCow" unless api-version <= "1.21.5". So we
+		// use reflection here to support the new cow variants anyway while still supporting older
+		// api versions.
+		var cowClass = Class.forName("org.bukkit.entity.Cow");
+		cowSetVariantMethod = cowClass.getMethod("setVariant", Cow.Variant.class);
 	}
 
 	@Override
 	public String getVersionId() {
-		return "1_21_R2";
+		return "1_21_R5";
 	}
 
 	public Class<?> getCraftMagicNumbersClass() {
@@ -179,7 +195,7 @@ public final class NMSHandler implements NMSCallProvider {
 				nmsRequired.getComponentsPatch()
 		);
 		// Compare the components according to Minecraft's matching rules (imprecise):
-		return DataComponentPredicate.allOf(requiredComponents).test(nmsProvided);
+		return DataComponentExactPredicate.allOf(requiredComponents).test(nmsProvided);
 	}
 
 	@Override
@@ -238,8 +254,12 @@ public final class NMSHandler implements NMSCallProvider {
 	public @Nullable String getItemSNBT(@Nullable ItemStack itemStack) {
 		Validate.notNull(itemStack, "itemStack is null");
 		assert itemStack != null;
+		if (ItemUtils.isEmpty(itemStack)) {
+			return null;
+		}
+
 		net.minecraft.world.item.ItemStack nmsItem = asNMSItemStack(itemStack);
-		Tag itemNBT = nmsItem.saveOptional(MinecraftServer.getDefaultRegistryAccess());
+		Tag itemNBT = nmsItem.save(MinecraftServer.getDefaultRegistryAccess());
 		return itemNBT.toString();
 	}
 
@@ -260,8 +280,88 @@ public final class NMSHandler implements NMSCallProvider {
 				|| explosionResult == ExplosionResult.DESTROY_WITH_DECAY;
 	}
 
+	// MC 1.21.3+ TODO Can be removed once we only support Bukkit 1.21.3+
+
 	@Override
-	public boolean supportsItemSNBTHoverEvents() {
-		return true; // Supported in MC versions before 1.21.5
+	public void setSalmonVariant(Salmon salmon, String variant) {
+		Salmon.Variant variantValue = EnumUtils.valueOf(Salmon.Variant.class, variant);
+		if (variantValue == null) {
+			variantValue = Salmon.Variant.MEDIUM; // Default
+		}
+		salmon.setVariant(variantValue);
+	}
+
+	// MC 1.21.5+ TODO Can be removed once we only support Bukkit 1.21.5+
+
+	@Override
+	public void setCowVariant(Cow cow, NamespacedKey variant) {
+		Cow.Variant variantValue = Registry.COW_VARIANT.get(variant);
+		if (variantValue == null) {
+			variantValue = Cow.Variant.TEMPERATE; // Default
+		}
+		assert variantValue != null;
+
+		try {
+			cowSetVariantMethod.invoke(cow, variantValue);
+		} catch (Exception e) {
+			// Unexpected:
+			Log.severe("Failed to set cow variant!", e);
+		}
+	}
+
+	@Override
+	public NamespacedKey cycleCowVariant(NamespacedKey variant, boolean backwards) {
+		Cow.Variant variantValue = Registry.COW_VARIANT.get(variant);
+		if (variantValue == null) {
+			variantValue = Cow.Variant.TEMPERATE; // Default
+		}
+		assert variantValue != null;
+
+		Registry<Cow.Variant> registry = Unsafe.castNonNull(Registry.COW_VARIANT);
+		return RegistryUtils.cycleKeyed(registry, variantValue, backwards).getKeyOrThrow();
+	}
+
+	@Override
+	public void setPigVariant(Pig pig, NamespacedKey variant) {
+		Pig.Variant variantValue = Registry.PIG_VARIANT.get(variant);
+		if (variantValue == null) {
+			variantValue = Pig.Variant.TEMPERATE; // Default
+		}
+		assert variantValue != null;
+		pig.setVariant(variantValue);
+	}
+
+	@Override
+	public NamespacedKey cyclePigVariant(NamespacedKey variant, boolean backwards) {
+		Pig.Variant variantValue = Registry.PIG_VARIANT.get(variant);
+		if (variantValue == null) {
+			variantValue = Pig.Variant.TEMPERATE; // Default
+		}
+		assert variantValue != null;
+
+		Registry<Pig.Variant> registry = Unsafe.castNonNull(Registry.PIG_VARIANT);
+		return RegistryUtils.cycleKeyed(registry, variantValue, backwards).getKeyOrThrow();
+	}
+
+	@Override
+	public void setChickenVariant(Chicken chicken, NamespacedKey variant) {
+		Chicken.Variant variantValue = Registry.CHICKEN_VARIANT.get(variant);
+		if (variantValue == null) {
+			variantValue = Chicken.Variant.TEMPERATE; // Default
+		}
+		assert variantValue != null;
+		chicken.setVariant(variantValue);
+	}
+
+	@Override
+	public NamespacedKey cycleChickenVariant(NamespacedKey variant, boolean backwards) {
+		Chicken.Variant variantValue = Registry.CHICKEN_VARIANT.get(variant);
+		if (variantValue == null) {
+			variantValue = Chicken.Variant.TEMPERATE; // Default
+		}
+		assert variantValue != null;
+
+		Registry<Chicken.Variant> registry = Unsafe.castNonNull(Registry.CHICKEN_VARIANT);
+		return RegistryUtils.cycleKeyed(registry, variantValue, backwards).getKeyOrThrow();
 	}
 }

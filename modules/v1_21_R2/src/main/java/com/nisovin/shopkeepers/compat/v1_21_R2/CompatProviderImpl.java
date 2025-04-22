@@ -1,16 +1,17 @@
-package com.nisovin.shopkeepers.compat.v1_20_R5;
+package com.nisovin.shopkeepers.compat.v1_21_R2;
 
 import java.lang.reflect.Field;
 
-import org.bukkit.craftbukkit.v1_20_R4.entity.CraftAbstractVillager;
-import org.bukkit.craftbukkit.v1_20_R4.entity.CraftEntity;
-import org.bukkit.craftbukkit.v1_20_R4.entity.CraftLivingEntity;
-import org.bukkit.craftbukkit.v1_20_R4.entity.CraftMob;
-import org.bukkit.craftbukkit.v1_20_R4.entity.CraftPlayer;
-import org.bukkit.craftbukkit.v1_20_R4.entity.CraftVillager;
-import org.bukkit.craftbukkit.v1_20_R4.inventory.CraftItemStack;
-import org.bukkit.craftbukkit.v1_20_R4.inventory.CraftMerchant;
-import org.bukkit.craftbukkit.v1_20_R4.util.CraftMagicNumbers;
+import org.bukkit.ExplosionResult;
+import org.bukkit.craftbukkit.v1_21_R1.entity.CraftAbstractVillager;
+import org.bukkit.craftbukkit.v1_21_R1.entity.CraftEntity;
+import org.bukkit.craftbukkit.v1_21_R1.entity.CraftLivingEntity;
+import org.bukkit.craftbukkit.v1_21_R1.entity.CraftMob;
+import org.bukkit.craftbukkit.v1_21_R1.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_21_R1.entity.CraftVillager;
+import org.bukkit.craftbukkit.v1_21_R1.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.v1_21_R1.inventory.CraftMerchant;
+import org.bukkit.craftbukkit.v1_21_R1.util.CraftMagicNumbers;
 import org.bukkit.entity.AbstractVillager;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
@@ -26,7 +27,7 @@ import org.bukkit.inventory.MerchantInventory;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import com.nisovin.shopkeepers.api.internal.util.Unsafe;
-import com.nisovin.shopkeepers.compat.api.NMSCallProvider;
+import com.nisovin.shopkeepers.compat.CompatProvider;
 import com.nisovin.shopkeepers.shopobjects.living.LivingEntityAI;
 import com.nisovin.shopkeepers.util.inventory.ItemUtils;
 import com.nisovin.shopkeepers.util.java.Validate;
@@ -34,6 +35,7 @@ import com.nisovin.shopkeepers.util.logging.Log;
 
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponentPredicate;
+import net.minecraft.core.component.PatchedDataComponentMap;
 import net.minecraft.nbt.Tag;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
@@ -41,18 +43,18 @@ import net.minecraft.world.entity.ai.goal.GoalSelector;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
 import net.minecraft.world.item.trading.MerchantOffers;
 
-public final class NMSHandler implements NMSCallProvider {
+public final class CompatProviderImpl implements CompatProvider {
 
 	private final Field craftItemStackHandleField;
 
-	public NMSHandler() throws Exception {
+	public CompatProviderImpl() throws Exception {
 		craftItemStackHandleField = CraftItemStack.class.getDeclaredField("handle");
 		craftItemStackHandleField.setAccessible(true);
 	}
 
 	@Override
 	public String getVersionId() {
-		return "1_20_R5";
+		return "1_21_R2";
 	}
 
 	public Class<?> getCraftMagicNumbersClass() {
@@ -172,7 +174,10 @@ public final class NMSHandler implements NMSCallProvider {
 		if (provided.getType() != required.getType()) return false;
 		net.minecraft.world.item.ItemStack nmsProvided = asNMSItemStack(provided);
 		net.minecraft.world.item.ItemStack nmsRequired = asNMSItemStack(required);
-		DataComponentMap requiredComponents = nmsRequired.getComponents();
+		DataComponentMap requiredComponents = PatchedDataComponentMap.fromPatch(
+				DataComponentMap.EMPTY,
+				nmsRequired.getComponentsPatch()
+		);
 		// Compare the components according to Minecraft's matching rules (imprecise):
 		return DataComponentPredicate.allOf(requiredComponents).test(nmsProvided);
 	}
@@ -242,12 +247,17 @@ public final class NMSHandler implements NMSCallProvider {
 
 	@Override
 	public boolean isDestroyingBlocks(EntityExplodeEvent event) {
-		return true; // Pre 1.21 behavior
+		return isDestroyingBlocks(event.getExplosionResult());
 	}
 
 	@Override
 	public boolean isDestroyingBlocks(BlockExplodeEvent event) {
-		return true; // Pre 1.21 behavior
+		return isDestroyingBlocks(event.getExplosionResult());
+	}
+
+	private static boolean isDestroyingBlocks(ExplosionResult explosionResult) {
+		return explosionResult == ExplosionResult.DESTROY
+				|| explosionResult == ExplosionResult.DESTROY_WITH_DECAY;
 	}
 
 	@Override
