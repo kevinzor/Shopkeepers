@@ -1,0 +1,27 @@
+// TODO Use paperweight-userdev.
+// But: Use Spigot mappings (see 'paperweight-mappings-namespace') to not break cross-server
+// compatibility for shared NMS modules (1_20_R5 - 1_21_R4).
+apply from: rootProject.file('modules/shared/nmsModule.gradle')
+
+ext {
+	// This needs to be defined by projects that apply this script.
+	paperVersion = 'UNSPECIFIED'
+}
+
+repositories {
+	// Paper
+	maven { url = 'https://repo.papermc.io/repository/maven-public/' }
+}
+
+configurations.all {
+	resolutionStrategy.capabilitiesResolution.withCapability("org.bukkit:bukkit:${paperVersion}") {
+		select("io.papermc.paper:paper-api:${paperVersion}")
+	}
+}
+
+dependencies {
+	afterEvaluate {
+		compileOnly "io.papermc.paper:paper-api:${paperVersion}"
+		testImplementation "io.papermc.paper:paper-api:${paperVersion}"
+	}
+}

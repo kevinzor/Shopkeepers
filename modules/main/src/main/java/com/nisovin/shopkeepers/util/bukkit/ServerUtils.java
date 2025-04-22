@@ -10,9 +10,19 @@ import com.nisovin.shopkeepers.api.internal.util.Unsafe;
 
 public final class ServerUtils {
 
+	private static final boolean IS_PAPER;
 	private static final String MAPPINGS_VERSION;
 
 	static {
+		boolean isPaper;
+		try {
+			Class.forName("io.papermc.paper.registry.RegistryAccess");
+			isPaper = true;
+		} catch (ClassNotFoundException e) {
+			isPaper = false;
+		}
+		IS_PAPER = isPaper;
+
 		UnsafeValues unsafeValues = Bukkit.getUnsafe();
 		Method getMappingsVersionMethod;
 		try {
@@ -28,6 +38,16 @@ public final class ServerUtils {
 		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
 			throw new RuntimeException("Could not retrieve the server's mappings version!", e);
 		}
+
+	}
+
+	/**
+	 * Checks if the server has access to Paper-specific API.
+	 * 
+	 * @return <code>true</code> if the server provides the Paper API
+	 */
+	public static boolean isPaper() {
+		return IS_PAPER;
 	}
 
 	public static String getMappingsVersion() {

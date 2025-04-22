@@ -6,7 +6,18 @@ import com.nisovin.shopkeepers.util.java.Validate;
 
 public class CompatVersion {
 
+	public static final String VARIANT_PAPER = "paper";
+
+	private static String getVariant(String compatVersion) {
+		// Expected version format: "1_21_R5_some_variant_tag"
+		var variantSeparatorIndex = compatVersion.indexOf('_', 7);
+		if (variantSeparatorIndex < 0) return "";
+
+		return compatVersion.substring(variantSeparatorIndex + 1);
+	}
+
 	private final String compatVersion;
+	private final String variant;
 	private final String minecraftVersion;
 	private final String mappingsVersion;
 
@@ -15,6 +26,7 @@ public class CompatVersion {
 		Validate.notEmpty(minecraftVersion, "minecraftVersion is empty");
 		Validate.notEmpty(mappingsVersion, "mappingsVersion is empty");
 		this.compatVersion = compatVersion;
+		this.variant = getVariant(compatVersion);
 		this.minecraftVersion = minecraftVersion;
 		this.mappingsVersion = mappingsVersion;
 	}
@@ -26,6 +38,25 @@ public class CompatVersion {
 	 */
 	public String getCompatVersion() {
 		return compatVersion;
+	}
+
+	/**
+	 * Gets the variant component of the compatibility version, e.g. {@link #VARIANT_PAPER}.
+	 * 
+	 * @return the variant component of the compatibility version, or an empty String if there is no
+	 *         variant
+	 */
+	public String getVariant() {
+		return variant;
+	}
+
+	/**
+	 * Checks whether this compatibility version has a non-empty {@link #getVariant() variant}.
+	 * 
+	 * @return <code>true</code> if this compatibility version has a non-empty variant
+	 */
+	public boolean hasVariant() {
+		return !this.getVariant().isEmpty();
 	}
 
 	/**

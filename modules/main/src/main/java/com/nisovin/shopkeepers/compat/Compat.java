@@ -16,10 +16,16 @@ import com.nisovin.shopkeepers.util.logging.Log;
  */
 public final class Compat {
 
-	private static final Map<String, CompatVersion> SUPPORTED_MAPPINGS_VERSIONS = new LinkedHashMap<>();
+	private static final Map<String, CompatVersion> COMPAT_VERSIONS = new LinkedHashMap<>();
 
 	private static void register(CompatVersion version) {
-		SUPPORTED_MAPPINGS_VERSIONS.put(version.getMappingsVersion(), version);
+		var compatVersion = version.getCompatVersion();
+		if (COMPAT_VERSIONS.containsKey(compatVersion)) {
+			throw new IllegalArgumentException("CompatVersion '" + compatVersion
+					+ "' is already registered!");
+		}
+
+		COMPAT_VERSIONS.put(compatVersion, version);
 	}
 
 	// We have to update and rebuild our compat code whenever the mappings changed.
@@ -33,9 +39,11 @@ public final class Compat {
 	// 'Minecraft Version': Our revision number (behind the 'R') is incremented for every new compat
 	// module for a specific major Minecraft version, which usually aligns with mappings updates for
 	// new minor Minecraft updates, whereas CraftBukkit may increment its 'Minecraft Version' less
-	// frequently.
+	// frequently. Also, our compat version may include additional tags, such as whether the module
+	// is paper-specific.
 	static {
 		// Registered in the order from latest to oldest.
+		register(new CompatVersion("1_21_R5_paper", "1.21.5", "7ecad754373a5fbc43d381d7450c53a5"));
 		register(new CompatVersion("1_21_R5", "1.21.5", "7ecad754373a5fbc43d381d7450c53a5"));
 		register(new CompatVersion("1_21_R4", "1.21.4", "60ac387ca8007aa018e6aeb394a6988c"));
 		register(new CompatVersion("1_21_R3", "1.21.3", "61a218cda78417b6039da56e08194083"));
@@ -47,13 +55,35 @@ public final class Compat {
 	}
 
 	public static @Nullable CompatVersion getCompatVersion(String compatVersion) {
-		// If there are multiple entries for the same compat version, we return the latest one.
-		for (CompatVersion version : SUPPORTED_MAPPINGS_VERSIONS.values()) {
-			if (version.getCompatVersion().equals(compatVersion)) {
-				return version;
-			}
+		return COMPAT_VERSIONS.get(compatVersion); // Null if not found
+	}
+
+	/**
+	 * Searches for a matching {@link CompatVersion}.
+	 * 
+	 * @param mappingsVersion
+	 *            the mappings version
+	 * @param variant
+	 *            the variant, or an empty String
+	 * @return the matched {@link CompatVersion}, or <code>null</code> if not suited
+	 *         {@link CompatVersion} is found
+	 */
+	private static @Nullable CompatVersion findCompatVersion(String mappingsVersion, String variant) {
+		var compatVersion = COMPAT_VERSIONS.values().stream()
+				.filter(x -> x.getMappingsVersion().equals(mappingsVersion)
+						&& x.getVariant().equals(variant))
+				.findFirst()
+				.orElse(null);
+		if (compatVersion == null && !variant.isEmpty()) {
+			// Check again but also match compat versions without any variant:
+			// This allows us to reuse the older compatible compat version implementations for Paper
+			// servers without having to copy them.
+			compatVersion = COMPAT_VERSIONS.values().stream()
+					.filter(x -> x.getMappingsVersion().equals(mappingsVersion) && !x.hasVariant())
+					.findFirst()
+					.orElse(null);
 		}
-		return null;
+		return compatVersion;
 	}
 
 	// ----
@@ -74,8 +104,10 @@ public final class Compat {
 			throw new IllegalStateException("Provider already loaded!");
 		}
 
-		String mappingsVersion = ServerUtils.getMappingsVersion();
-		CompatVersion compatVersion = SUPPORTED_MAPPINGS_VERSIONS.get(mappingsVersion);
+		var mappingsVersion = ServerUtils.getMappingsVersion();
+		var variant = ServerUtils.isPaper() ? CompatVersion.VARIANT_PAPER : "";
+
+		var compatVersion = findCompatVersion(mappingsVersion, variant);
 		if (compatVersion != null) {
 			String compatVersionString = compatVersion.getCompatVersion();
 			try {
@@ -83,6 +115,7 @@ public final class Compat {
 						"com.nisovin.shopkeepers.compat.v" + compatVersionString + ".CompatProviderImpl"
 				);
 				provider = (CompatProvider) clazz.getConstructor().newInstance();
+				Log.info("Compatibility provider loaded: " + compatVersionString);
 				return true; // Success
 			} catch (Exception e) {
 				Log.severe("Failed to load compatibility provider for version '"
@@ -93,7 +126,8 @@ public final class Compat {
 
 		// Incompatible server version detected:
 		Log.warning("Incompatible server version: " + Bukkit.getBukkitVersion() + " (mappings: "
-				+ mappingsVersion + ")");
+				+ mappingsVersion + ", variant: " + (variant.isEmpty() ? "default" : variant)
+				+ ")");
 		Log.warning("Shopkeepers is trying to run in 'fallback mode'.");
 		Log.info("Check for updates at: " + plugin.getDescription().getWebsite());
 
