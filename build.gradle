@@ -141,6 +141,9 @@ subprojects {
 
 		// Bukkit, Spigot-API
 		maven { url = 'https://hub.spigotmc.org/nexus/content/groups/public/' }
+
+		// nonpe snapshots
+		maven {url='https://raw.githubusercontent.com/vegardit/no-npe/mvn-snapshots-repo'}
 	}
 
 	// Shared plugin / task configurations:
