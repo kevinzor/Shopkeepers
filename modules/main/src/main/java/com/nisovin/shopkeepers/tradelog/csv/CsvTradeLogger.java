@@ -106,7 +106,7 @@ public class CsvTradeLogger extends AbstractFileTradeLogger {
 		String item2Amount = "";
 		String item2Metadata = "";
 		if (item2 != null) {
-			item2Type = item2.getType().name();
+			item2Type = item2.getType().name(); // TODO Store the namespaced key instead
 			item2Amount = String.valueOf(item2.getAmount());
 			item2Metadata = this.getItemMetadata(item2);
 		}
@@ -123,12 +123,13 @@ public class CsvTradeLogger extends AbstractFileTradeLogger {
 				shop.getZ(), // shop_z
 				shopOwnerId, // shop_owner_uuid
 				shopOwnerName, // shop_owner_name
-				item1.getType().name(), // item1_type
+				item1.getType().name(), // item1_type // TODO Store the namespaced key instead
 				item1.getAmount(), // item1_amount
 				this.getItemMetadata(item1), // item1_metadata
 				item2Type, // item2_type
 				item2Amount, // item2_amount
 				item2Metadata, // item2_metadata
+				// TODO Store the namespaced key instead
 				resultItem.getType().name(), // result_item_type
 				resultItem.getAmount(), // result_item_amount
 				this.getItemMetadata(resultItem), // result_item_metadata

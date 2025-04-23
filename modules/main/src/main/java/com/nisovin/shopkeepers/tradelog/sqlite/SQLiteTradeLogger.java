@@ -160,7 +160,7 @@ public class SQLiteTradeLogger extends AbstractFileTradeLogger {
 		@Nullable Integer item2Amount = null;
 		@Nullable String item2Metadata = null;
 		if (item2 != null) {
-			item2Type = item2.getType().name();
+			item2Type = item2.getType().name(); // TODO Store the namespaced key instead
 			item2Amount = item2.getAmount();
 			item2Metadata = this.getItemMetadata(item2);
 		}
@@ -180,6 +180,7 @@ public class SQLiteTradeLogger extends AbstractFileTradeLogger {
 		insertStatement.setString(10, shopOwnerId); // shop_owner_uuid
 		insertStatement.setString(11, shopOwnerName); // shop_owner_name
 
+		// TODO Store the namespaced key instead
 		insertStatement.setString(12, item1.getType().name()); // item_1_type
 		insertStatement.setInt(13, item1.getAmount()); // item_1_amount
 		insertStatement.setString(14, this.getItemMetadata(item1)); // item_1_metadata
@@ -188,6 +189,7 @@ public class SQLiteTradeLogger extends AbstractFileTradeLogger {
 		insertStatement.setObject(16, item2Amount, Types.TINYINT); // item_2_amount
 		insertStatement.setString(17, item2Metadata); // item_2_metadata
 
+		// TODO Store the namespaced key instead
 		insertStatement.setString(18, resultItem.getType().name()); // result_item_type
 		insertStatement.setInt(19, resultItem.getAmount()); // result_item_amount
 		insertStatement.setString(20, this.getItemMetadata(resultItem)); // result_item_metadata

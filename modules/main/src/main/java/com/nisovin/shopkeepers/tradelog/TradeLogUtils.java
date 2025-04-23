@@ -35,6 +35,9 @@ public class TradeLogUtils {
 		Map<String, Object> itemData = itemStack.serialize(); // Assert: Modifiable map.
 		itemData.remove("type");
 		itemData.remove("amount");
+		// On Paper 1.21.5+, ItemStacks are serialized in a different format:
+		itemData.remove("id");
+		itemData.remove("count");
 		// In order to ensure single-line CSV records, we format the Yaml compactly:
 		String yaml = YamlUtils.toCompactYaml(itemData);
 		return yaml;
