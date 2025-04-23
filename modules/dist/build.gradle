@@ -28,7 +28,7 @@ dependencies {
 	// build, and would also cause the shadowJar task to bundle the non-remapped classes instead of
 	// the remapped ones.
 	nmsModules.each { module ->
-		shaded project(module)
+		shaded project(path: module, configuration: 'remapped')
 	}
 }
 
@@ -48,6 +48,11 @@ shadowJar {
 		nmsModules.each { module ->
 			include(project(module))
 		}
+	}
+	manifest {
+		// TODO Change this to 'mojang' once we use Mojang mappings for the Paper modules and no
+		// longer share modules across Paper and Spigot.
+		attributes["paperweight-mappings-namespace"] = "spigot"
 	}
 }
 

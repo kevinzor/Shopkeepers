@@ -4,40 +4,47 @@ apply plugin: 'eclipse'
 
 apply from: rootProject.file('modules/shared/specialSource.gradle')
 
-ext {
-	// This needs to be defined by projects that apply this script.
+// Every project using this script must declare this version BEFORE applying this script:
+/*ext {
 	craftbukkitVersion = 'UNSPECIFIED'
-	// This can be overridden by projects that apply this script.
-	remapServerCode = true
+}*/
+
+if (!project.hasProperty('craftbukkitVersion')) {
+	throw new GradleException("Property 'craftbukkitVersion' must be defined before applying this script.")
 }
 
 dependencies {
 	implementation project(':shopkeepers-main')
-	afterEvaluate {
-		if (remapServerCode) {
-			implementation "org.bukkit:craftbukkit:${craftbukkitVersion}:remapped-mojang"
-		} else {
-			implementation "org.bukkit:craftbukkit:${craftbukkitVersion}"
-		}
-	}
+	implementation "org.bukkit:craftbukkit:${craftbukkitVersion}:remapped-mojang"
 
 	testImplementation libs.junit
 	testImplementation libs.asm
 }
 
-afterEvaluate {
-	if (remapServerCode) {
-		jar {
-			doLast {
-				def outputFiles = outputs.files.files
-				for (inputFile in outputFiles) {
-					File intermediateFile = new File(temporaryDir, inputFile.name.replace('.jar', '-obf.jar'))
-					File outputFile = inputFile
-					remapMojangToSpigot(inputFile, intermediateFile, outputFile, craftbukkitVersion)
-				}
-			}
+jar {
+	doLast {
+		def outputFiles = outputs.files.files
+		for (inputFile in outputFiles) {
+			File intermediateFile = new File(temporaryDir, inputFile.name.replace('.jar', '-obf.jar'))
+			File outputFile = inputFile
+			remapMojangToSpigot(inputFile, intermediateFile, outputFile, craftbukkitVersion)
 		}
 	}
 }
 
-// Note: The NMS modules are not published as standalone artifacts, but are shaded into the final plugin jar.
+configurations {
+	create("remapped") {
+		canBeConsumed = true
+		canBeResolved = false
+		attributes {
+			attribute(Category.CATEGORY_ATTRIBUTE, objects.named(Category, Category.LIBRARY))
+			attribute(Usage.USAGE_ATTRIBUTE, objects.named(Usage, Usage.JAVA_RUNTIME))
+		}
+	}
+}
+
+artifacts {
+	remapped project.tasks.named('jar').map { it.archiveFile }
+}
+
+// Note: The compat modules are not published as standalone artifacts, but are shaded into the final plugin jar.
