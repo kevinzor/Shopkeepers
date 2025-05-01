@@ -16,6 +16,8 @@ import com.nisovin.shopkeepers.util.inventory.ItemUtils;
 
 public final class FallbackCompatProvider implements CompatProvider {
 
+	public static final String VERSION_ID = "fallback";
+
 	// Minecraft
 	private final Class<?> nmsEntityClass;
 	private final Method nmsEntitySetOnGroundMethod;
@@ -58,7 +60,7 @@ public final class FallbackCompatProvider implements CompatProvider {
 
 	@Override
 	public String getVersionId() {
-		return "FailedHandler";
+		return VERSION_ID;
 	}
 
 	@Override

@@ -52,6 +52,11 @@ public final class Compat {
 		register(new CompatVersion("1_21_R1", "1.21", "229d7afc75b70a6c388337687ac4da1f"));
 		// Note: MC 1.20.6 completely replaced 1.20.5. We only support 1.20.6.
 		register(new CompatVersion("1_20_R5", "1.20.6", "ee13f98a43b9c5abffdcc0bb24154460"));
+		register(new CompatVersion(
+				FallbackCompatProvider.VERSION_ID,
+				FallbackCompatProvider.VERSION_ID,
+				FallbackCompatProvider.VERSION_ID
+		));
 	}
 
 	public static @Nullable CompatVersion getCompatVersion(String compatVersion) {

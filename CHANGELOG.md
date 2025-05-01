@@ -5,6 +5,7 @@ Date format: (YYYY-MM-DD)
 ### Supported MC versions: 1.21.5, 1.21.4, 1.21.3, 1.21.1, 1.21, 1.20.6
 
 * Internal: Various refactors related to UIs. Separate "UIHandlers" (now called "ViewProviders") from the actual view implementation. Each player-specific UI session is represented by a "View" instance now. This replaces the previous "UISession" and "EditorSession" objects.
+* Internal: Also add a dummy CompatVersion for the fallback provider.
 
 ## v2.23.5 (2025-04-23)
 ### Supported MC versions: 1.21.5, 1.21.4, 1.21.3, 1.21.1, 1.21, 1.20.6
