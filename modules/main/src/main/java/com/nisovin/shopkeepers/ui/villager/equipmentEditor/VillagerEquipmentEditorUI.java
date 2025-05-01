@@ -13,7 +13,8 @@ public class VillagerEquipmentEditorUI {
 		Validate.notNull(player, "player is null");
 
 		var viewProvider = new VillagerEquipmentEditorViewProvider(entity);
-		return UISessionManager.getInstance().requestUI(viewProvider, player);
+		var config = new VillagerEquipmentEditorUIState(entity);
+		return UISessionManager.getInstance().requestUI(viewProvider, player, config);
 	}
 
 	private VillagerEquipmentEditorUI() {

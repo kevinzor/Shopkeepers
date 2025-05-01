@@ -26,7 +26,7 @@ public final class ConfirmationUI {
 
 		// Note: This also closes any previous UI and thereby also aborts any previously active UI
 		// confirmation request.
-		UISessionManager.getInstance().requestUI(getViewProvider(), player);
+		UISessionManager.getInstance().requestUI(getViewProvider(), player, config);
 	}
 
 	private ConfirmationUI() {
