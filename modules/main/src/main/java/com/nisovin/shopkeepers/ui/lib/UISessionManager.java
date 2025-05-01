@@ -48,18 +48,19 @@ public final class UISessionManager {
 	private static @Nullable UISessionManager instance;
 
 	public static UISessionManager getInstance() {
-		return Validate.State.notNull(instance, "Currently disabled!");
+		return Validate.State.notNull(instance, "Not yet initialized!");
 	}
 
-	public static void enable(Plugin plugin, SessionHandler sessionHandler) {
-		Validate.State.isTrue(instance == null, "Already enabled!");
+	// Note: We allow subsequent re-initialization. Although not currently expected, this allows
+	// handling cases in which the plugin instance is re-created multiple times, potentially leading
+	// to multiple initializations of the UISessionManager.
+	public static void initialize(Plugin plugin, SessionHandler sessionHandler) {
+		if (instance != null) {
+			// Has no effect if already disabled:
+			instance.onDisable();
+		}
+
 		instance = new UISessionManager(plugin, sessionHandler);
-		instance.onEnable();
-	}
-
-	public static void disable() {
-		getInstance().onDisable();
-		instance = null;
 	}
 
 	private final Plugin plugin;
@@ -79,11 +80,14 @@ public final class UISessionManager {
 		this.uiListener = new UIListener(plugin, Unsafe.initialized(this));
 	}
 
-	private void onEnable() {
+	public void onEnable() {
 		uiListener.onEnable();
 	}
 
-	private void onDisable() {
+	// Note: This method may also be called even when onEnabled has not been called yet, e.g.
+	// because the plugin is being shut down during enabling.
+	// Note: Further calls to abort UI sessions are allowed even after disabling.
+	public void onDisable() {
 		// Close all open views:
 		this.abortUISessions();
 		uiListener.onDisable();

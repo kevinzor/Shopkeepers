@@ -64,6 +64,7 @@ import com.nisovin.shopkeepers.tradenotifications.TradeNotifications;
 import com.nisovin.shopkeepers.trading.commandtrading.CommandTrading;
 import com.nisovin.shopkeepers.ui.SKDefaultUITypes;
 import com.nisovin.shopkeepers.ui.SKUIRegistry;
+import com.nisovin.shopkeepers.ui.SKUISystem;
 import com.nisovin.shopkeepers.util.bukkit.SchedulerUtils;
 import com.nisovin.shopkeepers.util.java.ClassUtils;
 import com.nisovin.shopkeepers.util.java.Validate;
@@ -102,8 +103,9 @@ public class SKShopkeepersPlugin extends JavaPlugin implements InternalShopkeepe
 	private final SKShopTypesRegistry shopTypesRegistry = new SKShopTypesRegistry();
 	private final SKShopObjectTypesRegistry shopObjectTypesRegistry = new SKShopObjectTypesRegistry();
 
-	// UI registry:
-	private final SKUIRegistry uiRegistry = new SKUIRegistry(Unsafe.initialized(this));
+	// UI system:
+	private final SKUISystem uiSystem = new SKUISystem(Unsafe.initialized(this));
+	private final SKUIRegistry uiRegistry = new SKUIRegistry();
 	private final SKDefaultUITypes defaultUITypes = new SKDefaultUITypes();
 
 	// Shopkeeper registry:
@@ -356,8 +358,8 @@ public class SKShopkeepersPlugin extends JavaPlugin implements InternalShopkeepe
 		forcingCreatureSpawner.onEnable();
 		forcingEntityTeleporter.onEnable();
 
-		// Inform UI registry (registers UI event handlers):
-		uiRegistry.onEnable();
+		// Enable UI system:
+		uiSystem.onEnable();
 
 		// Enable container protection:
 		protectedContainers.enable();
@@ -459,8 +461,8 @@ public class SKShopkeepersPlugin extends JavaPlugin implements InternalShopkeepe
 				this.getLogger()
 		);
 
-		// Inform UI registry about disable:
-		uiRegistry.onDisable();
+		// Disable UI system:
+		uiSystem.onDisable();
 
 		// Deactivate (despawn) all shopkeepers (prior to saving shopkeepers data and before
 		// unloading all shopkeepers):
