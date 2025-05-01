@@ -16,7 +16,7 @@ public abstract class AbstractShopkeeperViewProvider extends ViewProvider
 
 	@Override
 	public ShopkeeperViewContext getContext() {
-		return (ShopkeeperViewContext) this.getContext();
+		return (ShopkeeperViewContext) super.getContext();
 	}
 
 	@Override

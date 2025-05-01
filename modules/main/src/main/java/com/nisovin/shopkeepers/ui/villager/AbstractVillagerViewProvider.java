@@ -17,7 +17,7 @@ public abstract class AbstractVillagerViewProvider extends ViewProvider {
 
 	@Override
 	public VillagerViewContext getContext() {
-		return (VillagerViewContext) this.getContext();
+		return (VillagerViewContext) super.getContext();
 	}
 
 	/**

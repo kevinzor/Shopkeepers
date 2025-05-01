@@ -100,7 +100,7 @@ public final class VillagerEditorViewProvider extends AbstractEditorViewProvider
 
 	@Override
 	public VillagerViewContext getContext() {
-		return (VillagerViewContext) this.getContext();
+		return (VillagerViewContext) super.getContext();
 	}
 
 	public AbstractVillager getVillager() {
