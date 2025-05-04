@@ -15,7 +15,10 @@ if (!project.hasProperty('craftbukkitVersion')) {
 
 dependencies {
 	implementation project(':shopkeepers-main')
-	implementation "org.bukkit:craftbukkit:${craftbukkitVersion}:remapped-mojang"
+	implementation ("org.bukkit:craftbukkit:${craftbukkitVersion}:remapped-mojang") {
+		// Already included in craftbukkit. Avoids accidentally using the wrong (non-remapped) type.
+		exclude group: 'org.spigotmc', module: 'minecraft-server'
+	}
 
 	testImplementation libs.junit
 	testImplementation libs.asm
