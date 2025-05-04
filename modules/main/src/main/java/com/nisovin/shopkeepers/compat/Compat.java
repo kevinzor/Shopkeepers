@@ -1,5 +1,7 @@
 package com.nisovin.shopkeepers.compat;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -7,6 +9,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
+import com.nisovin.shopkeepers.util.bukkit.PluginUtils;
 import com.nisovin.shopkeepers.util.bukkit.ServerUtils;
 import com.nisovin.shopkeepers.util.java.Validate;
 import com.nisovin.shopkeepers.util.logging.Log;
@@ -109,32 +112,36 @@ public final class Compat {
 			throw new IllegalStateException("Provider already loaded!");
 		}
 
-		var mappingsVersion = ServerUtils.getMappingsVersion();
-		var variant = ServerUtils.isPaper() ? CompatVersion.VARIANT_PAPER : "";
+		if (isForceFallback(plugin)) {
+			Log.warning("Force fallback: Shopkeepers is trying to run in 'fallback mode'.");
+		} else {
+			var mappingsVersion = ServerUtils.getMappingsVersion();
+			var variant = ServerUtils.isPaper() ? CompatVersion.VARIANT_PAPER : "";
 
-		var compatVersion = findCompatVersion(mappingsVersion, variant);
-		if (compatVersion != null) {
-			String compatVersionString = compatVersion.getCompatVersion();
-			try {
-				Class<?> clazz = Class.forName(
-						"com.nisovin.shopkeepers.compat.v" + compatVersionString + ".CompatProviderImpl"
-				);
-				provider = (CompatProvider) clazz.getConstructor().newInstance();
-				Log.info("Compatibility provider loaded: " + compatVersionString);
-				return true; // Success
-			} catch (Exception e) {
-				Log.severe("Failed to load compatibility provider for version '"
-						+ compatVersionString + "'!", e);
-				// Continue with fallback.
+			var compatVersion = findCompatVersion(mappingsVersion, variant);
+			if (compatVersion != null) {
+				String compatVersionString = compatVersion.getCompatVersion();
+				try {
+					Class<?> clazz = Class.forName(
+							"com.nisovin.shopkeepers.compat.v" + compatVersionString + ".CompatProviderImpl"
+					);
+					provider = (CompatProvider) clazz.getConstructor().newInstance();
+					Log.info("Compatibility provider loaded: " + compatVersionString);
+					return true; // Success
+				} catch (Exception e) {
+					Log.severe("Failed to load compatibility provider for version '"
+							+ compatVersionString + "'!", e);
+					// Continue with fallback.
+				}
 			}
-		}
 
-		// Incompatible server version detected:
-		Log.warning("Incompatible server version: " + Bukkit.getBukkitVersion() + " (mappings: "
-				+ mappingsVersion + ", variant: " + (variant.isEmpty() ? "default" : variant)
-				+ ")");
-		Log.warning("Shopkeepers is trying to run in 'fallback mode'.");
-		Log.info("Check for updates at: " + plugin.getDescription().getWebsite());
+			// Incompatible server version detected:
+			Log.warning("Incompatible server version: " + Bukkit.getBukkitVersion() + " (mappings: "
+					+ mappingsVersion + ", variant: " + (variant.isEmpty() ? "default" : variant)
+					+ ")");
+			Log.warning("Shopkeepers is trying to run in 'fallback mode'.");
+			Log.info("Check for updates at: " + plugin.getDescription().getWebsite());
+		}
 
 		try {
 			provider = new FallbackCompatProvider();
@@ -143,5 +150,11 @@ public final class Compat {
 			Log.severe("Failed to enable 'fallback mode'!", e);
 		}
 		return false;
+	}
+
+	private static boolean isForceFallback(Plugin plugin) {
+		var pluginDataFolder = plugin.getDataFolder().toPath();
+		var forceFallbackFile = pluginDataFolder.resolve(".force-fallback");
+		return Files.exists(forceFallbackFile);
 	}
 }
