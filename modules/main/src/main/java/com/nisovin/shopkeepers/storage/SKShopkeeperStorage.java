@@ -46,7 +46,6 @@ import com.nisovin.shopkeepers.util.data.serialization.InvalidDataException;
 import com.nisovin.shopkeepers.util.java.ConversionUtils;
 import com.nisovin.shopkeepers.util.java.FileUtils;
 import com.nisovin.shopkeepers.util.java.Retry;
-import com.nisovin.shopkeepers.util.java.StringUtils;
 import com.nisovin.shopkeepers.util.java.ThrowableUtils;
 import com.nisovin.shopkeepers.util.java.Validate;
 import com.nisovin.shopkeepers.util.java.VoidCallable;
@@ -615,7 +614,7 @@ public class SKShopkeeperStorage implements ShopkeeperStorage {
 			shopkeeper = shopkeeperRegistry.loadShopkeeper(shopkeeperData);
 			assert shopkeeper != null && shopkeeper.isValid();
 		} catch (InvalidDataException e) {
-			this.failedToLoadShopkeeper(key, StringUtils.getOrEmpty(e.getMessage()));
+			this.failedToLoadShopkeeper(key, "Shopkeeper data could not be loaded!", e);
 			return;
 		} catch (Exception e) {
 			this.failedToLoadShopkeeper(key, "Unexpected error!", e);

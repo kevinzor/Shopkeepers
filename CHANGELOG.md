@@ -4,6 +4,7 @@ Date format: (YYYY-MM-DD)
 ## v2.23.6 (TBA)
 ### Supported MC versions: 1.21.5, 1.21.4, 1.21.3, 1.21.1, 1.21, 1.20.6
 
+* Debug: Log the full exception stack trace when we fail to load the data of a shopkeeper.
 * Debug: The fallback mode can now be tested by adding a file with name `.force-fallback` to the plugin folder.
 * Internal: Various refactors related to UIs. Separate "UIHandlers" (now called "ViewProviders") from the actual view implementation. Each player-specific UI session is represented by a "View" instance now. This replaces the previous "UISession" and "EditorSession" objects.
 * Internal: Also add a dummy CompatVersion for the fallback provider.
