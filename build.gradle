@@ -394,7 +394,7 @@ gitPublish {
 // Prepare the local Maven repository via gitPublishReset, then publish artifacts into it, and then
 // commit and push the Maven repository to Github:
 gradle.afterProject { project ->
-	def repoStagingTask = project.tasks.findByName("publishAllPublicationsToStagingRepository")
+	def repoStagingTask = project.tasks.findByName("publishMavenJavaPublicationToStagingRepository")
 	if (repoStagingTask != null) {
 		println "Found repository staging task for project ${project.name}"
 		repoStagingTask.dependsOn(rootProject.tasks.gitPublishReset)
@@ -412,6 +412,7 @@ def taskListAliases = [
 	'cleanAssemble' : ['clean', 'assemble'],
 	'cleanBuild' : ['clean', 'build'],
 	'cleanInstall' : ['clean', 'build', 'publishToMavenLocal'],
+	'cleanStaging' : ['clean', 'build', 'publishToMavenLocal', 'publishAllPublicationsToStagingRepository'],
 	'cleanPublish' : ['clean', 'build', 'publishToMavenLocal', 'publishAllPublicationsToStagingRepository', 'gitPublishPush'],
 	'cleanInstallMinimal' : ['clean', ':shopkeepers-api:publishToMavenLocal']
 ]
