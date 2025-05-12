@@ -14,6 +14,7 @@ Date format: (YYYY-MM-DD)
   * Debug: For better error messages about which shopkeeper and trade is affected by a deserialization issue, we use our own deserialization approach instead of Bukkit's ConfigurationSerializable.
   * Since all item data is migrated via Minecraft's data migration now, before the item stack is constructed, our previous item data migration logic can eventually be removed, together with the `item-migrations` debug option, once all servers are expected to have updated to the new serialization format.
 * Fix #959: The changes to the shopkeeper trade event in v2.19.0 introduced a bug that caused shift trading to continue trading even if the the active trade switches to a different result item. Additionally, we now also abort the trading if the cost items of the active trading recipe have changed, so that players don't accidentally continue trading the same result item but for different costs.
+* Localization: Use the default message when the specified language file is missing an entry.
 * Debug: Log the full exception stack trace when we fail to load the data of a shopkeeper.
 * Debug: The fallback mode can now be tested by adding a file with name `.force-fallback` to the plugin folder.
 * Internal: Various refactors related to UIs. Separate "UIHandlers" (now called "ViewProviders") from the actual view implementation. Each player-specific UI session is represented by a "View" instance now. This replaces the previous "UISession" and "EditorSession" objects.

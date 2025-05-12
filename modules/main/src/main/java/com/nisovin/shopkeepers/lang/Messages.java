@@ -5,6 +5,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
+import org.checkerframework.checker.nullness.qual.Nullable;
+
 import com.nisovin.shopkeepers.SKShopkeepersPlugin;
 import com.nisovin.shopkeepers.config.Settings;
 import com.nisovin.shopkeepers.config.lib.Config;
@@ -872,12 +874,8 @@ public class Messages extends Config {
 		plugin.saveResource(languageFilePath, true);
 	}
 
-	public static void loadLanguageFile() {
-		// Create default language file:
-		saveDefaultLanguageFile();
-
+	private static @Nullable ConfigData loadLanguageFile(String language) {
 		SKShopkeepersPlugin plugin = SKShopkeepersPlugin.getInstance();
-		String language = Settings.language;
 
 		// Create language file if it is missing and there exists a default:
 		String languageFilePath = getLanguageFilePath(language);
@@ -886,24 +884,62 @@ public class Messages extends Config {
 			plugin.saveResource(languageFilePath, false);
 		}
 
-		// Load messages from language config:
+		// Load language file:
 		if (!languageFile.exists()) {
 			Log.warning("Could not find language file '" + languageFile.getName() + "'!");
-		} else {
-			Log.info("Loading language file: " + languageFile.getName());
-			try {
-				// Load the language config:
-				DataStore languageConfig = BukkitConfigDataStore.ofNewYamlConfig();
-				languageConfig.load(languageFile);
+			return null;
+		}
 
-				// Load messages:
-				INSTANCE.load(ConfigData.of(languageConfig));
+		Log.info("Loading language file: " + languageFile.getName());
+		try {
+			// Load the language config:
+			DataStore languageConfig = BukkitConfigDataStore.ofNewYamlConfig();
+			languageConfig.load(languageFile);
+			return ConfigData.of(languageConfig);
+		} catch (Exception e) {
+			Log.warning("Could not load language file '" + languageFile.getName() + "'!", e);
+			return null;
+		}
+	}
 
-				// Also update the derived settings:
-				Settings.onSettingsChanged();
-			} catch (Exception e) {
-				Log.warning("Could not load language file '" + languageFile.getName() + "'!", e);
+	private static @Nullable ConfigData loadDefaultLanguageFile() {
+		return loadLanguageFile(DEFAULT_LANGUAGE);
+	}
+
+	public static void loadLanguageFile() {
+		// Create the default language file, updating any existing one:
+		saveDefaultLanguageFile();
+
+		// Load the default language file (used for defaults when values are missing):
+		var defaultLanguageConfigData = loadDefaultLanguageFile();
+		if (defaultLanguageConfigData == null) {
+			// Failed to load the default language file (already logged elsewhere):
+			return;
+		}
+
+		String language = Settings.language;
+
+		ConfigData languageConfigData = defaultLanguageConfigData;
+		if (!language.equals(DEFAULT_LANGUAGE)) {
+			// Else: No need to load the default language file again.
+			languageConfigData = loadLanguageFile(language);
+			if (languageConfigData == null) {
+				// Failed to load the language file (already logged elsewhere):
+				return;
 			}
+
+			// Use the default language file as defaults:
+			languageConfigData.setDefaults(defaultLanguageConfigData);
+		}
+
+		// Load messages:
+		try {
+			INSTANCE.load(languageConfigData);
+
+			// Also update the derived settings:
+			Settings.onSettingsChanged();
+		} catch (Exception e) {
+			Log.warning("Could not load language file for language '" + language + "'!", e);
 		}
 	}
 
