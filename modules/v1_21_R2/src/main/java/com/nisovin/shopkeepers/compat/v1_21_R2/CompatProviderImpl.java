@@ -2,7 +2,9 @@ package com.nisovin.shopkeepers.compat.v1_21_R2;
 
 import java.lang.reflect.Field;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ExplosionResult;
+import org.bukkit.NamespacedKey;
 import org.bukkit.craftbukkit.v1_21_R1.CraftRegistry;
 import org.bukkit.craftbukkit.v1_21_R1.entity.CraftAbstractVillager;
 import org.bukkit.craftbukkit.v1_21_R1.entity.CraftEntity;
@@ -27,9 +29,15 @@ import org.bukkit.inventory.Merchant;
 import org.bukkit.inventory.MerchantInventory;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
+import com.mojang.brigadier.StringReader;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.serialization.Dynamic;
 import com.nisovin.shopkeepers.api.internal.util.Unsafe;
 import com.nisovin.shopkeepers.compat.CompatProvider;
 import com.nisovin.shopkeepers.shopobjects.living.LivingEntityAI;
+import com.nisovin.shopkeepers.util.annotations.ReadOnly;
+import com.nisovin.shopkeepers.util.data.container.DataContainer;
+import com.nisovin.shopkeepers.util.inventory.ItemStackComponentsData;
 import com.nisovin.shopkeepers.util.inventory.ItemUtils;
 import com.nisovin.shopkeepers.util.java.Validate;
 import com.nisovin.shopkeepers.util.logging.Log;
@@ -37,8 +45,13 @@ import com.nisovin.shopkeepers.util.logging.Log;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponentPredicate;
 import net.minecraft.core.component.PatchedDataComponentMap;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
+import net.minecraft.nbt.TagParser;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.datafix.DataFixers;
+import net.minecraft.util.datafix.fixes.References;
 import net.minecraft.world.entity.ai.goal.GoalSelector;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
 import net.minecraft.world.item.trading.MerchantOffers;
@@ -241,6 +254,79 @@ public final class CompatProviderImpl implements CompatProvider {
 		net.minecraft.world.item.ItemStack nmsItem = asNMSItemStack(itemStack);
 		Tag itemNBT = nmsItem.saveOptional(CraftRegistry.getMinecraftRegistry());
 		return itemNBT.toString();
+	}
+
+	@Override
+	public @Nullable ItemStackComponentsData getItemStackComponentsData(@ReadOnly ItemStack itemStack) {
+		Validate.notNull(itemStack, "itemStack is null!");
+		if (ItemUtils.isEmpty(itemStack)) {
+			return null;
+		}
+
+		var nmsItem = this.asNMSItemStack(itemStack);
+		var itemTag = (CompoundTag) nmsItem.save(CraftRegistry.getMinecraftRegistry());
+		var componentsTag = (CompoundTag) itemTag.get("components");
+		if (componentsTag == null) {
+			return null;
+		}
+
+		var componentsData = ItemStackComponentsData.ofNonNull(DataContainer.create());
+		componentsTag.getAllKeys().forEach(componentKey -> {
+			assert componentKey != null;
+			var componentValue = componentsTag.get(componentKey);
+			assert componentValue != null;
+			// Serialized as SNBT:
+			componentsData.set(componentKey, componentValue.toString());
+		});
+		return componentsData;
+	}
+
+	@Override
+	public @Nullable ItemStack deserializeItemStack(
+			int dataVersion,
+			NamespacedKey id,
+			int count,
+			@Nullable ItemStackComponentsData componentsData
+	) {
+		Validate.notNull(id, "id is null!");
+		var itemTag = new CompoundTag();
+		itemTag.putString("id", id.toString());
+		itemTag.putInt("count", count);
+
+		var componentValues = componentsData != null ? componentsData.getValues() : null;
+		if (componentValues != null && !componentValues.isEmpty()) {
+			var componentsTag = new CompoundTag();
+			componentValues.forEach((componentKey, componentValue) -> {
+				assert componentKey != null;
+				assert componentValue != null;
+				var componentSnbt = componentValue.toString();
+
+				Tag componentTag;
+				try {
+					componentTag = new TagParser(new StringReader(componentSnbt)).readValue();
+				} catch (CommandSyntaxException e) {
+					throw new IllegalArgumentException(
+							"Error parsing item stack component: '" + componentSnbt + "'",
+							e
+					);
+				}
+				componentsTag.put(componentKey.toString(), componentTag);
+			});
+			itemTag.put("components", componentsTag);
+		}
+
+		var currentDataVersion = Bukkit.getUnsafe().getDataVersion();
+		var convertedItemTag = (CompoundTag) DataFixers.getDataFixer().update(
+				References.ITEM_STACK,
+				new Dynamic<>(Unsafe.castNonNull(NbtOps.INSTANCE), itemTag),
+				dataVersion,
+				currentDataVersion
+		).getValue();
+		var nmsItem = net.minecraft.world.item.ItemStack.parse(
+				CraftRegistry.getMinecraftRegistry(),
+				convertedItemTag
+		).orElse(net.minecraft.world.item.ItemStack.EMPTY);
+		return CraftItemStack.asCraftMirror(nmsItem);
 	}
 
 	// MC 1.21+ TODO Can be removed once we only support Bukkit 1.21+

@@ -27,6 +27,10 @@ public final class DebugOptions {
 	public static final String commands = add("commands");
 	// Logs information when updating stored shop owner names.
 	public static final String ownerNameUpdates = add("owner-name-updates");
+	// TODO Remove this once all servers are expected to have updated to our new item stack
+	// serialization. Logging item migrations during item stack serialization would be quite spammy,
+	// occur frequently during server updates, and not provide context information about the
+	// involved shopkeeper or trade.
 	// Logs whenever a shopkeeper performs item migrations (e.g. for trading offers).
 	public static final String itemMigrations = add("item-migrations");
 	// Logs whenever items are updated via the UpdateItemEvent.

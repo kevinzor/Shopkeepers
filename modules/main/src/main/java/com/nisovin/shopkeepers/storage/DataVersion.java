@@ -55,7 +55,7 @@ public final class DataVersion {
 	 * <p>
 	 * Changes to this version trigger a full save of all shopkeepers.
 	 */
-	private static final int SHOPKEEPER_STORAGE_VERSION = 3;
+	private static final int SHOPKEEPER_STORAGE_VERSION = 4;
 	/**
 	 * The current shopkeeper data version.
 	 * <p>

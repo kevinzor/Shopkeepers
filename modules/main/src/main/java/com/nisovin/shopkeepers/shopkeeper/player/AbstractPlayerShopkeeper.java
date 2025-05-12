@@ -421,6 +421,8 @@ public abstract class AbstractPlayerShopkeeper
 
 	static {
 		// Register shopkeeper data migrations:
+		// TODO Can be removed once all servers are expected to have updated to our new item stack
+		// serialization format.
 		ShopkeeperDataMigrator.registerMigration(new Migration(
 				"hire-cost-item",
 				MigrationPhase.ofShopkeeperClass(AbstractPlayerShopkeeper.class)

@@ -15,6 +15,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 import com.nisovin.shopkeepers.api.util.UnmodifiableItemStack;
 import com.nisovin.shopkeepers.util.annotations.ReadOnly;
+import com.nisovin.shopkeepers.util.inventory.ItemStackComponentsData;
 import com.nisovin.shopkeepers.util.inventory.ItemUtils;
 import com.nisovin.shopkeepers.util.java.Validate;
 
@@ -124,6 +125,15 @@ public interface CompatProvider {
 	// not correctly serialize the data currently
 	// (https://github.com/SpigotMC/BungeeCord/issues/3688).
 	public @Nullable String getItemSNBT(@ReadOnly ItemStack itemStack);
+
+	public @Nullable ItemStackComponentsData getItemStackComponentsData(@ReadOnly ItemStack itemStack);
+
+	public @Nullable ItemStack deserializeItemStack(
+			int dataVersion,
+			NamespacedKey id,
+			int count,
+			@Nullable ItemStackComponentsData componentsData
+	);
 
 	// MC 1.21+ TODO Can be removed once we only support Bukkit 1.21+
 

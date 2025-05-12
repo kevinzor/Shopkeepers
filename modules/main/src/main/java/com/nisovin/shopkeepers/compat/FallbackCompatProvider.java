@@ -1,7 +1,14 @@
 package com.nisovin.shopkeepers.compat;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Optional;
+import java.util.function.BiConsumer;
 
+import org.bukkit.Bukkit;
+import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -11,9 +18,16 @@ import org.bukkit.inventory.ItemStack;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import com.nisovin.shopkeepers.api.internal.util.Unsafe;
+import com.nisovin.shopkeepers.util.annotations.ReadOnly;
 import com.nisovin.shopkeepers.util.bukkit.ServerUtils;
+import com.nisovin.shopkeepers.util.data.container.DataContainer;
+import com.nisovin.shopkeepers.util.inventory.ItemStackComponentsData;
 import com.nisovin.shopkeepers.util.inventory.ItemUtils;
+import com.nisovin.shopkeepers.util.java.Validate;
+import com.nisovin.shopkeepers.util.logging.Log;
 
+// This assumes Spigot mappings. Fallback for server implementations with other mappings (e.g.
+// Paper) is not supported currently.
 public final class FallbackCompatProvider implements CompatProvider {
 
 	public static final String VERSION_ID = "fallback";
@@ -21,8 +35,31 @@ public final class FallbackCompatProvider implements CompatProvider {
 	// Minecraft
 	private final Class<?> nmsEntityClass;
 	private final Method nmsEntitySetOnGroundMethod;
+	private final Object nmsMinecraftRegistry;
+	private final Class<?> nmsCompoundTagClass;
+	private final Method nmsCompoundTagGetMethod;
+	private final Method nmsCompoundTagPutStringMethod;
+	private final Method nmsCompoundTagPutIntMethod;
+	private final Method nmsCompoundTagPutMethod;
+	private final Method nmsCompoundTagForEachMethod;
+	private final Class<?> nmsItemStackClass;
+	private final Method nmsItemStackSaveMethod;
+	private final Method nmsItemStackParseMethod;
+	private final Object nmsNbtOps;
+	private final Object nmsTagParser;
+	private final Method nmsTagParserParseFullyMethod;
+	private final Object nmsDataFixer;
+	private final Method nmsDataFixerUpdateMethod;
+	private final Object nmsDataFixerTypeItemStack;
+	private final Constructor<?> nmsDynamicConstructor;
+	private final Method nmsDynamicGetValueMethod;
 
 	// CraftBukkit
+	private final Class<?> obcCraftItemStackClass;
+	private final Field obcCraftItemStackHandleField;
+	private final Method obcCraftItemStackAsNMSCopyMethod;
+	private final Method obcCraftItemStackAsCraftMirrorMethod;
+
 	private final Class<?> obcCraftEntityClass;
 	private final Method obcGetHandleMethod;
 
@@ -43,7 +80,88 @@ public final class FallbackCompatProvider implements CompatProvider {
 				boolean.class
 		);
 
+		var obcCraftRegistryClass = Class.forName(cbPackage + ".CraftRegistry");
+		var obcGetMinecraftRegistryMethod = obcCraftRegistryClass.getMethod("getMinecraftRegistry");
+		nmsMinecraftRegistry = Unsafe.assertNonNull(obcGetMinecraftRegistryMethod.invoke(null));
+
+		var nmsTagClass = Class.forName("net.minecraft.nbt.NBTBase"); // Tag
+		nmsCompoundTagClass = Class.forName("net.minecraft.nbt.NBTTagCompound"); // CompoundTag
+		nmsCompoundTagGetMethod = nmsCompoundTagClass.getDeclaredMethod("a", String.class); // get
+		// putString
+		nmsCompoundTagPutStringMethod = nmsCompoundTagClass.getDeclaredMethod("a", String.class, String.class);
+		// putInt
+		nmsCompoundTagPutIntMethod = nmsCompoundTagClass.getDeclaredMethod("a", String.class, int.class);
+		// put
+		nmsCompoundTagPutMethod = nmsCompoundTagClass.getMethod("a", String.class, nmsTagClass);
+		// forEach
+		nmsCompoundTagForEachMethod = nmsCompoundTagClass.getDeclaredMethod("a", BiConsumer.class);
+
+		// HolderLookup.Provider
+		var nmsHolderLookupProviderClass = Class.forName("net.minecraft.core.HolderLookup$a");
+		nmsItemStackClass = Class.forName("net.minecraft.world.item.ItemStack");
+		nmsItemStackSaveMethod = nmsItemStackClass.getDeclaredMethod(
+				"a", // save
+				nmsHolderLookupProviderClass
+		);
+		nmsItemStackParseMethod = nmsItemStackClass.getDeclaredMethod(
+				"a", // parse
+				nmsHolderLookupProviderClass,
+				nmsTagClass
+		);
+
+		var nmsNbtOpsClass = Class.forName("net.minecraft.nbt.DynamicOpsNBT"); // NbtOps
+		var nmsNbtOpsInstanceField = nmsNbtOpsClass.getField("a"); // INSTANCE
+		nmsNbtOps = Unsafe.assertNonNull(nmsNbtOpsInstanceField.get(null));
+
+		var nmsTagParserClass = Class.forName("net.minecraft.nbt.MojangsonParser"); // TagParser
+		var dynamicOpsClass = Class.forName("com.mojang.serialization.DynamicOps");
+		// create
+		var nmsTagParserCreateMethod = nmsTagParserClass.getDeclaredMethod("a", dynamicOpsClass);
+		nmsTagParser = Unsafe.assertNonNull(nmsTagParserCreateMethod.invoke(null, nmsNbtOps));
+		// parseFully
+		nmsTagParserParseFullyMethod = nmsTagParserClass.getDeclaredMethod("b", String.class);
+
+		var nmsDynamicClass = Class.forName("com.mojang.serialization.Dynamic");
+		// DataFixers
+		var nmsDataFixersClass = Class.forName("net.minecraft.util.datafix.DataConverterRegistry");
+		// getDataFixer
+		var nmsDataFixerGetDataFixerMethod = nmsDataFixersClass.getDeclaredMethod("a");
+		nmsDataFixer = Unsafe.assertNonNull(nmsDataFixerGetDataFixerMethod.invoke(null));
+		var nmsDataFixerTypeReferenceClass = Class.forName("com.mojang.datafixers.DSL$TypeReference");
+		var nmsDataFixerTypeReferenceTypeNameMethod = nmsDataFixerTypeReferenceClass.getDeclaredMethod("typeName");
+		var nmsDataFixerClass = Class.forName("com.mojang.datafixers.DataFixer");
+		nmsDataFixerUpdateMethod = nmsDataFixerClass.getDeclaredMethod(
+				"update",
+				nmsDataFixerTypeReferenceClass,
+				nmsDynamicClass,
+				int.class,
+				int.class
+		);
+
+		// References
+		var nmsDataFixerReferencesClass = Class.forName("net.minecraft.util.datafix.fixes.DataConverterTypes");
+		// ITEM_STACK
+		nmsDataFixerTypeItemStack = Unsafe.assertNonNull(nmsDataFixerReferencesClass.getField("t").get(null));
+		if (!"item_stack".equals(nmsDataFixerTypeReferenceTypeNameMethod.invoke(nmsDataFixerTypeItemStack))) {
+			throw new IllegalStateException("Failed to retrieve the item stack datafixer type reference!");
+		}
+
+		nmsDynamicConstructor = nmsDynamicClass.getConstructor(dynamicOpsClass, Object.class);
+		nmsDynamicGetValueMethod = nmsDynamicClass.getDeclaredMethod("getValue");
+
 		// CraftBukkit
+
+		obcCraftItemStackClass = Class.forName(cbPackage + ".inventory.CraftItemStack");
+		obcCraftItemStackHandleField = obcCraftItemStackClass.getDeclaredField("handle");
+		obcCraftItemStackHandleField.setAccessible(true);
+		obcCraftItemStackAsNMSCopyMethod = obcCraftItemStackClass.getDeclaredMethod(
+				"asNMSCopy",
+				ItemStack.class
+		);
+		obcCraftItemStackAsCraftMirrorMethod = obcCraftItemStackClass.getDeclaredMethod(
+				"asCraftMirror",
+				nmsItemStackClass
+		);
 
 		obcCraftEntityClass = Class.forName(cbPackage + ".entity.CraftEntity");
 		obcGetHandleMethod = obcCraftEntityClass.getDeclaredMethod("getHandle");
@@ -95,6 +213,24 @@ public final class FallbackCompatProvider implements CompatProvider {
 		// benefit).
 	}
 
+	// For CraftItemStacks, this first tries to retrieve the underlying NMS item stack without
+	// making a copy of it. Otherwise, this falls back to using CraftItemStack#asNMSCopy.
+	private Object asNMSItemStack(ItemStack itemStack) {
+		assert itemStack != null;
+		if (obcCraftItemStackClass.isInstance(itemStack)) {
+			try {
+				return Unsafe.castNonNull(obcCraftItemStackHandleField.get(itemStack));
+			} catch (Exception e) {
+				Log.severe("Failed to retrieve the underlying Minecraft ItemStack!", e);
+			}
+		}
+		try {
+			return Unsafe.assertNonNull(obcCraftItemStackAsNMSCopyMethod.invoke(null, itemStack));
+		} catch (IllegalAccessException | InvocationTargetException e) {
+			throw new RuntimeException("Failed to convert item stack to NMS item stack!", e);
+		}
+	}
+
 	@Override
 	public boolean matches(@Nullable ItemStack provided, @Nullable ItemStack required) {
 		if (provided == required) return true;
@@ -120,6 +256,98 @@ public final class FallbackCompatProvider implements CompatProvider {
 	@Override
 	public @Nullable String getItemSNBT(ItemStack itemStack) {
 		return null; // Not supported.
+	}
+
+	@Override
+	public @Nullable ItemStackComponentsData getItemStackComponentsData(@ReadOnly ItemStack itemStack) {
+		Validate.notNull(itemStack, "itemStack is null!");
+		if (ItemUtils.isEmpty(itemStack)) {
+			return null;
+		}
+
+		try {
+			var nmsItem = this.asNMSItemStack(itemStack);
+			var itemTag = nmsItemStackSaveMethod.invoke(nmsItem, nmsMinecraftRegistry);
+			var componentsTag = nmsCompoundTagGetMethod.invoke(itemTag, "components");
+			if (componentsTag == null) {
+				return null;
+			}
+
+			var componentsData = ItemStackComponentsData.ofNonNull(DataContainer.create());
+			var consumer = new BiConsumer<String, Object>() {
+				@Override
+				public void accept(String componentKey, Object componentValue) {
+					assert componentKey != null;
+					// Serialized as SNBT:
+					componentsData.set(componentKey, componentValue.toString());
+				}
+			};
+			nmsCompoundTagForEachMethod.invoke(componentsTag, consumer);
+			return componentsData;
+		} catch (Exception e) {
+			throw new RuntimeException("Failed to serialize item stack!", e);
+		}
+	}
+
+	@Override
+	public @Nullable ItemStack deserializeItemStack(
+			int dataVersion,
+			NamespacedKey id,
+			int count,
+			@Nullable ItemStackComponentsData componentsData
+	) {
+		Validate.notNull(id, "id is null!");
+		try {
+			var itemTag = nmsCompoundTagClass.getConstructor().newInstance();
+			nmsCompoundTagPutStringMethod.invoke(itemTag, "id", id.toString());
+			nmsCompoundTagPutIntMethod.invoke(itemTag, "count", count);
+
+			var componentValues = componentsData != null ? componentsData.getValues() : null;
+			if (componentValues != null && !componentValues.isEmpty()) {
+				var componentsTag = nmsCompoundTagClass.getConstructor().newInstance();
+				componentValues.forEach((componentKey, componentValue) -> {
+					assert componentKey != null;
+					assert componentValue != null;
+					var componentSnbt = componentValue.toString();
+
+					Object componentTag;
+					try {
+						componentTag = Unsafe.assertNonNull(
+								nmsTagParserParseFullyMethod.invoke(nmsTagParser, componentSnbt)
+						);
+					} catch (Exception e) {
+						throw new IllegalArgumentException(
+								"Error parsing item stack component: '" + componentSnbt + "'",
+								e
+						);
+					}
+					try {
+						nmsCompoundTagPutMethod.invoke(componentsTag, componentKey.toString(), componentTag);
+					} catch (IllegalAccessException | InvocationTargetException e) {
+						throw new RuntimeException(e);
+					}
+				});
+				nmsCompoundTagPutMethod.invoke(itemTag, "components", componentsTag);
+			}
+
+			var currentDataVersion = Bukkit.getUnsafe().getDataVersion();
+			var convertedItemTagDynamic = nmsDataFixerUpdateMethod.invoke(
+					nmsDataFixer,
+					nmsDataFixerTypeItemStack,
+					nmsDynamicConstructor.newInstance(nmsNbtOps, itemTag),
+					dataVersion,
+					currentDataVersion
+			);
+			var convertedItemTag = nmsDynamicGetValueMethod.invoke(convertedItemTagDynamic);
+			var nmsItem = ((Optional<?>) Unsafe.assertNonNull(nmsItemStackParseMethod.invoke(
+					null,
+					nmsMinecraftRegistry,
+					convertedItemTag
+			))).orElse(null);
+			return (ItemStack) obcCraftItemStackAsCraftMirrorMethod.invoke(null, nmsItem);
+		} catch (Exception e) {
+			throw new RuntimeException("Failed to deserialize item stack!", e);
+		}
 	}
 
 	// MC 1.21+ TODO Can be removed once we only support Bukkit 1.21+
