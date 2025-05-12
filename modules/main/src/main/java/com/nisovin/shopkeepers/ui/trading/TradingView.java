@@ -537,18 +537,19 @@ public class TradingView extends View {
 				this.commonApplyTrade(trade);
 
 				// Check if we can continue trading:
+				var previousTrade = trade;
 				trade = this.checkForTrade(tradingContext, true); // Silent
 				if (trade == null) {
 					// No trade available:
 					break;
 				}
 
-				// Compare trading recipe result items:
-				UnmodifiableItemStack newResultItem = trade.getTradingRecipe().getResultItem();
-				if (!newResultItem.isSimilar(trade.getTradingRecipe().getResultItem())) {
-					// The new result item does not match the previous result item.
-					// Abort trading (mimics Minecraft behavior).
-					break;
+				// Abort the trading if the active trading recipe has changed:
+				// Mimics Minecraft behavior: Minecraft aborts the trading if the result item has
+				// changed. We compare the full trading recipe instead, so that players don't
+				// accidentally continue trading the same result item but for different costs.
+				if (!trade.getTradingRecipe().equals(previousTrade.getTradingRecipe())) {
+					break; // The active trade has changed: Abort
 				}
 			}
 
