@@ -19,6 +19,7 @@ Date format: (YYYY-MM-DD)
 * Internal: Also add a dummy CompatVersion for the fallback provider.
 * Build: Exclude non-remapped server jar from NMS module dependencies. This avoids accidentally using the wrong (non-remapped) type.
 * Build: Resolve issue with the repository missing the external annotations artifact: Make the `publishMavenJavaPublicationToStagingRepository` task depend on `gitPublishReset`.
+* API: Revert nonpe version back to 1.3.5 for now until 1.3.6 has been released to Maven central. This resolves an issue with API clients being required to also add the nonpe snapshot repository to their projects.
 
 ## v2.23.5 (2025-04-23)
 ### Supported MC versions: 1.21.5, 1.21.4, 1.21.3, 1.21.1, 1.21, 1.20.6
