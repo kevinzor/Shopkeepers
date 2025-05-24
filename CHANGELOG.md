@@ -1,7 +1,11 @@
 # Changelog
 Date format: (YYYY-MM-DD)  
 
-## v2.23.6 (TBA)
+## v2.23.7 (TBA)
+### Supported MC versions: 1.21.5, 1.21.4, 1.21.3, 1.21.1, 1.21, 1.20.6
+
+
+## v2.23.6 (2025-05-24)
 ### Supported MC versions: 1.21.5, 1.21.4, 1.21.3, 1.21.1, 1.21, 1.20.6
 
 * Data: Change the serialization of item stacks from Bukkit's built-in serialization to a custom serialization that saves item components as SNBT. Be sure to backup your current `save.yml` file before updating to this version!
