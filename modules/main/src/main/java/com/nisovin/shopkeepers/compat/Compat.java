@@ -1,7 +1,6 @@
 package com.nisovin.shopkeepers.compat;
 
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -9,7 +8,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-import com.nisovin.shopkeepers.util.bukkit.PluginUtils;
 import com.nisovin.shopkeepers.util.bukkit.ServerUtils;
 import com.nisovin.shopkeepers.util.java.Validate;
 import com.nisovin.shopkeepers.util.logging.Log;
