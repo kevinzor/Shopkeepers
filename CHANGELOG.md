@@ -2,8 +2,13 @@
 Date format: (YYYY-MM-DD)  
 
 ## v2.23.7 (TBA)
-### Supported MC versions: 1.21.5, 1.21.4, 1.21.3, 1.21.1, 1.21, 1.20.6
+### Supported MC versions: 1.21.6, 1.21.5, 1.21.4, 1.21.3, 1.21.1, 1.21, 1.20.6
 
+* Update for MC 1.21.6.
+  * Add happy ghast to the by default enabled mob types.
+    * It supports a baby variant and a colored harness can be equipped to its body slot.
+    * It does not seem to look at players currently when turned to its baby variant or back.
+  * Update the fallback implementation.
 * Config: Avoid inserting default settings if the loaded config data is completely empty.
   * The config data can also be empty if the config file failed to load. Inserting the default settings in this case would overwrite the user's current config.
   * To reset the config to its default values, it is now required to fully delete the config file. Only clearing the config file is not longer sufficient.

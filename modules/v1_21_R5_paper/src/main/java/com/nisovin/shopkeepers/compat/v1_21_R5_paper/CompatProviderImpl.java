@@ -349,7 +349,7 @@ public final class CompatProviderImpl implements CompatProvider {
 		var nmsItem = net.minecraft.world.item.ItemStack.parse(
 				CraftRegistry.getMinecraftRegistry(),
 				convertedItemTag
-		).orElse(net.minecraft.world.item.ItemStack.EMPTY);
+		).orElseThrow();
 		return CraftItemStack.asCraftMirror(nmsItem);
 	}
 

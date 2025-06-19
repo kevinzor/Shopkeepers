@@ -4,7 +4,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Optional;
 import java.util.function.BiConsumer;
 
 import org.bukkit.Bukkit;
@@ -42,9 +41,12 @@ public final class FallbackCompatProvider implements CompatProvider {
 	private final Method nmsCompoundTagPutIntMethod;
 	private final Method nmsCompoundTagPutMethod;
 	private final Method nmsCompoundTagForEachMethod;
+	private final Method nmsHolderLookupProviderCreateSerializationContextMethod;
 	private final Class<?> nmsItemStackClass;
-	private final Method nmsItemStackSaveMethod;
-	private final Method nmsItemStackParseMethod;
+	private final Object nmsItemStackCodec;
+	private final Method nmsCodecEncodeStartMethod;
+	private final Method nmsCodecParseMethod;
+	private final Method nmsDataResultGetOrThrowMethod;
 	private final Object nmsNbtOps;
 	private final Object nmsTagParser;
 	private final Method nmsTagParserParseFullyMethod;
@@ -76,7 +78,7 @@ public final class FallbackCompatProvider implements CompatProvider {
 
 		nmsEntityClass = Class.forName("net.minecraft.world.entity.Entity");
 		nmsEntitySetOnGroundMethod = nmsEntityClass.getDeclaredMethod(
-				"d", // setOnGround
+				"e", // setOnGround
 				boolean.class
 		);
 
@@ -96,25 +98,37 @@ public final class FallbackCompatProvider implements CompatProvider {
 		// forEach
 		nmsCompoundTagForEachMethod = nmsCompoundTagClass.getDeclaredMethod("a", BiConsumer.class);
 
+		var dynamicOpsClass = Class.forName("com.mojang.serialization.DynamicOps");
 		// HolderLookup.Provider
 		var nmsHolderLookupProviderClass = Class.forName("net.minecraft.core.HolderLookup$a");
+		nmsHolderLookupProviderCreateSerializationContextMethod = nmsHolderLookupProviderClass.getDeclaredMethod(
+				"a", // createSerializationContext
+				dynamicOpsClass
+		);
+
 		nmsItemStackClass = Class.forName("net.minecraft.world.item.ItemStack");
-		nmsItemStackSaveMethod = nmsItemStackClass.getDeclaredMethod(
-				"a", // save
-				nmsHolderLookupProviderClass
+
+		var nmsItemStackCodecField = nmsItemStackClass.getDeclaredField("b"); // CODEC
+		nmsItemStackCodec = Unsafe.assertNonNull(nmsItemStackCodecField.get(null));
+		nmsCodecEncodeStartMethod = nmsItemStackCodec.getClass().getMethod(
+				"encodeStart",
+				dynamicOpsClass,
+				Object.class
 		);
-		nmsItemStackParseMethod = nmsItemStackClass.getDeclaredMethod(
-				"a", // parse
-				nmsHolderLookupProviderClass,
-				nmsTagClass
+		nmsCodecParseMethod = nmsItemStackCodec.getClass().getMethod(
+				"parse",
+				dynamicOpsClass,
+				Object.class
 		);
+
+		var nmsDataResultClass = Class.forName("com.mojang.serialization.DataResult");
+		nmsDataResultGetOrThrowMethod = nmsDataResultClass.getDeclaredMethod("getOrThrow");
 
 		var nmsNbtOpsClass = Class.forName("net.minecraft.nbt.DynamicOpsNBT"); // NbtOps
 		var nmsNbtOpsInstanceField = nmsNbtOpsClass.getField("a"); // INSTANCE
 		nmsNbtOps = Unsafe.assertNonNull(nmsNbtOpsInstanceField.get(null));
 
 		var nmsTagParserClass = Class.forName("net.minecraft.nbt.MojangsonParser"); // TagParser
-		var dynamicOpsClass = Class.forName("com.mojang.serialization.DynamicOps");
 		// create
 		var nmsTagParserCreateMethod = nmsTagParserClass.getDeclaredMethod("a", dynamicOpsClass);
 		nmsTagParser = Unsafe.assertNonNull(nmsTagParserCreateMethod.invoke(null, nmsNbtOps));
@@ -141,7 +155,7 @@ public final class FallbackCompatProvider implements CompatProvider {
 		// References
 		var nmsDataFixerReferencesClass = Class.forName("net.minecraft.util.datafix.fixes.DataConverterTypes");
 		// ITEM_STACK
-		nmsDataFixerTypeItemStack = Unsafe.assertNonNull(nmsDataFixerReferencesClass.getField("t").get(null));
+		nmsDataFixerTypeItemStack = Unsafe.assertNonNull(nmsDataFixerReferencesClass.getField("u").get(null));
 		if (!"item_stack".equals(nmsDataFixerTypeReferenceTypeNameMethod.invoke(nmsDataFixerTypeItemStack))) {
 			throw new IllegalStateException("Failed to retrieve the item stack datafixer type reference!");
 		}
@@ -253,6 +267,20 @@ public final class FallbackCompatProvider implements CompatProvider {
 		// Not supported.
 	}
 
+	private Object getItemStackTag(Object nmsItemStack) throws Exception {
+		var serializationContext = nmsHolderLookupProviderCreateSerializationContextMethod.invoke(
+				nmsMinecraftRegistry,
+				nmsNbtOps
+		);
+		var itemTagResult = nmsCodecEncodeStartMethod.invoke(
+				nmsItemStackCodec,
+				serializationContext,
+				nmsItemStack
+		);
+		var itemTag = nmsDataResultGetOrThrowMethod.invoke(itemTagResult);
+		return Unsafe.assertNonNull(itemTag);
+	}
+
 	@Override
 	public @Nullable String getItemSNBT(ItemStack itemStack) {
 		return null; // Not supported.
@@ -267,7 +295,7 @@ public final class FallbackCompatProvider implements CompatProvider {
 
 		try {
 			var nmsItem = this.asNMSItemStack(itemStack);
-			var itemTag = nmsItemStackSaveMethod.invoke(nmsItem, nmsMinecraftRegistry);
+			var itemTag = this.getItemStackTag(nmsItem);
 			var componentsTag = nmsCompoundTagGetMethod.invoke(itemTag, "components");
 			if (componentsTag == null) {
 				return null;
@@ -339,11 +367,16 @@ public final class FallbackCompatProvider implements CompatProvider {
 					currentDataVersion
 			);
 			var convertedItemTag = nmsDynamicGetValueMethod.invoke(convertedItemTagDynamic);
-			var nmsItem = ((Optional<?>) Unsafe.assertNonNull(nmsItemStackParseMethod.invoke(
-					null,
+			var serializationContext = nmsHolderLookupProviderCreateSerializationContextMethod.invoke(
 					nmsMinecraftRegistry,
+					nmsNbtOps
+			);
+			var nmsItemResult = nmsCodecParseMethod.invoke(
+					nmsItemStackCodec,
+					serializationContext,
 					convertedItemTag
-			))).orElse(null);
+			);
+			var nmsItem = nmsDataResultGetOrThrowMethod.invoke(nmsItemResult);
 			return (ItemStack) obcCraftItemStackAsCraftMirrorMethod.invoke(null, nmsItem);
 		} catch (Exception e) {
 			throw new RuntimeException("Failed to deserialize item stack!", e);
