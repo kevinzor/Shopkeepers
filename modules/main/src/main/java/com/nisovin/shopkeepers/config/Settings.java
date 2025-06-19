@@ -777,6 +777,16 @@ public class Settings extends Config {
 
 		ConfigData configData = getPluginConfigData();
 
+		// The default config is not empty. If the loaded config data is empty, the config file is
+		// either empty (unusual) or the config failed to load. We abort the config loading with an
+		// error here instead of inserting the default settings, because doing so might overwrite
+		// the user's current config file contents.
+		if (configData.isEmpty()) {
+			return new ConfigLoadException("The config file is empty or could not be loaded."
+					+ " Please check the log and config file for errors, or delete the file to have"
+					+ " it reset to the default config during the next restart.");
+		}
+
 		// Load settings from config:
 		boolean configChanged;
 		try {

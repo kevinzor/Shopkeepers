@@ -4,6 +4,9 @@ Date format: (YYYY-MM-DD)
 ## v2.23.7 (TBA)
 ### Supported MC versions: 1.21.5, 1.21.4, 1.21.3, 1.21.1, 1.21, 1.20.6
 
+* Config: Avoid inserting default settings if the loaded config data is completely empty.
+  * The config data can also be empty if the config file failed to load. Inserting the default settings in this case would overwrite the user's current config.
+  * To reset the config to its default values, it is now required to fully delete the config file. Only clearing the config file is not longer sufficient.
 
 ## v2.23.6 (2025-05-24)
 ### Supported MC versions: 1.21.5, 1.21.4, 1.21.3, 1.21.1, 1.21, 1.20.6
