@@ -362,11 +362,13 @@ public class TradingView extends View {
 		boolean isCursorEmpty = ItemUtils.isEmpty(cursor);
 
 		// Handle trade depending on used inventory action:
-		// TODO: In MC 1.15.1 PICKUP_ONE and PICKUP_SOME might get triggered when clicking the
-		// result slot (test again: left click, shift+left click, right click, middle click).
-		// TODO: Even though this is not available in vanilla Minecraft, maybe add a way to trade as
-		// often as possible, using up all the items in the player's inventory (i.e. being able to
-		// sell all items with one click)?
+		// Note: There is no need for us to add a custom "quick trade" action, since Minecraft
+		// already allows players to trade very quickly: Players can shift click the result slot to
+		// trade as often as possible with the current input items, and then press the spacebar to
+		// refill the input slots for the selected trade with items from the inventory.
+		// Note: In creative mode, players can also middle click the result slot to copy a stack of
+		// the result item (action CLONE_STACK), but this does not trigger a trade.
+		// Left click and right click: Trade once.
 		if (action == InventoryAction.PICKUP_ALL || action == InventoryAction.PICKUP_HALF) {
 			if (this.handleTrade(trade)) {
 				UnmodifiableItemStack resultItem = trade.getTradeEvent().getResultItem();
@@ -411,7 +413,7 @@ public class TradingView extends View {
 			this.updateTrades();
 		} else if (action == InventoryAction.DROP_ONE_SLOT || action == InventoryAction.DROP_ALL_SLOT) {
 			// Not supported for now, since this might be tricky to accurately reproduce.
-			// dropItemNaturally is not equivalent to the player himself dropping the item and
+			// dropItemNaturally is not equivalent to the player themselves dropping the item and
 			// inventoryView.setItem(-999, item) doesn't set the item's thrower (and there is no API
 			// to set that, nor does the inventoryView return a reference to the dropped item).
 			/*if (isCursorEmpty) {
@@ -465,8 +467,8 @@ public class TradingView extends View {
 				this.updateTrades();
 			}
 		} else if (action == InventoryAction.MOVE_TO_OTHER_INVENTORY) {
-			// Trades as often as possible (depending on offered items and inventory space) for the
-			// current result item:
+			// Shift left or right click: Trades as often as possible (depending on offered items
+			// and inventory space) for the current result item:
 			// If the current trading recipe is no longer fulfilled, and the currently selected
 			// recipe index is 0, it will switch to the next applicable trading recipe, and continue
 			// the trading if the new result item is equal to the previous result item.
