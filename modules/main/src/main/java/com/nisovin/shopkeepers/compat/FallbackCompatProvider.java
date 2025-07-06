@@ -282,7 +282,7 @@ public final class FallbackCompatProvider implements CompatProvider {
 	}
 
 	@Override
-	public @Nullable String getItemSNBT(ItemStack itemStack) {
+	public @Nullable String getItemSNBT(@ReadOnly ItemStack itemStack) {
 		return null; // Not supported.
 	}
 

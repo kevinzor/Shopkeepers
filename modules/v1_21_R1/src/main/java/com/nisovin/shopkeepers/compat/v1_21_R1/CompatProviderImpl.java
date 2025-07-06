@@ -250,7 +250,7 @@ public final class CompatProviderImpl implements CompatProvider {
 	}
 
 	@Override
-	public @Nullable String getItemSNBT(@Nullable ItemStack itemStack) {
+	public @Nullable String getItemSNBT(@ReadOnly ItemStack itemStack) {
 		Validate.notNull(itemStack, "itemStack is null");
 		assert itemStack != null;
 		if (ItemUtils.isEmpty(itemStack)) {
