@@ -13,6 +13,8 @@ def subprojects = [
 	'v1_21_R5_paper',
 	'v1_21_R6',
 	'v1_21_R6_paper',
+	'v1_21_R7',
+	'v1_21_R7_paper',
 	'dist'
 ]
 

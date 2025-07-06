@@ -71,9 +71,8 @@ buildSpigotIfMissing 1.21.1 remapped
 buildSpigotIfMissing 1.21.3 remapped
 
 buildSpigotIfMissing 1.21.4 remapped
-
 buildSpigotIfMissing 1.21.5 remapped
-
 buildSpigotIfMissing 1.21.6 remapped
+buildSpigotIfMissing 1.21.7 remapped
 
 popd
