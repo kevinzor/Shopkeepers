@@ -125,6 +125,14 @@ public final class ItemStackSerializers {
 			// getKey instead of getKeyOrThrow: Compatible with both Spigot and Paper.
 			dataContainer.set(ID, value.getType().getKey());
 			dataContainer.set(COUNT, value.getAmount());
+			// TODO: Saving the itemstack to get its data can result in an error if Minecraft finds
+			// the item data to be invalid. Example: Entity data component with missing "id".
+			// Ideally, we want to detect such issues early, e.g. when loading shopkeepers, and we
+			// want this to only affect the particular trade or shopkeeper and not prevent the
+			// saving of other data.
+			// However, it is unclear how the invalid item data can end up inside the shopkeeper in
+			// the first place: Loading the shopkeeper with the invalid data already fails, and the
+			// give command also already detects invalid data up-front.
 			var componentsData = ItemStackComponentsData.of(ItemUtils.asItemStack(value));
 			dataContainer.set(COMPONENTS, componentsData); // Omitted if null
 			return dataContainer.serialize();
