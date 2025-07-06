@@ -195,6 +195,15 @@ public final class CompatProviderImpl implements CompatProvider {
 		return Unsafe.assertNonNull(CraftItemStack.asNMSCopy(itemStack));
 	}
 
+	private CompoundTag getItemStackTag(net.minecraft.world.item.ItemStack nmsItem) {
+		var itemTag = (CompoundTag) net.minecraft.world.item.ItemStack.CODEC.encodeStart(
+				CraftRegistry.getMinecraftRegistry().createSerializationContext(NbtOps.INSTANCE),
+				nmsItem
+		).getOrThrow();
+		assert itemTag != null;
+		return itemTag;
+	}
+
 	@Override
 	public boolean matches(@Nullable ItemStack provided, @Nullable ItemStack required) {
 		if (provided == required) return true;
@@ -274,10 +283,7 @@ public final class CompatProviderImpl implements CompatProvider {
 		}
 
 		var nmsItem = this.asNMSItemStack(itemStack);
-		var itemTag = (CompoundTag) net.minecraft.world.item.ItemStack.CODEC.encodeStart(
-				CraftRegistry.getMinecraftRegistry().createSerializationContext(NbtOps.INSTANCE),
-				nmsItem
-		).getOrThrow();
+		var itemTag = this.getItemStackTag(nmsItem);
 		return itemTag.toString();
 	}
 
@@ -293,10 +299,7 @@ public final class CompatProviderImpl implements CompatProvider {
 		}
 
 		var nmsItem = this.asNMSItemStack(itemStack);
-		var itemTag = (CompoundTag) net.minecraft.world.item.ItemStack.CODEC.encodeStart(
-				CraftRegistry.getMinecraftRegistry().createSerializationContext(NbtOps.INSTANCE),
-				nmsItem
-		).getOrThrow();
+		var itemTag = this.getItemStackTag(nmsItem);
 
 		var componentsTag = (CompoundTag) itemTag.get("components");
 		if (componentsTag == null) {

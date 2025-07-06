@@ -193,6 +193,12 @@ public final class CompatProviderImpl implements CompatProvider {
 		return Unsafe.assertNonNull(CraftItemStack.asNMSCopy(itemStack));
 	}
 
+	private CompoundTag getItemStackTag(net.minecraft.world.item.ItemStack nmsItem) {
+		var itemTag = (CompoundTag) nmsItem.save(CraftRegistry.getMinecraftRegistry());
+		assert itemTag != null;
+		return itemTag;
+	}
+
 	@Override
 	public boolean matches(@Nullable ItemStack provided, @Nullable ItemStack required) {
 		if (provided == required) return true;
@@ -271,9 +277,9 @@ public final class CompatProviderImpl implements CompatProvider {
 			return null;
 		}
 
-		net.minecraft.world.item.ItemStack nmsItem = asNMSItemStack(itemStack);
-		Tag itemNBT = nmsItem.save(CraftRegistry.getMinecraftRegistry());
-		return itemNBT.toString();
+		var nmsItem = this.asNMSItemStack(itemStack);
+		var itemTag = this.getItemStackTag(nmsItem);
+		return itemTag.toString();
 	}
 
 	@Override
@@ -284,7 +290,8 @@ public final class CompatProviderImpl implements CompatProvider {
 		}
 
 		var nmsItem = this.asNMSItemStack(itemStack);
-		var itemTag = (CompoundTag) nmsItem.save(CraftRegistry.getMinecraftRegistry());
+		var itemTag = this.getItemStackTag(nmsItem);
+
 		var componentsTag = (CompoundTag) itemTag.get("components");
 		if (componentsTag == null) {
 			return null;
