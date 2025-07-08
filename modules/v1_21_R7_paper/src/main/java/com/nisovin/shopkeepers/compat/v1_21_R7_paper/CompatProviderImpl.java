@@ -212,8 +212,8 @@ public final class CompatProviderImpl implements CompatProvider {
 		else if (ItemUtils.isEmpty(provided)) return false;
 		assert required != null && provided != null;
 		if (provided.getType() != required.getType()) return false;
-		net.minecraft.world.item.ItemStack nmsProvided = asNMSItemStack(provided);
-		net.minecraft.world.item.ItemStack nmsRequired = asNMSItemStack(required);
+		net.minecraft.world.item.ItemStack nmsProvided = this.asNMSItemStack(provided);
+		net.minecraft.world.item.ItemStack nmsRequired = this.asNMSItemStack(required);
 		DataComponentMap requiredComponents = PatchedDataComponentMap.fromPatch(
 				DataComponentMap.EMPTY,
 				nmsRequired.getComponentsPatch()

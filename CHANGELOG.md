@@ -5,6 +5,7 @@ Date format: (YYYY-MM-DD)
 ### Supported MC versions: 1.21.7, 1.21.6, 1.21.5, 1.21.4, 1.21.3, 1.21.1, 1.21, 1.20.6
 
 * Update for MC 1.21.7.
+* Data: Consistently throw an exception if the item deserialization fails. On some server versions, we would previously silently load an empty item instead.
 
 ## v2.23.8 (2025-06-21)
 ### Supported MC versions: 1.21.6, 1.21.5, 1.21.4, 1.21.3, 1.21.1, 1.21, 1.20.6

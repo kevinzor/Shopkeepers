@@ -189,8 +189,8 @@ public final class CompatProviderImpl implements CompatProvider {
 		else if (ItemUtils.isEmpty(provided)) return false;
 		assert required != null && provided != null;
 		if (provided.getType() != required.getType()) return false;
-		net.minecraft.world.item.ItemStack nmsProvided = asNMSItemStack(provided);
-		net.minecraft.world.item.ItemStack nmsRequired = asNMSItemStack(required);
+		net.minecraft.world.item.ItemStack nmsProvided = this.asNMSItemStack(provided);
+		net.minecraft.world.item.ItemStack nmsRequired = this.asNMSItemStack(required);
 		DataComponentMap requiredComponents = nmsRequired.getComponents();
 		// Compare the components according to Minecraft's matching rules (imprecise):
 		return DataComponentPredicate.allOf(requiredComponents).test(nmsProvided);
@@ -331,7 +331,7 @@ public final class CompatProviderImpl implements CompatProvider {
 		var nmsItem = net.minecraft.world.item.ItemStack.parse(
 				CraftRegistry.getMinecraftRegistry(),
 				convertedItemTag
-		).orElse(net.minecraft.world.item.ItemStack.EMPTY);
+		).orElseThrow();
 		return CraftItemStack.asCraftMirror(nmsItem);
 	}
 
