@@ -6,6 +6,7 @@ Date format: (YYYY-MM-DD)
 
 * Update for MC 1.21.7.
 * Data: Consistently throw an exception if the item deserialization fails. On some server versions, we would previously silently load an empty item instead.
+* Data: Support 'minecraft:air' in the the new item deserialization. We already handle unexpected empty items via property validators. This allows us to also use our new item serialization format in places in which air / empty item stacks are considered valid.
 
 ## v2.23.8 (2025-06-21)
 ### Supported MC versions: 1.21.6, 1.21.5, 1.21.4, 1.21.3, 1.21.1, 1.21, 1.20.6

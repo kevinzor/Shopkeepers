@@ -128,7 +128,7 @@ public interface CompatProvider {
 
 	public @Nullable ItemStackComponentsData getItemStackComponentsData(@ReadOnly ItemStack itemStack);
 
-	public @Nullable ItemStack deserializeItemStack(
+	public ItemStack deserializeItemStack(
 			int dataVersion,
 			NamespacedKey id,
 			int count,

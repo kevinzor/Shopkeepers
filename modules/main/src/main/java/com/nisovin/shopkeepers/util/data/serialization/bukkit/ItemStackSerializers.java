@@ -5,6 +5,7 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
+import com.nisovin.shopkeepers.api.internal.util.Unsafe;
 import com.nisovin.shopkeepers.api.util.UnmodifiableItemStack;
 import com.nisovin.shopkeepers.compat.Compat;
 import com.nisovin.shopkeepers.util.bukkit.DataUtils;
@@ -71,7 +72,7 @@ public final class ItemStackSerializers {
 			if (data instanceof ItemStack itemStack) {
 				return DataUtils.processNonNullLoadedItemStack(itemStack);
 			} else if (data instanceof UnmodifiableItemStack unmodifiableItemStack) {
-				// We also support UnmodifiableItemStackshere, but return a copy of the item stack,
+				// We also support UnmodifiableItemStacks here, but return a copy of the item stack,
 				// because we don't know how the returned ItemStack will be used by the caller, i.e.
 				// whether it is expected to be modifiable.
 				// Note: We don't expect the additional ItemStack processing of
@@ -94,7 +95,7 @@ public final class ItemStackSerializers {
 						throw new InvalidDataException("Failed to deserialize ItemStack!", e);
 					}
 
-					if (itemStack == null) {
+					if (Unsafe.nullable(itemStack) == null) {
 						throw new InvalidDataException("Loaded ItemStack is null!");
 					}
 

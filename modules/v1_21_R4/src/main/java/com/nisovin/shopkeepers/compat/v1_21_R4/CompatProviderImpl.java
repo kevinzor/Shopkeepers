@@ -4,6 +4,7 @@ import java.lang.reflect.Field;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ExplosionResult;
+import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.craftbukkit.v1_21_R3.CraftRegistry;
 import org.bukkit.craftbukkit.v1_21_R3.entity.CraftAbstractVillager;
@@ -295,7 +296,7 @@ public final class CompatProviderImpl implements CompatProvider {
 	}
 
 	@Override
-	public @Nullable ItemStack deserializeItemStack(
+	public ItemStack deserializeItemStack(
 			int dataVersion,
 			NamespacedKey id,
 			int count,
@@ -335,11 +336,16 @@ public final class CompatProviderImpl implements CompatProvider {
 				dataVersion,
 				currentDataVersion
 		).getValue();
+
+		if ("minecraft:air".equals(convertedItemTag.getString("id"))) {
+			return new ItemStack(Material.AIR);
+		}
+
 		var nmsItem = net.minecraft.world.item.ItemStack.parse(
 				CraftRegistry.getMinecraftRegistry(),
 				convertedItemTag
 		).orElseThrow();
-		return CraftItemStack.asCraftMirror(nmsItem);
+		return Unsafe.assertNonNull(CraftItemStack.asCraftMirror(nmsItem));
 	}
 
 	// MC 1.21+ TODO Can be removed once we only support Bukkit 1.21+

@@ -7,6 +7,7 @@ import java.lang.reflect.Method;
 import java.util.function.BiConsumer;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
@@ -37,6 +38,7 @@ public final class FallbackCompatProvider implements CompatProvider {
 	private final Object nmsMinecraftRegistry;
 	private final Class<?> nmsCompoundTagClass;
 	private final Method nmsCompoundTagGetMethod;
+	private final Method nmsCompoundTagGetStringOrMethod;
 	private final Method nmsCompoundTagPutStringMethod;
 	private final Method nmsCompoundTagPutIntMethod;
 	private final Method nmsCompoundTagPutMethod;
@@ -89,6 +91,8 @@ public final class FallbackCompatProvider implements CompatProvider {
 		var nmsTagClass = Class.forName("net.minecraft.nbt.NBTBase"); // Tag
 		nmsCompoundTagClass = Class.forName("net.minecraft.nbt.NBTTagCompound"); // CompoundTag
 		nmsCompoundTagGetMethod = nmsCompoundTagClass.getDeclaredMethod("a", String.class); // get
+		// getStringOr
+		nmsCompoundTagGetStringOrMethod = nmsCompoundTagClass.getDeclaredMethod("b", String.class, String.class);
 		// putString
 		nmsCompoundTagPutStringMethod = nmsCompoundTagClass.getDeclaredMethod("a", String.class, String.class);
 		// putInt
@@ -318,7 +322,7 @@ public final class FallbackCompatProvider implements CompatProvider {
 	}
 
 	@Override
-	public @Nullable ItemStack deserializeItemStack(
+	public ItemStack deserializeItemStack(
 			int dataVersion,
 			NamespacedKey id,
 			int count,
@@ -367,6 +371,17 @@ public final class FallbackCompatProvider implements CompatProvider {
 					currentDataVersion
 			);
 			var convertedItemTag = nmsDynamicGetValueMethod.invoke(convertedItemTagDynamic);
+
+			var idString = (String) nmsCompoundTagGetStringOrMethod.invoke(
+					convertedItemTag,
+					"id",
+					"minecraft:air"
+			);
+			assert idString != null;
+			if (idString.equals("minecraft:air")) {
+				return new ItemStack(Material.AIR);
+			}
+
 			var serializationContext = nmsHolderLookupProviderCreateSerializationContextMethod.invoke(
 					nmsMinecraftRegistry,
 					nmsNbtOps
@@ -377,7 +392,9 @@ public final class FallbackCompatProvider implements CompatProvider {
 					convertedItemTag
 			);
 			var nmsItem = nmsDataResultGetOrThrowMethod.invoke(nmsItemResult);
-			return (ItemStack) obcCraftItemStackAsCraftMirrorMethod.invoke(null, nmsItem);
+			return Unsafe.assertNonNull(
+					(ItemStack) obcCraftItemStackAsCraftMirrorMethod.invoke(null, nmsItem)
+			);
 		} catch (Exception e) {
 			throw new RuntimeException("Failed to deserialize item stack!", e);
 		}
