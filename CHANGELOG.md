@@ -4,6 +4,7 @@ Date format: (YYYY-MM-DD)
 ## v2.23.10 (TBA)
 ### Supported MC versions: 1.21.7, 1.21.6, 1.21.5, 1.21.4, 1.21.3, 1.21.1, 1.21, 1.20.6
 
+* Build: Move tests into a new 'test' module in order to be able to use compat functionality in tests in the future.
 
 ## v2.23.9 (2025-07-09)
 ### Supported MC versions: 1.21.7, 1.21.6, 1.21.5, 1.21.4, 1.21.3, 1.21.1, 1.21, 1.20.6

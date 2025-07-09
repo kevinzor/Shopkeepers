@@ -31,7 +31,6 @@ public class ItemDataTest extends AbstractItemStackSerializationTest<@Nullable S
 
 	@AfterClass
 	public static void cleanup() {
-		ItemData.resetSerializerPrefersPlainTextFormat();
 	}
 
 	private static String yamlNewline() {

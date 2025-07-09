@@ -246,6 +246,8 @@ public class SKShopkeepersPlugin extends JavaPlugin implements InternalShopkeepe
 		}
 
 		// Load config:
+		// Note: The config loading can already depend on Compat functionality (e.g. for item
+		// loading), so Compat must be initialized first.
 		this.configLoadError = Settings.loadConfig();
 		if (this.configLoadError != null) {
 			return;

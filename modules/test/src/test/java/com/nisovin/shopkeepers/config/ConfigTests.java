@@ -13,6 +13,7 @@ import java.util.Set;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.checkerframework.checker.nullness.qual.NonNull;
+import org.hamcrest.MatcherAssert;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -23,7 +24,6 @@ import com.nisovin.shopkeepers.lang.Messages;
 import com.nisovin.shopkeepers.testutil.AbstractBukkitTest;
 import com.nisovin.shopkeepers.util.bukkit.ConfigUtils;
 import com.nisovin.shopkeepers.util.data.container.DataContainer;
-import com.nisovin.shopkeepers.util.inventory.ItemData;
 import com.nisovin.shopkeepers.util.java.ClassUtils;
 
 public class ConfigTests extends AbstractBukkitTest {
@@ -34,7 +34,6 @@ public class ConfigTests extends AbstractBukkitTest {
 
 	@AfterClass
 	public static void cleanup() {
-		ItemData.resetSerializerPrefersPlainTextFormat();
 	}
 
 	private DataContainer loadConfigFromResource(String resourcePath, boolean useBukkitSettings) {
@@ -80,7 +79,7 @@ public class ConfigTests extends AbstractBukkitTest {
 			// Compare values:
 			Object expectedValue = expectedValues.get(expectedKey);
 			Object actualValue = actualValues.get(expectedKey);
-			Assert.assertThat("The value for key '" + expectedKey
+			MatcherAssert.assertThat("The value for key '" + expectedKey
 					+ "' of the default config does not match the expected value!",
 					actualValue, dataFuzzyEqualTo(expectedValue));
 		}

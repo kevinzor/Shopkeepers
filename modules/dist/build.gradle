@@ -50,7 +50,7 @@ shadowJar {
 		include(project(':shopkeepers-api'))
 		include(project(':shopkeepers-main'))
 		nmsModules.each { module ->
-			include(project(module))
+			include(project(path: module, configuration: 'remapped'))
 		}
 	}
 	manifest {
