@@ -1,6 +1,7 @@
 package com.nisovin.shopkeepers.compat;
 
 import java.nio.file.Files;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -46,8 +47,15 @@ public final class Compat {
 	// Minecraft version instead.
 	static {
 		// Registered in the order from latest to oldest.
-		register(new CompatVersion("1_21_R7_paper", "1.21.7", "1.21.7"));
-		register(new CompatVersion("1_21_R7", "1.21.7", "98b42190c84edaa346fd96106ee35d6f"));
+		// 1.21.8: Mappings version has not changed. We can reuse the 1.21.7 compat modules.
+		register(new CompatVersion("1_21_R7_paper", Arrays.asList(
+				new ServerVersion("1.21.7", "1.21.7"),
+				new ServerVersion("1.21.8", "1.21.8")
+		)));
+		register(new CompatVersion("1_21_R7", Arrays.asList(
+				new ServerVersion("1.21.7", "98b42190c84edaa346fd96106ee35d6f"),
+				new ServerVersion("1.21.8", "98b42190c84edaa346fd96106ee35d6f")
+		)));
 		register(new CompatVersion("1_21_R6_paper", "1.21.6", "1.21.6"));
 		register(new CompatVersion("1_21_R6", "1.21.6", "164f8e872cb3dff744982fca079642b2"));
 		register(new CompatVersion("1_21_R5_paper", "1.21.5", "7ecad754373a5fbc43d381d7450c53a5"));
@@ -82,8 +90,9 @@ public final class Compat {
 	 */
 	private static @Nullable CompatVersion findCompatVersion(String mappingsVersion, String variant) {
 		var compatVersion = COMPAT_VERSIONS.values().stream()
-				.filter(x -> x.getMappingsVersion().equals(mappingsVersion)
-						&& x.getVariant().equals(variant))
+				.filter(x -> x.getVariant().equals(variant)
+						&& x.getSupportedServerVersions().stream()
+								.anyMatch(v -> v.getMappingsVersion().equals(mappingsVersion)))
 				.findFirst()
 				.orElse(null);
 		if (compatVersion == null && !variant.isEmpty()) {
@@ -91,7 +100,9 @@ public final class Compat {
 			// This allows us to reuse the older compatible compat version implementations for Paper
 			// servers without having to copy them.
 			compatVersion = COMPAT_VERSIONS.values().stream()
-					.filter(x -> x.getMappingsVersion().equals(mappingsVersion) && !x.hasVariant())
+					.filter(x -> !x.hasVariant()
+							&& x.getSupportedServerVersions().stream()
+									.anyMatch(v -> v.getMappingsVersion().equals(mappingsVersion)))
 					.findFirst()
 					.orElse(null);
 		}
