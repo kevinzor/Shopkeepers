@@ -22,6 +22,7 @@ import com.nisovin.shopkeepers.util.annotations.ReadOnly;
 import com.nisovin.shopkeepers.util.bukkit.ServerUtils;
 import com.nisovin.shopkeepers.util.data.container.DataContainer;
 import com.nisovin.shopkeepers.util.inventory.ItemStackComponentsData;
+import com.nisovin.shopkeepers.util.inventory.ItemStackMetaTag;
 import com.nisovin.shopkeepers.util.inventory.ItemUtils;
 import com.nisovin.shopkeepers.util.java.Validate;
 import com.nisovin.shopkeepers.util.logging.Log;
@@ -36,6 +37,7 @@ public final class FallbackCompatProvider implements CompatProvider {
 	private final Class<?> nmsEntityClass;
 	private final Method nmsEntitySetOnGroundMethod;
 	private final Object nmsMinecraftRegistry;
+	private final Class<?> nmsTagClass;
 	private final Class<?> nmsCompoundTagClass;
 	private final Method nmsCompoundTagGetMethod;
 	private final Method nmsCompoundTagGetStringOrMethod;
@@ -57,6 +59,7 @@ public final class FallbackCompatProvider implements CompatProvider {
 	private final Object nmsDataFixerTypeItemStack;
 	private final Constructor<?> nmsDynamicConstructor;
 	private final Method nmsDynamicGetValueMethod;
+	private final Method nmsNbtUtilsCompareNbtMethod;
 
 	// CraftBukkit
 	private final Class<?> obcCraftItemStackClass;
@@ -88,7 +91,7 @@ public final class FallbackCompatProvider implements CompatProvider {
 		var obcGetMinecraftRegistryMethod = obcCraftRegistryClass.getMethod("getMinecraftRegistry");
 		nmsMinecraftRegistry = Unsafe.assertNonNull(obcGetMinecraftRegistryMethod.invoke(null));
 
-		var nmsTagClass = Class.forName("net.minecraft.nbt.NBTBase"); // Tag
+		nmsTagClass = Class.forName("net.minecraft.nbt.NBTBase"); // Tag
 		nmsCompoundTagClass = Class.forName("net.minecraft.nbt.NBTTagCompound"); // CompoundTag
 		nmsCompoundTagGetMethod = nmsCompoundTagClass.getDeclaredMethod("a", String.class); // get
 		// getStringOr
@@ -166,6 +169,14 @@ public final class FallbackCompatProvider implements CompatProvider {
 
 		nmsDynamicConstructor = nmsDynamicClass.getConstructor(dynamicOpsClass, Object.class);
 		nmsDynamicGetValueMethod = nmsDynamicClass.getDeclaredMethod("getValue");
+
+		var nmsNbtUtilsClass = Class.forName("net.minecraft.nbt.GameProfileSerializer"); // NbtUtils
+		nmsNbtUtilsCompareNbtMethod = nmsNbtUtilsClass.getDeclaredMethod(
+				"a",
+				nmsTagClass,
+				nmsTagClass,
+				boolean.class
+		); // compareNbt
 
 		// CraftBukkit
 
@@ -288,6 +299,42 @@ public final class FallbackCompatProvider implements CompatProvider {
 	@Override
 	public @Nullable String getItemSNBT(@ReadOnly ItemStack itemStack) {
 		return null; // Not supported.
+	}
+
+	@Override
+	public ItemStackMetaTag getItemStackMetaTag(@ReadOnly @Nullable ItemStack itemStack) {
+		if (ItemUtils.isEmpty(itemStack)) {
+			return new ItemStackMetaTag(null);
+		}
+		assert itemStack != null;
+
+		try {
+			var nmsItem = this.asNMSItemStack(itemStack);
+			var itemTag = this.getItemStackTag(nmsItem);
+			var componentsTag = nmsCompoundTagGetMethod.invoke(itemTag, "components");
+			return new ItemStackMetaTag(componentsTag);
+		} catch (Exception e) {
+			throw new RuntimeException("Failed to get item stack meta tag!", e);
+		}
+	}
+
+	@Override
+	public boolean matches(ItemStackMetaTag provided, ItemStackMetaTag required, boolean matchPartialLists) {
+		Validate.notNull(provided, "provided is null");
+		Validate.notNull(required, "required is null");
+		var providedTag = provided.getNmsTag();
+		var requiredTag = required.getNmsTag();
+		try {
+			// Partially match list data:
+			return Unsafe.castNonNull(nmsNbtUtilsCompareNbtMethod.invoke(
+					null,
+					requiredTag,
+					providedTag,
+					matchPartialLists
+			));
+		} catch (Exception e) {
+			throw new RuntimeException("Failed to match item stack meta tags!", e);
+		}
 	}
 
 	@Override

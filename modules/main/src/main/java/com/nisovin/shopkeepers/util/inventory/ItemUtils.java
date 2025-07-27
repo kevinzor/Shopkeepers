@@ -2,8 +2,6 @@ package com.nisovin.shopkeepers.util.inventory;
 
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.function.Predicate;
 
 import org.bukkit.Bukkit;
@@ -921,165 +919,78 @@ public final class ItemUtils {
 	// ITEM DATA MATCHING
 
 	public static boolean matchesData(
-			@ReadOnly @Nullable ItemStack item,
-			@ReadOnly @Nullable ItemStack data
+			@ReadOnly @Nullable ItemStack provided,
+			@ReadOnly @Nullable ItemStack required
 	) {
-		return matchesData(item, data, false); // Not matching partial lists
+		return matchesData(provided, required, true); // Matching partial lists
 	}
 
 	public static boolean matchesData(
-			@Nullable UnmodifiableItemStack item,
-			@Nullable UnmodifiableItemStack data
+			@Nullable UnmodifiableItemStack provided,
+			@Nullable UnmodifiableItemStack required
 	) {
-		return matchesData(item, data, false); // Not matching partial lists
+		return matchesData(provided, required, true); // Matching partial lists
 	}
 
-	// Same type and contains data.
+	// Same type and contains required data.
 	public static boolean matchesData(
-			@Nullable UnmodifiableItemStack item,
-			@Nullable UnmodifiableItemStack data,
+			@Nullable UnmodifiableItemStack provided,
+			@Nullable UnmodifiableItemStack required,
 			boolean matchPartialLists
 	) {
-		return matchesData(asItemStackOrNull(item), asItemStackOrNull(data), matchPartialLists);
+		return matchesData(asItemStackOrNull(provided), asItemStackOrNull(required), matchPartialLists);
 	}
 
-	// Same type and contains data.
+	// Same type and contains required data.
 	public static boolean matchesData(
-			@ReadOnly @Nullable ItemStack item,
-			@ReadOnly @Nullable ItemStack data,
+			@ReadOnly @Nullable ItemStack provided,
+			@ReadOnly @Nullable ItemStack required,
 			boolean matchPartialLists
 	) {
-		if (item == data) return true;
-		if (data == null) return true;
-		if (item == null) return false;
+		if (provided == required) return true;
+		if (required == null) return true;
+		if (provided == null) return false;
 		// Compare item types:
-		if (item.getType() != data.getType()) return false;
+		if (provided.getType() != required.getType()) return false;
 
 		// Check if metadata is contained in item:
-		return matchesData(item.getItemMeta(), data.getItemMeta(), matchPartialLists);
+		return matchesData(
+				ItemStackMetaTag.of(provided),
+				ItemStackMetaTag.of(required),
+				matchPartialLists
+		);
 	}
 
 	public static boolean matchesData(
-			@ReadOnly @Nullable ItemStack item,
-			Material dataType,
-			@ReadOnly @Nullable Map<? extends String, @ReadOnly @NonNull ?> data,
+			@Nullable UnmodifiableItemStack provided,
+			Material requiredType,
+			ItemStackMetaTag required,
 			boolean matchPartialLists
 	) {
-		if (item == null) return false;
-		if (item.getType() != dataType) return false; // Also returns false if dataType is null
-		if (data == null || data.isEmpty()) return true;
-		return matchesData(item.getItemMeta(), data, matchPartialLists);
+		return matchesData(asItemStackOrNull(provided), requiredType, required, matchPartialLists);
 	}
 
 	public static boolean matchesData(
-			@Nullable UnmodifiableItemStack item,
-			Material dataType,
-			@ReadOnly @Nullable Map<? extends String, @ReadOnly @NonNull ?> data,
+			@ReadOnly @Nullable ItemStack provided,
+			Material requiredType,
+			ItemStackMetaTag required,
 			boolean matchPartialLists
 	) {
-		return matchesData(asItemStackOrNull(item), dataType, data, matchPartialLists);
+		if (provided == null) return false;
+		if (provided.getType() != requiredType) return false;
+		if (required.isEmpty()) return true;
+		return matchesData(ItemStackMetaTag.of(provided), required, matchPartialLists);
 	}
 
+	// Checks if the provided metadata contains the required metadata.
+	// Similar to Minecraft's NBT predicate matching. Note: Unlike item comparisons during trading,
+	// this matches component data partially.
 	public static boolean matchesData(
-			@ReadOnly ItemMeta itemMetaData,
-			@ReadOnly ItemMeta dataMetaData
-	) {
-		return matchesData(itemMetaData, dataMetaData, false); // Not matching partial lists
-	}
-
-	// Checks if the metadata contains the other given metadata.
-	// Similar to Minecraft's NBT data matching (trading does not match partial lists, but data
-	// specified in commands does), but there are a few differences: Minecraft requires explicitly
-	// specified empty lists to perfectly match in all cases, and some data is treated as list in
-	// Minecraft but as map in Bukkit (e.g. enchantments). But the behavior is the same if not
-	// matching partial lists.
-	public static boolean matchesData(
-			@Nullable ItemMeta itemMetaData,
-			@Nullable ItemMeta dataMetaData,
+			ItemStackMetaTag provided,
+			ItemStackMetaTag required,
 			boolean matchPartialLists
 	) {
-		if (itemMetaData == dataMetaData) return true;
-		if (dataMetaData == null) return true;
-		if (itemMetaData == null) return false;
-
-		// TODO Maybe there is a better way of doing this in the future..
-		Map<? extends String, @NonNull ?> itemMetaDataMap = itemMetaData.serialize();
-		Map<? extends String, @NonNull ?> dataMetaDataMap = dataMetaData.serialize();
-		return matchesData(itemMetaDataMap, dataMetaDataMap, matchPartialLists);
-	}
-
-	public static boolean matchesData(
-			@ReadOnly @Nullable ItemMeta itemMetaData,
-			@ReadOnly @Nullable Map<? extends String, @ReadOnly @NonNull ?> data,
-			boolean matchPartialLists
-	) {
-		if (data == null || data.isEmpty()) return true;
-		if (itemMetaData == null) return false;
-		Map<? extends String, @NonNull ?> itemMetaDataMap = itemMetaData.serialize();
-		return matchesData(itemMetaDataMap, data, matchPartialLists);
-	}
-
-	public static boolean matchesData(
-			@ReadOnly @Nullable Map<? extends String, @ReadOnly @NonNull ?> itemData,
-			@ReadOnly @Nullable Map<? extends String, @ReadOnly @NonNull ?> data,
-			boolean matchPartialLists
-	) {
-		return _matchesData(itemData, data, matchPartialLists);
-	}
-
-	private static boolean _matchesData(
-			@ReadOnly @Nullable Object target,
-			@ReadOnly @Nullable Object data,
-			boolean matchPartialLists
-	) {
-		if (target == data) return true;
-		if (data == null) return true;
-		if (target == null) return false;
-
-		// Check if map contains given data:
-		if (data instanceof Map) {
-			if (!(target instanceof Map)) return false;
-			Map<@NonNull ?, @NonNull ?> targetMap = Unsafe.castNonNull(target);
-			Map<@NonNull ?, @NonNull ?> dataMap = Unsafe.castNonNull(data);
-			for (Entry<@NonNull ?, ?> entry : dataMap.entrySet()) {
-				Object targetValue = targetMap.get(entry.getKey());
-				if (!_matchesData(targetValue, entry.getValue(), matchPartialLists)) {
-					return false;
-				}
-			}
-			return true;
-		}
-
-		// Check if list contains given data:
-		if (matchPartialLists && data instanceof List) {
-			if (!(target instanceof List)) return false;
-			List<?> targetList = (List<?>) target;
-			List<?> dataList = (List<?>) data;
-			// If empty list is explicitly specified, then target list has to be empty as well:
-			/*if (dataList.isEmpty()) {
-				return targetList.isEmpty();
-			}*/
-			// Avoid loop (TODO: only works if dataList doesn't contain duplicate entries):
-			if (dataList.size() > targetList.size()) {
-				return false;
-			}
-			for (Object dataEntry : dataList) {
-				boolean dataContained = false;
-				for (Object targetEntry : targetList) {
-					if (_matchesData(targetEntry, dataEntry, matchPartialLists)) {
-						dataContained = true;
-						break;
-					}
-				}
-				if (!dataContained) {
-					return false;
-				}
-			}
-			return true;
-		}
-
-		// Check if objects are equal:
-		return data.equals(target);
+		return required.matches(provided, matchPartialLists);
 	}
 
 	// PREDICATES

@@ -16,6 +16,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import com.nisovin.shopkeepers.api.util.UnmodifiableItemStack;
 import com.nisovin.shopkeepers.util.annotations.ReadOnly;
 import com.nisovin.shopkeepers.util.inventory.ItemStackComponentsData;
+import com.nisovin.shopkeepers.util.inventory.ItemStackMetaTag;
 import com.nisovin.shopkeepers.util.inventory.ItemUtils;
 import com.nisovin.shopkeepers.util.java.Validate;
 
@@ -125,6 +126,10 @@ public interface CompatProvider {
 	// not correctly serialize the data currently
 	// (https://github.com/SpigotMC/BungeeCord/issues/3688).
 	public @Nullable String getItemSNBT(@ReadOnly ItemStack itemStack);
+
+	public ItemStackMetaTag getItemStackMetaTag(@ReadOnly @Nullable ItemStack itemStack);
+
+	public boolean matches(ItemStackMetaTag provided, ItemStackMetaTag required, boolean matchPartialLists);
 
 	public @Nullable ItemStackComponentsData getItemStackComponentsData(@ReadOnly ItemStack itemStack);
 

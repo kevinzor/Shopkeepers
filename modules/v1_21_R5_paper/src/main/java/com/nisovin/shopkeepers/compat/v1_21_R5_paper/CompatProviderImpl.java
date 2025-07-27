@@ -45,6 +45,7 @@ import com.nisovin.shopkeepers.util.annotations.ReadOnly;
 import com.nisovin.shopkeepers.util.bukkit.RegistryUtils;
 import com.nisovin.shopkeepers.util.data.container.DataContainer;
 import com.nisovin.shopkeepers.util.inventory.ItemStackComponentsData;
+import com.nisovin.shopkeepers.util.inventory.ItemStackMetaTag;
 import com.nisovin.shopkeepers.util.inventory.ItemUtils;
 import com.nisovin.shopkeepers.util.java.EnumUtils;
 import com.nisovin.shopkeepers.util.java.Validate;
@@ -57,6 +58,7 @@ import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.PatchedDataComponentMap;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
 import net.minecraft.nbt.TagParser;
 import net.minecraft.server.level.ServerPlayer;
@@ -283,6 +285,28 @@ public final class CompatProviderImpl implements CompatProvider {
 		var nmsItem = this.asNMSItemStack(itemStack);
 		var itemTag = this.getItemStackTag(nmsItem);
 		return itemTag.toString();
+	}
+
+	@Override
+	public ItemStackMetaTag getItemStackMetaTag(@ReadOnly @Nullable ItemStack itemStack) {
+		if (ItemUtils.isEmpty(itemStack)) {
+			return new ItemStackMetaTag(null);
+		}
+		assert itemStack != null;
+
+		var nmsItem = this.asNMSItemStack(itemStack);
+		var itemTag = this.getItemStackTag(nmsItem);
+		var componentsTag = (CompoundTag) itemTag.get("components");
+		return new ItemStackMetaTag(componentsTag);
+	}
+
+	@Override
+	public boolean matches(ItemStackMetaTag provided, ItemStackMetaTag required, boolean matchPartialLists) {
+		Validate.notNull(provided, "provided is null");
+		Validate.notNull(required, "required is null");
+		var providedTag = (Tag) provided.getNmsTag();
+		var requiredTag = (Tag) required.getNmsTag();
+		return NbtUtils.compareNbt(requiredTag, providedTag, matchPartialLists);
 	}
 
 	// Note: Paper 1.21.5+ also already serializes ItemStacks in a similar format. However, for

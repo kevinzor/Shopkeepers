@@ -110,37 +110,33 @@ public final class ItemData {
 		@Override
 		public @Nullable Object serialize(ItemData value) {
 			Validate.notNull(value, "value is null");
-			Map<? extends String, @NonNull ?> serializedMetaData = value.getSerializedMetaData();
+			ItemMeta itemMeta = value.getItemMeta(); // Can be null
+			Map<? extends String, @NonNull ?> serializedMetaData = ItemSerialization.serializeItemMetaOrEmpty(itemMeta);
 			if (serializedMetaData.isEmpty()) {
 				// Use a more compact representation if there is no additional item data:
 				return value.getType().name();
 			}
 
+			assert itemMeta != null;
+
 			DataContainer itemDataData = DataContainer.create();
 			itemDataData.set(ITEM_TYPE, value.getType());
 
 			// Lazily instantiated, only if needed during serialization:
-			Lazy<@Nullable ItemMeta> lazyItemMeta = new Lazy<>(value::getItemMeta);
-			Lazy<Map<? extends String, @NonNull ?>> lazyPlainSerializedMetaData = new Lazy<>(
-					() -> {
-						ItemMeta itemMeta = lazyItemMeta.get();
-						if (itemMeta != null) {
-							// ItemMeta#getDisplayName and #getLore convert from the ItemMeta's
-							// internal Json representations to plain legacy text representations.
-							// By applying those plain representations back to the ItemMeta and then
-							// serializing the ItemMeta, we are able check if the resulting Json
-							// representations in the newly serialized ItemMeta matches our original
-							// serialized representations.
-							if (itemMeta.hasDisplayName()) {
-								itemMeta.setDisplayName(itemMeta.getDisplayName());
-							}
-							if (itemMeta.hasLore()) {
-								itemMeta.setLore(itemMeta.getLore());
-							}
-						}
-						return ItemSerialization.serializeItemMetaOrEmpty(itemMeta);
-					}
-			);
+			Lazy<Map<? extends String, @NonNull ?>> lazyPlainSerializedMetaData = new Lazy<>(() -> {
+				// ItemMeta#getDisplayName and #getLore convert from the ItemMeta's internal Json
+				// representations to plain legacy text representations.
+				// By applying those plain representations back to the ItemMeta and then serializing
+				// the ItemMeta, we are able check if the resulting Json representations in the
+				// newly serialized ItemMeta matches our original serialized representations.
+				if (itemMeta.hasDisplayName()) {
+					itemMeta.setDisplayName(itemMeta.getDisplayName());
+				}
+				if (itemMeta.hasLore()) {
+					itemMeta.setLore(itemMeta.getLore());
+				}
+				return ItemSerialization.serializeItemMetaOrEmpty(itemMeta);
+			});
 			boolean preferPlainTextFormat = SERIALIZER_PREFERS_PLAIN_TEXT_FORMAT;
 
 			for (Entry<? extends String, @NonNull ?> metaEntry : serializedMetaData.entrySet()) {
@@ -154,13 +150,12 @@ public final class ItemData {
 				// Omit 'blockMaterial' for empty TILE_ENTITY item meta:
 				if (TILE_ENTITY_BLOCK_MATERIAL_KEY.equals(metaKey)) {
 					// Check if specific meta type only contains unspecific metadata:
-					ItemMeta specificItemMeta = Unsafe.assertNonNull(lazyItemMeta.get());
 					// TODO Relies on some material with unspecific item meta.
 					ItemMeta unspecificItemMeta = Bukkit.getItemFactory().asMetaFor(
-							specificItemMeta,
+							itemMeta,
 							Material.STONE
 					);
-					if (Bukkit.getItemFactory().equals(unspecificItemMeta, specificItemMeta)) {
+					if (Bukkit.getItemFactory().equals(unspecificItemMeta, itemMeta)) {
 						continue; // Skip 'blockMaterial' entry
 					}
 				}
@@ -174,7 +169,6 @@ public final class ItemData {
 						String serializedDisplayName = (String) metaValue;
 
 						if (preferPlainTextFormat) {
-							ItemMeta itemMeta = Unsafe.assertNonNull(lazyItemMeta.get());
 							String plainDisplayName = itemMeta.getDisplayName();
 							if (!serializedDisplayName.equals(plainDisplayName)) {
 								// The serialized display name might be in Json format. Check if we
@@ -197,7 +191,6 @@ public final class ItemData {
 						List<?> serializedLore = (List<?>) metaValue;
 
 						if (preferPlainTextFormat) {
-							ItemMeta itemMeta = Unsafe.assertNonNull(lazyItemMeta.get());
 							List<?> plainLore = Unsafe.assertNonNull(itemMeta.getLore());
 							if (!serializedLore.equals(plainLore)) {
 								// The serialized lore might be in Json format. Check if we can
@@ -310,9 +303,9 @@ public final class ItemData {
 	/////
 
 	private final UnmodifiableItemStack dataItem; // Has an amount of 1
-	// Cache serialized item metadata, to avoid serializing it again for every comparison:
+	// Cache serialized item meta, to avoid serializing it again for every comparison:
 	// Gets lazily initialized when needed.
-	private @ReadOnly @Nullable Map<? extends String, @ReadOnly @NonNull ?> serializedMetaData = null;
+	private @ReadOnly @Nullable ItemStackMetaTag serializedMetaData = null;
 
 	public ItemData(Material type) {
 		// Unmodifiable wrapper: Avoids creating another item copy during construction.
@@ -386,12 +379,11 @@ public final class ItemData {
 	}
 
 	// Not null.
-	private Map<? extends String, @NonNull ?> getSerializedMetaData() {
+	private ItemStackMetaTag getSerializedMetaData() {
 		// Lazily cache the serialized data:
 		if (serializedMetaData == null) {
-			ItemMeta itemMeta = dataItem.getItemMeta();
 			// Not null after initialization:
-			serializedMetaData = ItemSerialization.serializeItemMetaOrEmpty(itemMeta);
+			serializedMetaData = ItemStackMetaTag.of(ItemUtils.asItemStack(dataItem));
 		}
 		assert serializedMetaData != null;
 		return serializedMetaData;
@@ -428,7 +420,7 @@ public final class ItemData {
 	}
 
 	public boolean matches(@ReadOnly @Nullable ItemStack item) {
-		return this.matches(item, false); // Not matching partial lists
+		return this.matches(item, true); // Matching partial lists
 	}
 
 	public boolean matches(@Nullable UnmodifiableItemStack item) {
@@ -450,7 +442,7 @@ public final class ItemData {
 	}
 
 	public boolean matches(@Nullable ItemData itemData) {
-		return this.matches(itemData, false); // Not matching partial lists
+		return this.matches(itemData, true); // Matching partial lists
 	}
 
 	// Given ItemData is of same type and has data matching this ItemData.

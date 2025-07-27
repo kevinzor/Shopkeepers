@@ -44,9 +44,9 @@ class CommandCheckItem extends PlayerCommand {
 		player.sendMessage(ChatColor.YELLOW + "Item in main hand / off hand:");
 		player.sendMessage("- Similar to off-hand item: "
 				+ toDisplayString(ItemUtils.isSimilar(mainHandItem, offHandItem)));
-		player.sendMessage("- Matching off-hand item: "
+		player.sendMessage("- NBT matching off-hand item: "
 				+ toDisplayString(ItemUtils.matchesData(mainHandItem, offHandItem)));
-		player.sendMessage("- MC matching off-hand item: "
+		player.sendMessage("- Trade matching off-hand item: "
 				+ toDisplayString(Compat.getProvider().matches(mainHandItem, offHandItem)));
 		player.sendMessage("- Is shop creation item: "
 				+ checkItems(mainHandItem, offHandItem, ShopCreationItem::isShopCreationItem));
