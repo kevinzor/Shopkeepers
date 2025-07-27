@@ -1,8 +1,12 @@
 # Changelog
 Date format: (YYYY-MM-DD)  
 
-## v2.23.10 (TBA)
-### Supported MC versions: 1.21.7, 1.21.6, 1.21.5, 1.21.4, 1.21.3, 1.21.1, 1.21, 1.20.6
+## v2.23.11 (TBA)
+### Supported MC versions: 1.21.8, 1.21.7, 1.21.6, 1.21.5, 1.21.4, 1.21.3, 1.21.1, 1.21, 1.20.6
+
+
+## v2.23.10 (2025-07-27)
+### Supported MC versions: 1.21.8, 1.21.7, 1.21.6, 1.21.5, 1.21.4, 1.21.3, 1.21.1, 1.21, 1.20.6
 
 * Add support for Paper 1.21.8. Internally, this reuses the same compatibility implementation as for 1.21.7.
 * Build: Move tests into a new 'test' module in order to be able to use compat functionality in tests in the future.
