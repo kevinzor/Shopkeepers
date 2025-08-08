@@ -16,7 +16,6 @@ import com.nisovin.shopkeepers.api.internal.util.Unsafe;
 import com.nisovin.shopkeepers.api.util.UnmodifiableItemStack;
 import com.nisovin.shopkeepers.util.annotations.ReadOnly;
 import com.nisovin.shopkeepers.util.bukkit.ConfigUtils;
-import com.nisovin.shopkeepers.util.bukkit.TextUtils;
 import com.nisovin.shopkeepers.util.data.container.DataContainer;
 import com.nisovin.shopkeepers.util.data.property.BasicProperty;
 import com.nisovin.shopkeepers.util.data.property.Property;
@@ -26,35 +25,12 @@ import com.nisovin.shopkeepers.util.data.serialization.InvalidDataException;
 import com.nisovin.shopkeepers.util.data.serialization.MissingDataException;
 import com.nisovin.shopkeepers.util.data.serialization.bukkit.MinecraftEnumSerializers;
 import com.nisovin.shopkeepers.util.data.serialization.java.DataContainerSerializers;
-import com.nisovin.shopkeepers.util.java.Lazy;
 import com.nisovin.shopkeepers.util.java.Validate;
 
 /**
  * An immutable object that stores item type and metadata information.
  */
 public final class ItemData {
-
-	/**
-	 * Disabled by default because the conversion from the plain to the Json text format can be
-	 * unstable from one server version to another.
-	 */
-	// Also: SPIGOT-7571: Legacy color codes are now valid JSON text components. However, Bukkit
-	// handles these display name and lore strings differently depending on whether they are loaded
-	// from a config file (tries to parse the text as JSON components) versus when a plugin calls
-	// ItemMeta#setDisplayName / #setLore (does not attempt to parse the given strings as Json).
-	// When we serialize an ItemStack / ItemData that had a display name or lore set via the
-	// ItemMeta, and we use this 'preferPlainTextFormat' mode, we can end up with strings with
-	// legacy color codes inside the config that produce a different component format when loaded,
-	// since they are now considered valid Json text.
-	private static boolean SERIALIZER_PREFERS_PLAIN_TEXT_FORMAT = false;
-
-	public static void serializerPrefersPlainTextFormat(boolean preferPlainTextFormat) {
-		SERIALIZER_PREFERS_PLAIN_TEXT_FORMAT = preferPlainTextFormat;
-	}
-
-	public static void resetSerializerPrefersPlainTextFormat() {
-		serializerPrefersPlainTextFormat(false);
-	}
 
 	private static final Property<Material> ITEM_TYPE = new BasicProperty<Material>()
 			.dataKeyAccessor("type", MinecraftEnumSerializers.Materials.LENIENT)
@@ -63,8 +39,6 @@ public final class ItemData {
 			.build();
 
 	private static final String META_TYPE_KEY = "meta-type";
-	private static final String DISPLAY_NAME_KEY = "display-name";
-	private static final String LORE_KEY = "lore";
 
 	// Special case: Omitting 'blockMaterial' for empty TILE_ENTITY item meta.
 	private static final String TILE_ENTITY_BLOCK_MATERIAL_KEY = "blockMaterial";
@@ -122,23 +96,6 @@ public final class ItemData {
 			DataContainer itemDataData = DataContainer.create();
 			itemDataData.set(ITEM_TYPE, value.getType());
 
-			// Lazily instantiated, only if needed during serialization:
-			Lazy<Map<? extends String, @NonNull ?>> lazyPlainSerializedMetaData = new Lazy<>(() -> {
-				// ItemMeta#getDisplayName and #getLore convert from the ItemMeta's internal Json
-				// representations to plain legacy text representations.
-				// By applying those plain representations back to the ItemMeta and then serializing
-				// the ItemMeta, we are able check if the resulting Json representations in the
-				// newly serialized ItemMeta matches our original serialized representations.
-				if (itemMeta.hasDisplayName()) {
-					itemMeta.setDisplayName(itemMeta.getDisplayName());
-				}
-				if (itemMeta.hasLore()) {
-					itemMeta.setLore(itemMeta.getLore());
-				}
-				return ItemSerialization.serializeItemMetaOrEmpty(itemMeta);
-			});
-			boolean preferPlainTextFormat = SERIALIZER_PREFERS_PLAIN_TEXT_FORMAT;
-
 			for (Entry<? extends String, @NonNull ?> metaEntry : serializedMetaData.entrySet()) {
 				String metaKey = metaEntry.getKey();
 				Object metaValue = metaEntry.getValue();
@@ -157,56 +114,6 @@ public final class ItemData {
 					);
 					if (Bukkit.getItemFactory().equals(unspecificItemMeta, itemMeta)) {
 						continue; // Skip 'blockMaterial' entry
-					}
-				}
-
-				// Special handling of text data:
-				// - We might optionally prefer the plain text format with color codes for texts
-				// that the server can loss-less convert back to the Json text format.
-				// - We want to use alternative color codes.
-				if (DISPLAY_NAME_KEY.equals(metaKey)) {
-					if (metaValue instanceof String) {
-						String serializedDisplayName = (String) metaValue;
-
-						if (preferPlainTextFormat) {
-							String plainDisplayName = itemMeta.getDisplayName();
-							if (!serializedDisplayName.equals(plainDisplayName)) {
-								// The serialized display name might be in Json format. Check if we
-								// can preserve it even if we serialize it in plain format:
-								String plainSerializedDisplayName = Unsafe.castNonNull(
-										lazyPlainSerializedMetaData.get().get(DISPLAY_NAME_KEY)
-								);
-								if (serializedDisplayName.equals(plainSerializedDisplayName)) {
-									// Use the plain representation:
-									serializedDisplayName = plainDisplayName;
-								}
-							}
-						}
-
-						// Use alternative color codes:
-						metaValue = TextUtils.decolorize(serializedDisplayName);
-					}
-				} else if (LORE_KEY.equals(metaKey)) {
-					if (metaValue instanceof List) {
-						List<?> serializedLore = (List<?>) metaValue;
-
-						if (preferPlainTextFormat) {
-							List<?> plainLore = Unsafe.assertNonNull(itemMeta.getLore());
-							if (!serializedLore.equals(plainLore)) {
-								// The serialized lore might be in Json format. Check if we can
-								// preserve it even if we serialize it in plain format:
-								List<?> plainSerializedLore = Unsafe.castNonNull(
-										lazyPlainSerializedMetaData.get().get(LORE_KEY)
-								);
-								if (serializedLore.equals(plainSerializedLore)) {
-									// Use the plain representation:
-									serializedLore = plainLore;
-								}
-							}
-						}
-
-						// Use alternative color codes:
-						metaValue = TextUtils.decolorizeUnknown(serializedLore);
 					}
 				}
 
@@ -271,20 +178,6 @@ public final class ItemData {
 
 				// Insert meta type:
 				itemMetaData.put(META_TYPE_KEY, metaType);
-
-				// Convert color codes for display name and lore:
-				Object displayNameData = itemMetaData.get(DISPLAY_NAME_KEY);
-				if (displayNameData instanceof String) { // Also checks for null
-					itemMetaData.put(
-							DISPLAY_NAME_KEY,
-							TextUtils.colorize((String) displayNameData)
-					);
-				}
-				// Null if the data is not a list:
-				List<?> loreData = itemDataData.getList(LORE_KEY);
-				if (loreData != null) {
-					itemMetaData.put(LORE_KEY, TextUtils.colorizeUnknown(loreData));
-				}
 
 				// Deserialize the ItemMeta (can be null):
 				ItemMeta itemMeta = ItemSerialization.deserializeItemMeta(itemMetaData);
