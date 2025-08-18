@@ -93,7 +93,7 @@ public class ItemDataTest extends AbstractItemStackSerializationTest<@Nullable S
 	@Test
 	public void testYamlSerializationCompact() {
 		ItemStack itemStack = TestItemStacks.createItemStackBasicTool();
-		this.testYamlSerialization(itemStack, "item: DIAMOND_SWORD" + yamlNewline());
+		this.testYamlSerialization(itemStack, "item: minecraft:diamond_sword" + yamlNewline());
 	}
 
 	// Display name
@@ -104,8 +104,9 @@ public class ItemDataTest extends AbstractItemStackSerializationTest<@Nullable S
 		this.testYamlSerialization(
 				itemStack,
 				"item:" + yamlNewline()
-						+ "  type: DIAMOND_SWORD" + yamlNewline()
-						+ "  display-name: '{\"text\":\"Custom Name\",\"color\":\"red\"}'" + yamlNewline()
+						+ "  id: minecraft:diamond_sword" + yamlNewline()
+						+ "  components:" + yamlNewline()
+						+ "    minecraft:custom_name: '''{\"color\":\"red\",\"text\":\"Custom Name\"}'''" + yamlNewline()
 		);
 	}
 
@@ -117,82 +118,28 @@ public class ItemDataTest extends AbstractItemStackSerializationTest<@Nullable S
 		this.testYamlSerialization(
 				itemStack,
 				"item:" + yamlNewline()
-						+ "  type: DIAMOND_SWORD" + yamlNewline()
-						+ "  display-name: '{\"text\":\"Custom Name\",\"color\":\"red\"}'" + yamlNewline()
-						+ "  item-name: '{\"text\":\"Custom item name\",\"color\":\"red\"}'" + yamlNewline()
-						+ "  lore:" + yamlNewline()
-						+ "  - '{\"text\":\"lore1\",\"color\":\"green\"}'" + yamlNewline()
-						+ "  - '\"lore2\"'" + yamlNewline()
-						+ "  custom-model-data: 1" + yamlNewline()
-						+ "  enchants:" + yamlNewline()
-						+ "    minecraft:unbreaking: 1" + yamlNewline()
-						+ "    minecraft:sharpness: 2" + yamlNewline()
-						+ "  attribute-modifiers:" + yamlNewline()
-						+ "    minecraft:generic.attack_speed:" + yamlNewline()
-						+ "    - ==: org.bukkit.attribute.AttributeModifier" + yamlNewline()
-						+ "      amount: 2.0" + yamlNewline()
-						+ "      name: attack speed bonus" + yamlNewline()
-						+ "      slot: hand" + yamlNewline()
-						+ "      uuid: 00000000-0000-0001-0000-000000000001" + yamlNewline()
-						+ "      operation: 0" + yamlNewline()
-						+ "    - ==: org.bukkit.attribute.AttributeModifier" + yamlNewline()
-						+ "      amount: 0.5" + yamlNewline()
-						+ "      name: attack speed bonus 2" + yamlNewline()
-						+ "      slot: offhand" + yamlNewline()
-						+ "      uuid: 00000000-0000-0002-0000-000000000002" + yamlNewline()
-						+ "      operation: 2" + yamlNewline()
-						+ "    minecraft:generic.max_health:" + yamlNewline()
-						+ "    - ==: org.bukkit.attribute.AttributeModifier" + yamlNewline()
-						+ "      amount: 2.0" + yamlNewline()
-						+ "      name: max health bonus" + yamlNewline()
-						+ "      slot: hand" + yamlNewline()
-						+ "      uuid: 00000000-0000-0003-0000-000000000003" + yamlNewline()
-						+ "      operation: 0" + yamlNewline()
-						+ "  repair-cost: 3" + yamlNewline()
-						+ "  ItemFlags:" + yamlNewline()
-						+ "  - HIDE_ENCHANTS" + yamlNewline()
-						+ "  hide-tool-tip: true" + yamlNewline()
-						+ "  Unbreakable: true" + yamlNewline()
-						+ "  enchantment-glint-override: true" + yamlNewline()
-						+ "  fire-resistant: true" + yamlNewline()
-						+ "  max-stack-size: 65" + yamlNewline()
-						+ "  rarity: EPIC" + yamlNewline()
-						+ "  food:" + yamlNewline()
-						+ "    ==: Food" + yamlNewline()
-						+ "    nutrition: 2" + yamlNewline()
-						+ "    saturation: 2.5" + yamlNewline()
-						+ "    can-always-eat: true" + yamlNewline()
-						+ "    eat-seconds: 5.5" + yamlNewline()
-						+ "    effects:" + yamlNewline()
-						+ "    - ==: FoodEffect" + yamlNewline()
-						+ "      effect:" + yamlNewline()
-						+ "        ==: PotionEffect" + yamlNewline()
-						+ "        effect: minecraft:blindness" + yamlNewline()
-						+ "        duration: 5" + yamlNewline()
-						+ "        amplifier: 1" + yamlNewline()
-						+ "        ambient: true" + yamlNewline()
-						+ "        has-particles: true" + yamlNewline()
-						+ "        has-icon: true" + yamlNewline()
-						+ "      probability: 0.5" + yamlNewline()
-						+ "  tool:" + yamlNewline()
-						+ "    ==: Tool" + yamlNewline()
-						+ "    default-mining-speed: 1.5" + yamlNewline()
-						+ "    damage-per-block: 2" + yamlNewline()
-						+ "    rules:" + yamlNewline()
-						+ "    - ==: ToolRule" + yamlNewline()
-						+ "      blocks:" + yamlNewline()
-						+ "      - minecraft:stone" + yamlNewline()
-						+ "      speed: 0.5" + yamlNewline()
-						+ "      correct-for-drops: true" + yamlNewline()
-						+ "  Damage: 2" + yamlNewline()
-						+ "  max-damage: 10" + yamlNewline()
-						+ "  PublicBukkitValues: |-" + yamlNewline()
-						+ "    {" + yamlNewline()
-						+ "        \"some_plugin:some-key\": \"some value\"," + yamlNewline()
-						+ "        \"some_plugin:some-other-key\": {" + yamlNewline()
-						+ "            \"inner_plugin:inner-key\": 0.3f" + yamlNewline()
-						+ "        }" + yamlNewline()
-						+ "    }" + yamlNewline()
+						+ "  id: minecraft:diamond_sword" + yamlNewline()
+						+ "  components:" + yamlNewline()
+						+ "    minecraft:custom_model_data: '1'" + yamlNewline()
+						+ "    minecraft:lore: '[''{\"color\":\"green\",\"text\":\"lore1\"}'',''\"lore2\"'']'" + yamlNewline()
+						+ "    minecraft:max_stack_size: '65'" + yamlNewline()
+						+ "    minecraft:attribute_modifiers: '{modifiers:[{amount:2.0d,name:\"attack speed bonus\",operation:\"add_value\",slot:\"hand\",type:\"minecraft:generic.attack_speed\",uuid:[I;0,1,0,1]},{amount:0.5d,name:\"attack" + yamlNewline()
+						+ "      speed bonus 2\",operation:\"add_multiplied_total\",slot:\"offhand\",type:\"minecraft:generic.attack_speed\",uuid:[I;0,2,0,2]},{amount:2.0d,name:\"max" + yamlNewline()
+						+ "      health bonus\",operation:\"add_value\",slot:\"hand\",type:\"minecraft:generic.max_health\",uuid:[I;0,3,0,3]}]}'" + yamlNewline()
+						+ "    minecraft:enchantments: '{levels:{\"minecraft:sharpness\":2,\"minecraft:unbreaking\":1},show_in_tooltip:0b}'" + yamlNewline()
+						+ "    minecraft:tool: '{damage_per_block:2,default_mining_speed:1.5f,rules:[{blocks:\"minecraft:stone\",correct_for_drops:1b,speed:0.5f}]}'" + yamlNewline()
+						+ "    minecraft:damage: '2'" + yamlNewline()
+						+ "    minecraft:enchantment_glint_override: 1b" + yamlNewline()
+						+ "    minecraft:repair_cost: '3'" + yamlNewline()
+						+ "    minecraft:hide_tooltip: '{}'" + yamlNewline()
+						+ "    minecraft:fire_resistant: '{}'" + yamlNewline()
+						+ "    minecraft:item_name: '''{\"color\":\"red\",\"text\":\"Custom item name\"}'''" + yamlNewline()
+						+ "    minecraft:food: '{can_always_eat:1b,eat_seconds:5.5f,effects:[{effect:{ambient:1b,amplifier:1b,duration:5,id:\"minecraft:blindness\",show_icon:1b},probability:0.5f}],nutrition:2,saturation:2.5f}'" + yamlNewline()
+						+ "    minecraft:unbreakable: '{}'" + yamlNewline()
+						+ "    minecraft:custom_name: '''{\"color\":\"red\",\"text\":\"Custom Name\"}'''" + yamlNewline()
+						+ "    minecraft:rarity: '\"epic\"'" + yamlNewline()
+						+ "    minecraft:custom_data: '{PublicBukkitValues:{\"some_plugin:some-key\":\"some value\",\"some_plugin:some-other-key\":{\"inner_plugin:inner-key\":0.3f}}}'" + yamlNewline()
+						+ "    minecraft:max_damage: '10'" + yamlNewline()
 		);
 	}
 
@@ -204,12 +151,9 @@ public class ItemDataTest extends AbstractItemStackSerializationTest<@Nullable S
 		this.testYamlSerialization(
 				itemStack,
 				"item:" + yamlNewline()
-						+ "  type: CAMPFIRE" + yamlNewline()
-						+ "  BlockStateTag:" + yamlNewline()
-						+ "    waterlogged: 'false'" + yamlNewline()
-						+ "    signal_fire: 'false'" + yamlNewline()
-						+ "    lit: 'false'" + yamlNewline()
-						+ "    facing: north" + yamlNewline()
+						+ "  id: minecraft:campfire" + yamlNewline()
+						+ "  components:" + yamlNewline()
+						+ "    minecraft:block_state: '{facing:\"north\",lit:\"false\",signal_fire:\"false\",waterlogged:\"false\"}'" + yamlNewline()
 		);
 	}
 
@@ -219,13 +163,9 @@ public class ItemDataTest extends AbstractItemStackSerializationTest<@Nullable S
 	public void testYAMLSerializationUncommonMeta() {
 		ItemStack itemStack = TestItemStacks.createItemStackUncommonMeta();
 		this.testYamlSerialization(itemStack, "item:" + yamlNewline()
-				+ "  type: LEATHER_CHESTPLATE" + yamlNewline()
-				+ "  color:" + yamlNewline()
-				+ "    ==: Color" + yamlNewline()
-				+ "    ALPHA: 255" + yamlNewline()
-				+ "    RED: 0" + yamlNewline()
-				+ "    BLUE: 255" + yamlNewline()
-				+ "    GREEN: 0" + yamlNewline());
+				+ "  id: minecraft:leather_chestplate" + yamlNewline()
+				+ "  components:" + yamlNewline()
+				+ "    minecraft:dyed_color: '{rgb:255}'" + yamlNewline());
 	}
 
 	// Basic TileEntity
@@ -233,7 +173,7 @@ public class ItemDataTest extends AbstractItemStackSerializationTest<@Nullable S
 	@Test
 	public void testYAMLSerializationBasicTileEntity() {
 		ItemStack itemStack = TestItemStacks.createItemStackBasicTileEntity();
-		this.testYamlSerialization(itemStack, "item: CHEST" + yamlNewline());
+		this.testYamlSerialization(itemStack, "item: minecraft:chest" + yamlNewline());
 	}
 
 	// TileEntity with display name
@@ -244,8 +184,9 @@ public class ItemDataTest extends AbstractItemStackSerializationTest<@Nullable S
 		this.testYamlSerialization(
 				itemStack,
 				"item:" + yamlNewline()
-						+ "  type: CHEST" + yamlNewline()
-						+ "  display-name: '{\"text\":\"Custom Name\",\"color\":\"red\"}'" + yamlNewline()
+						+ "  id: minecraft:chest" + yamlNewline()
+						+ "  components:" + yamlNewline()
+						+ "    minecraft:custom_name: '''{\"color\":\"red\",\"text\":\"Custom Name\"}'''" + yamlNewline()
 		);
 	}
 

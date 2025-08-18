@@ -52,11 +52,13 @@ public class TestItemStacks {
 				createItemStackBasicTool(),
 				createItemStackDisplayName(),
 				createItemStackComplete(),
-				createItemStackBlockData(),
+				// TODO Broken in MC 1.20.5+, until late MC 1.21. See SPIGOT-7857
+				//createItemStackBlockData(),
 				createItemStackUncommonMeta(),
 				createItemStackWritableBook(),
 				createItemStackWrittenBook(),
-				createItemStackTileEntityDisplayName(),
+				// TODO Broken in MC 1.20.5+, until late MC 1.21. See SPIGOT-7857
+				//createItemStackTileEntityDisplayName(),
 				createItemStackBasicTileEntity()
 		);
 	}

@@ -3,13 +3,10 @@ package com.nisovin.shopkeepers.util.inventory;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import com.nisovin.shopkeepers.api.internal.util.Unsafe;
@@ -23,7 +20,9 @@ import com.nisovin.shopkeepers.util.data.property.validation.bukkit.MaterialVali
 import com.nisovin.shopkeepers.util.data.serialization.DataSerializer;
 import com.nisovin.shopkeepers.util.data.serialization.InvalidDataException;
 import com.nisovin.shopkeepers.util.data.serialization.MissingDataException;
+import com.nisovin.shopkeepers.util.data.serialization.bukkit.ItemStackSerializers;
 import com.nisovin.shopkeepers.util.data.serialization.bukkit.MinecraftEnumSerializers;
+import com.nisovin.shopkeepers.util.data.serialization.bukkit.NamespacedKeySerializers;
 import com.nisovin.shopkeepers.util.data.serialization.java.DataContainerSerializers;
 import com.nisovin.shopkeepers.util.java.Validate;
 
@@ -32,6 +31,13 @@ import com.nisovin.shopkeepers.util.java.Validate;
  */
 public final class ItemData {
 
+	// Null: Will use the server's current data version.
+	private static @Nullable Integer SERIALIZER_DATA_VERSION = null;
+
+	public static void setSerializerDataVersion(int dataVersion) {
+		SERIALIZER_DATA_VERSION = dataVersion;
+	}
+
 	private static final Property<Material> ITEM_TYPE = new BasicProperty<Material>()
 			.dataKeyAccessor("type", MinecraftEnumSerializers.Materials.LENIENT)
 			.validator(MaterialValidators.IS_ITEM)
@@ -39,9 +45,6 @@ public final class ItemData {
 			.build();
 
 	private static final String META_TYPE_KEY = "meta-type";
-
-	// Special case: Omitting 'blockMaterial' for empty TILE_ENTITY item meta.
-	private static final String TILE_ENTITY_BLOCK_MATERIAL_KEY = "blockMaterial";
 
 	// Entries are lazily added and then cached:
 	// The mapped value can be null for items that do not support item meta.
@@ -79,54 +82,75 @@ public final class ItemData {
 
 	/**
 	 * A {@link DataSerializer} for values of type {@link ItemData}.
+	 * <p>
+	 * {@link ItemData} is primarily used for item data inside the config. In order to keep the
+	 * config representation concise, we don't serialize the data version for each {@link ItemData}
+	 * value, but expect it to be persisted in a separate setting once and injected via
+	 * {@link #setSerializerDataVersion(int)} before the first {@link ItemData} setting is
+	 * deserialized.
 	 */
 	public static final DataSerializer<ItemData> SERIALIZER = new DataSerializer<ItemData>() {
 		@Override
 		public @Nullable Object serialize(ItemData value) {
 			Validate.notNull(value, "value is null");
-			ItemMeta itemMeta = value.getItemMeta(); // Can be null
-			Map<? extends String, @NonNull ?> serializedMetaData = ItemSerialization.serializeItemMetaOrEmpty(itemMeta);
-			if (serializedMetaData.isEmpty()) {
-				// Use a more compact representation if there is no additional item data:
-				return value.getType().name();
+
+			// getKey instead of getKeyOrThrow: Compatible with both Spigot and Paper.
+			var itemTypeKey = value.getType().getKey();
+
+			var componentsData = ItemStackComponentsData.of(ItemUtils.asItemStack(value.dataItem));
+			if (componentsData == null) {
+				// Use a more compact representation if there is no components data:
+				return NamespacedKeySerializers.DEFAULT.serialize(itemTypeKey);
 			}
 
-			assert itemMeta != null;
-
-			DataContainer itemDataData = DataContainer.create();
-			itemDataData.set(ITEM_TYPE, value.getType());
-
-			for (Entry<? extends String, @NonNull ?> metaEntry : serializedMetaData.entrySet()) {
-				String metaKey = metaEntry.getKey();
-				Object metaValue = metaEntry.getValue();
-
-				// We omit any data that can be easily restored during deserialization:
-				// Omit meta type key:
-				if (META_TYPE_KEY.equals(metaKey)) continue;
-
-				// Omit 'blockMaterial' for empty TILE_ENTITY item meta:
-				if (TILE_ENTITY_BLOCK_MATERIAL_KEY.equals(metaKey)) {
-					// Check if specific meta type only contains unspecific metadata:
-					// TODO Relies on some material with unspecific item meta.
-					ItemMeta unspecificItemMeta = Bukkit.getItemFactory().asMetaFor(
-							itemMeta,
-							Material.STONE
-					);
-					if (Bukkit.getItemFactory().equals(unspecificItemMeta, itemMeta)) {
-						continue; // Skip 'blockMaterial' entry
-					}
-				}
-
-				// Insert the entry into the data container:
-				// A deep copy is assumed to not be needed.
-				itemDataData.set(metaKey, metaValue);
-			}
-			return itemDataData.serialize();
+			// Like ItemStackSerializers.UNMODIFIABLE#serialize, but omits COUNT and DATA_VERSION:
+			// The data version is loaded and injected from a shared config setting before
+			// deserialization.
+			var dataContainer = DataContainer.create();
+			dataContainer.set(ItemStackSerializers.ID, itemTypeKey);
+			dataContainer.set(ItemStackSerializers.COMPONENTS, componentsData);
+			return dataContainer.serialize();
 		}
 
 		@Override
 		public ItemData deserialize(Object data) throws InvalidDataException {
 			Validate.notNull(data, "data is null");
+			try {
+				var dataVersion = SERIALIZER_DATA_VERSION; // Can be null
+
+				// Unmodifiable item: Avoids creating another item copy during ItemData
+				// construction.
+				UnmodifiableItemStack dataItem;
+				if (data instanceof String dataString) {
+					// Reconstruct from compact representation (no additional item metadata):
+					var dataContainer = DataContainer.create();
+					dataContainer.set(ItemStackSerializers.ID.getName(), dataString);
+					dataContainer.set(ItemStackSerializers.DATA_VERSION.getName(), dataVersion);
+					dataItem = ItemStackSerializers.UNMODIFIABLE.deserialize(dataContainer);
+				} else {
+					var dataContainer = DataContainer.of(data);
+					if (dataContainer != null) {
+						// The data container is assumed to be modifiable here.
+						dataContainer.set(ItemStackSerializers.DATA_VERSION.getName(), dataVersion);
+						dataItem = ItemStackSerializers.UNMODIFIABLE.deserialize(dataContainer);
+					} else {
+						// Unexpected. Forward as-is.
+						dataItem = ItemStackSerializers.UNMODIFIABLE.deserialize(data);
+					}
+				}
+				return new ItemData(dataItem);
+			} catch (InvalidDataException e) {
+				try {
+					return this.legacyDeserialize(data);
+				} catch (InvalidDataException legacyException) {
+					// If the legacy deserialization also fails, re-throw the original exception:
+					throw e;
+				}
+			}
+		}
+
+		// TODO This can be removed once we expect all configs to have been updated.
+		private ItemData legacyDeserialize(Object data) throws InvalidDataException {
 			Material itemType;
 			DataContainer itemDataData = null;
 			if (data instanceof String) {

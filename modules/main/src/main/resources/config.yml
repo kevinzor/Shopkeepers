@@ -6,6 +6,8 @@
 
 # Determines the required config migrations. Do not edit manually!
 config-version: 9
+# Determines the required config item data migrations. Do not edit manually!
+data-version: 3839
 # The initial debugging state of the plugin.
 debug: false
 # Additional debugging options.
@@ -168,8 +170,9 @@ disable-inventory-verification: false
 # The item that is used to create player shops.
 # Use the '/shopkeeper give' command to give yourself this item in-game.
 shop-creation-item:
-  type: VILLAGER_SPAWN_EGG
-  display-name: '{"text":"Shopkeeper","italic":false,"color":"green"}'
+  id: 'minecraft:villager_spawn_egg'
+  components:
+    minecraft:custom_name: '''{"color":"green","italic":false,"text":"Shopkeeper"}'''
 
 # Whether to add a custom NBT tag to newly created shop creation items, e.g.
 # when created via the '/shopkeeper give' command.
@@ -478,30 +481,30 @@ allow-renaming-of-player-npc-shops: false
 # file.
 # In combination with their display name and lore, these items must not match
 # any items that players are able to set up trades with.
-selling-empty-trade-result-item: GRAY_STAINED_GLASS_PANE
-selling-empty-trade-item1: GRAY_STAINED_GLASS_PANE
-selling-empty-trade-item2: GRAY_STAINED_GLASS_PANE
-selling-empty-item1: BARRIER
-selling-empty-item2: BARRIER
+selling-empty-trade-result-item: 'minecraft:gray_stained_glass_pane'
+selling-empty-trade-item1: 'minecraft:gray_stained_glass_pane'
+selling-empty-trade-item2: 'minecraft:gray_stained_glass_pane'
+selling-empty-item1: 'minecraft:barrier'
+selling-empty-item2: 'minecraft:barrier'
 
-buying-empty-trade-result-item: GRAY_STAINED_GLASS_PANE
-buying-empty-trade-item1: GRAY_STAINED_GLASS_PANE
-buying-empty-trade-item2: AIR
-buying-empty-result-item: BARRIER
-buying-empty-item2: AIR
+buying-empty-trade-result-item: 'minecraft:gray_stained_glass_pane'
+buying-empty-trade-item1: 'minecraft:gray_stained_glass_pane'
+buying-empty-trade-item2: 'minecraft:air'
+buying-empty-result-item: 'minecraft:barrier'
+buying-empty-item2: 'minecraft:air'
 
-trading-empty-trade-result-item: GRAY_STAINED_GLASS_PANE
-trading-empty-trade-item1: GRAY_STAINED_GLASS_PANE
-trading-empty-trade-item2: GRAY_STAINED_GLASS_PANE
-trading-empty-result-item: BARRIER
-trading-empty-item1: BARRIER
-trading-empty-item2: BARRIER
+trading-empty-trade-result-item: 'minecraft:gray_stained_glass_pane'
+trading-empty-trade-item1: 'minecraft:gray_stained_glass_pane'
+trading-empty-trade-item2: 'minecraft:gray_stained_glass_pane'
+trading-empty-result-item: 'minecraft:barrier'
+trading-empty-item1: 'minecraft:barrier'
+trading-empty-item2: 'minecraft:barrier'
 
-book-empty-trade-result-item: GRAY_STAINED_GLASS_PANE
-book-empty-trade-item1: GRAY_STAINED_GLASS_PANE
-book-empty-trade-item2: GRAY_STAINED_GLASS_PANE
-book-empty-item1: BARRIER
-book-empty-item2: BARRIER
+book-empty-trade-result-item: 'minecraft:gray_stained_glass_pane'
+book-empty-trade-item1: 'minecraft:gray_stained_glass_pane'
+book-empty-trade-item2: 'minecraft:gray_stained_glass_pane'
+book-empty-item1: 'minecraft:barrier'
+book-empty-item2: 'minecraft:barrier'
 
 # The number of pages that can be filled with trades. The maximum is 10.
 max-trades-pages: 5
@@ -509,18 +512,18 @@ max-trades-pages: 5
 # The items used for the buttons and icons in the trades page row.
 # The display name and lore of these items get set via the corresponding
 # messages and can therefore not be defined here.
-previous-page-item: WRITABLE_BOOK
-next-page-item: WRITABLE_BOOK
-current-page-item: WRITABLE_BOOK
-trade-setup-item: PAPER
+previous-page-item: 'minecraft:writable_book'
+next-page-item: 'minecraft:writable_book'
+current-page-item: 'minecraft:writable_book'
+trade-setup-item: 'minecraft:paper'
 
 # The item that players can rename and then use as a substitute for items they
 # don't have yet when they set up their trade offers or mob equipment.
 # Set this to AIR to disable the use of placeholder items.
-placeholder-item: PAPER
+placeholder-item: 'minecraft:paper'
 
 # The item used for the set-name button, and the naming item (if enabled).
-name-item: NAME_TAG
+name-item: 'minecraft:name_tag'
 
 # Whether to enable the equipment editor for all mobs and all equipment slots.
 # By default, the equipment can only be edited for mobs and slots that are known, at least for
@@ -536,19 +539,19 @@ enable-all-equipment-editor-slots: false
 # Whether to allow shop owners to move their shops.
 enable-moving-of-player-shops: true
 # The item used for the move button.
-move-item: ENDER_PEARL
+move-item: 'minecraft:ender_pearl'
 
 # Whether the editor menu of player shops contains an option to open the shop's
 # container.
 enable-container-option-on-player-shop: true
 # The item used for the 'open container' editor button.
-container-item: CHEST
+container-item: 'minecraft:chest'
 
 # The item used for the trade notifications editor button in player shops.
-trade-notifications-item: BELL
+trade-notifications-item: 'minecraft:bell'
 
 # The item used for the delete button.
-delete-item: BONE
+delete-item: 'minecraft:bone'
 
 # *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*
 # Non-Shopkeeper Villagers
@@ -586,7 +589,7 @@ edit-regular-wandering-traders: false
 
 # The item to use for the hire button in player shopkeepers that are for sale,
 # and for the hire-cost when hiring non-shopkeeper villagers.
-hire-item: EMERALD
+hire-item: 'minecraft:emerald'
 # The amount of hire-cost items it costs to hire a non-shopkeeper villager.
 hire-other-villagers-costs: 1
 # Whether hiring a player shopkeeper also requires the permission to create
@@ -728,11 +731,11 @@ log-item-metadata: false
 # *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*
 
 # The currency item that is used in player shops.
-currency-item: EMERALD
+currency-item: 'minecraft:emerald'
 
 # A second, higher-value currency item that is used in the second trading slot
 # of player shops. Set this to 'AIR' to disable the second currency.
-high-currency-item: EMERALD_BLOCK
+high-currency-item: 'minecraft:emerald_block'
 
 # The value of the second currency, based on the first currency.
 high-currency-value: 9

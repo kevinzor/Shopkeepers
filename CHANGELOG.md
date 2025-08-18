@@ -4,14 +4,40 @@ Date format: (YYYY-MM-DD)
 ## v2.23.11 (TBA)
 ### Supported MC versions: 1.21.8, 1.21.7, 1.21.6, 1.21.5, 1.21.4, 1.21.3, 1.21.1, 1.21, 1.20.6
 
-* Config: Changes to how we compare the data of config items such as the shop creation item:
+* Config: Changes to the item data format inside the config.
+  * The new format aligns more closely with how Minecraft represents item data and how we represent item data inside the save file.
+  * We now use Minecraft's item type ids instead of Bukkit's material names.
+  * Additional [item data components](https://minecraft.wiki/w/Data_component_format) are represented in [SNBT](https://minecraft.wiki/w/NBT_format#SNBT_format).
+  * Example:  
+    Old:  
+    ```yaml
+    shop-creation-item:
+      type: VILLAGER_SPAWN_EGG
+      display-name: '{"text":"Shopkeeper","italic":false,"color":"green"}'
+    ```
+    New (1.20.5+):  
+    ```yaml
+    shop-creation-item:
+      id: 'minecraft:villager_spawn_egg'
+      components:
+        minecraft:custom_name: '''{"color":"green","italic":false,"text":"Shopkeeper"}'''
+    ```
+    New (1.21.5+): SNBT instead of JSON for text data.  
+    ```yaml
+    shop-creation-item:
+      id: 'minecraft:villager_spawn_egg'
+      components:
+        minecraft:custom_name: '{color:"green",italic:0b,text:"Shopkeeper"}'
+    ```
+  * Your existing config is automatically migrated to the new format.
+  * Add new setting `data-version`: This setting is automatically updated whenever you migrate to a new server version and used to automatically migrate your item data inside the config.
+  * We no longer convert between legacy and alternative color codes. For recent Minecraft versions, the use of Minecraft's JSON / SNBT text representation is recommended.
+  * Internal: Remove unused plain text serialization implementation.
+* Config: Changes to how we compare the data of config items such as the shop creation item.
   * Previously, we tried to emulate Minecraft's [NBT data matching](https://minecraft.wiki/w/NBT_format#Testing_NBT_tags) based on Bukkit's item serialization output. This approach was not ideal: Bukkit's item serialization comes with overhead and its output does not perfectly match Minecraft's item NBT structure. And on recent versions of the Paper server, the Bukkit item serialization has been deprecated and might no longer receive updates.
   * The item matching implementation was updated to directly use Minecraft's underlying NBT comparison logic.
   * However, this also means that this logic is now part of the plugin's Minecraft version specific code that must be updated for every new version of Minecraft. A reflection based fallback implementation is available for Spigot servers, but is likely to break across server updates as well.
   * To more closely align with Minecraft's NBT matching logic used in commands and by the `custom_data` predicate, we also match partial lists now. Previously, we would not match partial lists to more closely align with how items are compared in villager trades. But in newer versions, the item comparison in villager trades has become more strict. And for the matching of config items, we prefer a more lenient partial matching of item data.
-* Config: Changes to the serialization of config item data:
-  * We no longer convert between legacy and alternative color codes. For recent Minecraft versions, the use of Minecraft's JSON text representation is recommended.
-  * Internal: Remove unused plain text serialization implementation.
 
 ## v2.23.10 (2025-07-27)
 ### Supported MC versions: 1.21.8, 1.21.7, 1.21.6, 1.21.5, 1.21.4, 1.21.3, 1.21.1, 1.21, 1.20.6

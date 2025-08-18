@@ -59,6 +59,8 @@ public class Settings extends Config {
 	 * General Settings
 	 */
 	public static int configVersion = 9;
+	// Initial value: Lowest supported Minecraft data version: MC 1.20.6
+	public static int dataVersion = 3839;
 	public static boolean debug = false;
 	// See DebugOptions for all available options.
 	public static List<String> debugOptions = new ArrayList<>(0);
@@ -799,8 +801,7 @@ public class Settings extends Config {
 
 		if (configChanged) {
 			// If the config was modified (migrations, adding missing settings, ..), save it:
-			Log.info("Saving config.");
-			plugin.saveConfig();
+			saveConfig();
 		}
 		return null; // Config loaded successfully
 	}
@@ -822,7 +823,22 @@ public class Settings extends Config {
 		}
 
 		// Load and validate settings:
+		// Load the data version setting first so that it is available for the loading of ItemData
+		// settings:
+		var dataVersionSetting = Settings.INSTANCE.getSetting("data-version");
+		assert dataVersionSetting != null;
+		Settings.INSTANCE.loadSetting(configData, dataVersionSetting);
+		ItemData.setSerializerDataVersion(dataVersion);
+
 		Settings.INSTANCE.load(configData);
+
+		// Update the data version:
+		// Note: This is done after inserting default values, since the default value might itself
+		// be outdated (we support a range of Minecraft versions).
+		var dataVersionChanged = Settings.INSTANCE.updateDataVersion();
+		if (dataVersionChanged) {
+			configChanged = true;
+		}
 
 		onSettingsChanged();
 		return configChanged;
@@ -957,6 +973,23 @@ public class Settings extends Config {
 				disableInventoryVerification = true;
 			}
 		}
+	}
+
+	// Returns true if the data version has changed.
+	private boolean updateDataVersion() {
+		var currentDataVersion = Bukkit.getUnsafe().getDataVersion();
+		if (dataVersion == currentDataVersion) {
+			return false;
+		}
+
+		Log.info(this.getLogPrefix() + "'data-version' updated from " + dataVersion + " to "
+				+ currentDataVersion + ".");
+		dataVersion = currentDataVersion;
+		// Note: Any item data is automatically migrated during loading. This data version check and
+		// updating ensures that we save back the migrated item data whenever the data version has
+		// changed.
+
+		return true;
 	}
 
 	/**

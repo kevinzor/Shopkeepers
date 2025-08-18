@@ -26,20 +26,22 @@ import com.nisovin.shopkeepers.util.java.Validate;
  */
 public final class ItemStackSerializers {
 
-	private static final Property<Integer> DATA_VERSION = new BasicProperty<Integer>()
+	public static final Property<Integer> DATA_VERSION = new BasicProperty<Integer>()
 			.dataKeyAccessor("DataVersion", NumberSerializers.INTEGER)
 			// If no data version is specified, we assume the current data version (i.e. no data
 			// migrations are applied).
+			.useDefaultIfMissing()
 			.defaultValue(Bukkit.getUnsafe().getDataVersion())
 			.build();
-	private static final Property<NamespacedKey> ID = new BasicProperty<NamespacedKey>()
+	public static final Property<NamespacedKey> ID = new BasicProperty<NamespacedKey>()
 			.dataKeyAccessor("id", NamespacedKeySerializers.DEFAULT)
 			.build();
-	private static final Property<Integer> COUNT = new BasicProperty<Integer>()
+	public static final Property<Integer> COUNT = new BasicProperty<Integer>()
 			.dataKeyAccessor("count", NumberSerializers.INTEGER)
+			.useDefaultIfMissing()
 			.defaultValue(1)
 			.build();
-	private static final Property<ItemStackComponentsData> COMPONENTS = new BasicProperty<ItemStackComponentsData>()
+	public static final Property<ItemStackComponentsData> COMPONENTS = new BasicProperty<ItemStackComponentsData>()
 			.dataKeyAccessor("components", new DataSerializer<ItemStackComponentsData>() {
 				@Override
 				public @Nullable Object serialize(ItemStackComponentsData value) {
