@@ -39,7 +39,6 @@ import com.nisovin.shopkeepers.dependencies.worldguard.WorldGuardDependency;
 import com.nisovin.shopkeepers.input.chat.ChatInput;
 import com.nisovin.shopkeepers.input.interaction.InteractionInput;
 import com.nisovin.shopkeepers.internals.SKApiInternals;
-import com.nisovin.shopkeepers.itemconversion.ItemConversions;
 import com.nisovin.shopkeepers.lang.Messages;
 import com.nisovin.shopkeepers.metrics.PluginMetrics;
 import com.nisovin.shopkeepers.moving.ShopkeeperMoving;
@@ -120,7 +119,6 @@ public class SKShopkeepersPlugin extends JavaPlugin implements InternalShopkeepe
 
 	private final ForcingCreatureSpawner forcingCreatureSpawner = new ForcingCreatureSpawner(Unsafe.initialized(this));
 	private final ForcingEntityTeleporter forcingEntityTeleporter = new ForcingEntityTeleporter(Unsafe.initialized(this));
-	private final ItemConversions itemConversions = new ItemConversions(Unsafe.initialized(this));
 	private final Commands commands = new Commands(Unsafe.initialized(this));
 	private final ChatInput chatInput = new ChatInput(Unsafe.initialized(this));
 	private final InteractionInput interactionInput = new InteractionInput(Unsafe.initialized(this));
@@ -390,9 +388,6 @@ public class SKShopkeepersPlugin extends JavaPlugin implements InternalShopkeepe
 		// Features related to regular villagers:
 		regularVillagers.onEnable();
 
-		// Item conversions:
-		itemConversions.onEnable();
-
 		// Enable commands:
 		commands.onEnable();
 
@@ -498,9 +493,6 @@ public class SKShopkeepersPlugin extends JavaPlugin implements InternalShopkeepe
 		// Input:
 		chatInput.onDisable();
 		interactionInput.onDisable();
-
-		// Item conversions:
-		itemConversions.onDisable();
 
 		// Regular villagers:
 		regularVillagers.onDisable();

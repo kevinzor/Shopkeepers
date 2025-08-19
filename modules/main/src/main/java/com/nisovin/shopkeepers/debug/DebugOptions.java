@@ -35,9 +35,6 @@ public final class DebugOptions {
 	public static final String itemMigrations = add("item-migrations");
 	// Logs whenever items are updated via the UpdateItemEvent.
 	public static final String itemUpdates = add("item-updates");
-	// Logs whenever we explicitly convert items to Spigot's data format. Note that this does not
-	// log when items get implicitly converted, which may happen under various circumstances.
-	public static final String itemConversions = add("item-conversions");
 	// Logs detailed item information for the selected trade and the items in the input slots
 	// whenever a player clicks an empty trading result slot.
 	public static final String emptyTrades = add("empty-trades");

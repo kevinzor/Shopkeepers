@@ -76,10 +76,6 @@ public class Settings extends Config {
 	 */
 	public static boolean saveInstantly = true;
 
-	public static boolean convertPlayerItems = false;
-	public static boolean convertAllPlayerItems = true;
-	public static List<ItemData> convertPlayerItemsExceptions = new ArrayList<>();
-
 	/*
 	 * Plugin Compatibility
 	 */

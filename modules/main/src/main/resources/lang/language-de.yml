@@ -343,7 +343,6 @@ currency-items-given: "&aSpieler &e{player}&a hat &6{amount}x &aWährungsgegenst
 currency-items-received: "&aDu hast &6{amount}x&a Währungsgegenstand '&e{currency}&a' bekommen!"
 must-hold-item-in-main-hand: "&7Du musst einen Gegenstand in deiner Haupthand halten."
 currency-item-set-to-main-hand-item: "&aDer Währungsgegenstand '&e{currencyId}&a' wurde zu dem &eGegenstand in deiner Haupthand&a geändert!"
-items-converted: "&aEs wurden &e{count}&a Gegenstände konvertiert!"
 items-updated: "&aEs wurden &e{count}&a Gegenstände aktualisiert!"
 unknown-book-author: "Unbekannt"
 
@@ -709,7 +708,6 @@ command-description-remove-all: "Entfernt alle Shops eines Spielers, aller Spiel
 command-description-give: "Gibt dem Spieler Gegenstände zum Erstellen von Shops."
 command-description-give-currency: "Gibt dem Spieler Geld Gegenstände."
 command-description-set-currency: "Ändert den Währungsgegenstand zu dem Gegenstand in deiner Hand."
-command-description-convert-items: "Konvertiert die gehaltenen (oder alle) Gegenstände, um dem Datenformat von Spigot zu entsprechen."
 command-description-update-items: "Aktualisiert Gegenstände von Drittanbieter-Plugins (sofern diese es unterstützen)."
 command-description-remote: "Öffnet einen Shop aus der Ferne (Optional: Für einen anderen Spieler)."
 command-description-remote-edit: "Editiert einen Shop aus der Ferne."

@@ -29,9 +29,6 @@ debug: false
 # - 'item-migrations': Logs whenever a shopkeeper performs item migrations
 #    (e.g. for trade offers).
 # - 'item-updates': Logs whenever items are updated via the UpdateItemEvent.
-# - 'item-conversions': Logs whenever we explicitly convert items to Spigot's
-#    data format. Note that this does not log when items get implicitly
-#    converted, which may happen under various circumstances.
 # - 'empty-trades': Logs detailed item information for the selected trade and
 #    the items in the input slots whenever a player clicks an empty trading
 #    result slot.
@@ -63,38 +60,6 @@ language: en-default
 # If you have a large server with many players and/or many shopkeepers, it
 # might be a good idea to disable this for performance reasons.
 save-instantly: true
-
-# Enables the automatic conversion of items inside the inventories of players
-# and shop containers whenever a player opens a shopkeeper UI (e.g. trading,
-# editor, hiring, etc.) The items are converted to conform to Spigot's internal
-# data format.
-# This setting helps with issues related to items that have been created on
-# previous Spigot versions or via some Minecraft mechanism (e.g. give command,
-# loot tables, etc.) no longer getting accepted when trading with shopkeepers.
-# In order for the items to get reliably accepted during trades, their data has
-# to match the internal format that Spigot uses when a plugin would create the
-# same items via the Spigot API. Spigot occasionally makes changes to this
-# internal data format. Any previously created items, or newly created items
-# that don't conform to this new format, may cause trading and item stacking
-# issues then.
-# This setting is intended to help with the portion of the issue affecting
-# shopkeeper trades. This setting will not reliably help you prevent item
-# stacking related issues!
-# Enabling this setting comes with a performance impact! Try to avoid using
-# this option and search for alternative solutions instead (e.g. stick to
-# Spigot's data format when creating items via Minecraft mechanisms). Try to
-# only keep this setting enabled for as long as required (e.g. until you assume
-# that most of your players' legacy items got converted by now).
-convert-player-items: false
-# If 'convert-player-items' is enabled, this setting toggles whether the
-# 'convert-player-items-exceptions' setting acts as black- or whitelist.
-# If enabled, all items inside the checked inventories will be converted except
-# those that match the items specified by 'convert-player-items-exceptions'.
-# If disabled, only items that match the items specified by
-# 'convert-player-items-exceptions' get converted.
-convert-all-player-items: true
-# Black- or whitelist of items affected by the 'convert-player-items' setting.
-convert-player-items-exceptions: []
 
 # *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*
 # Plugin Compatibility

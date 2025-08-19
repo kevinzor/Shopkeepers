@@ -1,7 +1,7 @@
 # Changelog
 Date format: (YYYY-MM-DD)  
 
-## v2.23.11 (TBA)
+## v2.24.0 (TBA)
 ### Supported MC versions: 1.21.8, 1.21.7, 1.21.6, 1.21.5, 1.21.4, 1.21.3, 1.21.1, 1.21, 1.20.6
 
 * Config: Changes to the item data format inside the config.
@@ -38,6 +38,15 @@ Date format: (YYYY-MM-DD)
   * The item matching implementation was updated to directly use Minecraft's underlying NBT comparison logic.
   * However, this also means that this logic is now part of the plugin's Minecraft version specific code that must be updated for every new version of Minecraft. A reflection based fallback implementation is available for Spigot servers, but is likely to break across server updates as well.
   * To more closely align with Minecraft's NBT matching logic used in commands and by the `custom_data` predicate, we also match partial lists now. Previously, we would not match partial lists to more closely align with how items are compared in villager trades. But in newer versions, the item comparison in villager trades has become more strict. And for the matching of config items, we prefer a more lenient partial matching of item data.
+* Data: Remove the item conversion feature.
+  * This feature was used as a workaround in the past to help server owners deal with changes to the internal item data representation across server versions. Since then, there have been changes in Spigot to better preserve text data during serialization. And with the introduction of item data components in MC 1.20.5 and the changes to how Minecraft itself normalizes and compares item data now, this feature should no longer be required. Also, especially on Paper servers, this feature might break items since it relies on Bukkit's serialization and deserialization of ItemMeta, which is deprecated on Paper servers.
+  * Command: Remove command `convertItems` and related permissions `shopkeeper.convertitems.own` and `shopkeeper.convertitems.others`.
+  * Debug: Remove debug option `item-conversions`.
+  * Config: Remove settings `convert-player-items`, `convert-all-player-items` and `convert-player-items-exceptions`.
+
+**Message changes:**  
+* Removed `items-converted`.
+* Removed `command-description-convert-items`.
 
 ## v2.23.10 (2025-07-27)
 ### Supported MC versions: 1.21.8, 1.21.7, 1.21.6, 1.21.5, 1.21.4, 1.21.3, 1.21.1, 1.21, 1.20.6

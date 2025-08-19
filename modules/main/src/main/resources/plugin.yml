@@ -75,12 +75,6 @@ permissions:
     shopkeeper.setcurrency:
         description: Set the currency items via command
         default: op
-    shopkeeper.convertitems.own:
-        description: Convert your own items via command
-        default: op
-    shopkeeper.convertitems.others:
-        description: Convert items of other players via command
-        default: op
     shopkeeper.updateitems:
         description: Update third-party items
         default: op
@@ -213,8 +207,6 @@ permissions:
             shopkeeper.remove-all.admin: true
             shopkeeper.give: true
             shopkeeper.givecurrency: true
-            shopkeeper.convertitems.own: true
-            shopkeeper.convertitems.others: true
             shopkeeper.updateitems: true
             shopkeeper.remote: true
             shopkeeper.remote.otherplayers: true

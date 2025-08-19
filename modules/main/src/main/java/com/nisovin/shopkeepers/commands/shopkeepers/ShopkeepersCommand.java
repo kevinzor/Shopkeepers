@@ -81,7 +81,6 @@ public class ShopkeepersCommand extends BaseCommand {
 		childCommands.register(new CommandGive());
 		childCommands.register(new CommandGiveCurrency());
 		childCommands.register(new CommandSetCurrency());
-		childCommands.register(new CommandConvertItems());
 		childCommands.register(new CommandUpdateItems());
 		childCommands.register(new CommandRemote());
 		childCommands.register(new CommandEdit());

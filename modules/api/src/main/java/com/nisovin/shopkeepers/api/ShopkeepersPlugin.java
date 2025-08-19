@@ -125,14 +125,6 @@ public interface ShopkeepersPlugin extends Plugin {
 	 */
 	public static final String SET_CURRENCY_PERMISSION = "shopkeeper.setcurrency";
 	/**
-	 * The <code>shopkeeper.convertitems.own</code> permission.
-	 */
-	public static final String CONVERT_ITEMS_OWN_PERMISSION = "shopkeeper.convertitems.own";
-	/**
-	 * The <code>shopkeeper.convertitems.others</code> permission.
-	 */
-	public static final String CONVERT_ITEMS_OTHERS_PERMISSION = "shopkeeper.convertitems.others";
-	/**
 	 * The <code>shopkeeper.updateitems</code> permission.
 	 */
 	public static final String UPDATE_ITEMS_PERMISSION = "shopkeeper.updateitems";
