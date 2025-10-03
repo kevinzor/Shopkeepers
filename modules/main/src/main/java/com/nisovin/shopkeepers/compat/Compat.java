@@ -50,12 +50,12 @@ public final class Compat {
 		// 1.21.8: Mappings version has not changed. We can reuse the 1.21.7 compat modules.
 		register(new CompatVersion("1_21_R7_paper", Arrays.asList(
 				new ServerVersion("1.21.7", "1.21.7"),
-				new ServerVersion("1.21.8", "1.21.8")
+				new ServerVersion("1.21.8", "1.21.8"),
 				new ServerVersion("1.21.9", "1.21.9")
 		)));
 		register(new CompatVersion("1_21_R7", Arrays.asList(
 				new ServerVersion("1.21.7", "98b42190c84edaa346fd96106ee35d6f"),
-				new ServerVersion("1.21.8", "98b42190c84edaa346fd96106ee35d6f")
+				new ServerVersion("1.21.8", "98b42190c84edaa346fd96106ee35d6f"),
 				new ServerVersion("1.21.9", "98b42190c84edaa346fd96106ee35d6f")
 		)));
 		register(new CompatVersion("1_21_R6_paper", "1.21.6", "1.21.6"));
